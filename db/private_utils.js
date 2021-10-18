@@ -1,4 +1,4 @@
-const database = require("./initialize-db");
+const database = require("./initialize_db");
 
 // You give your SQL query and parameters to this function and get a promise that returns rows array
 exports.query = function (sql, params = []) {

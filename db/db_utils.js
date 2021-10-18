@@ -1,4 +1,4 @@
-const query = require("./private-utils").query;
+const query = require("./private_utils").query;
 
 // Returns true if username exists
 exports.usernameExists = async function (username) {
