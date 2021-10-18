@@ -1,0 +1,24 @@
+{
+  "name": "jam_matching_algorithm",
+  "version": "1.0.0",
+  "description": "matching algorithm for jam",
+  "main": "main.js",
+  "scripts": {
+    "test": "node main.js",
+    "nodemon": "nodemon main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DAB-Co/jam-matching-algorithm.git"
+  },
+  "author": "DAB Co.",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DAB-Co/jam-matching-algorithm/issues"
+  },
+  "homepage": "https://github.com/DAB-Co/jam-matching-algorithm#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "sqlite3": "^4.2.0"
+  }
+}
