@@ -1,6 +1,15 @@
 const express = require("express"); // framework for nodejs
 const path = require("path"); // useful for joining file paths
 
+const argv = require("yargs")(process.argv.slice(2))
+	.option("port", {
+		description: "port to bind",
+		type: "number",
+		demandOption: true,
+	})
+	.help().alias("help", "h")
+	.parse();
+
 const app = express(); // create express app
 
 // parse data, useful for post or put requests
@@ -9,7 +18,7 @@ app.use(express.urlencoded({
 }));
 
 // Start listening to given port
-const server = app.listen(80, () => {
+const server = app.listen(argv.port, () => {
     console.log(`Running on port ${server.address().port}`);
 });
 
