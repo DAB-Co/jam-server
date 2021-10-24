@@ -14,7 +14,8 @@ const app = express(); // create express app
 
 // parse data, useful for post or put requests
 app.use(express.urlencoded({
-    extended: false
+    extended: true,
+    type: "application/json",
 }));
 
 // Start listening to given port
