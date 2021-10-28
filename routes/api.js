@@ -9,8 +9,10 @@ router.get("/api", async (req, res) => {
 
 // Creates user
 router.post("/api/signup", async (req, res) => {
-    let username = req.query.username;
-    let password = req.query.password.toString();
+    let user = JSON.parse(req.body);
+    console.log(user);
+    let username = user.username;
+    let password = user.password.toString();
     console.log(`register: ${username + " " + password}`);
     // Check the db if username exists
     if (await db_utils.usernameExists(username)) {
