@@ -27,8 +27,10 @@ router.post("/api/signup", async (req, res) => {
 
 // Handles login
 router.post("/api/auth", async (req, res) => {
-    let username = req.query.username;
-    let password = req.query.password.toString();
+    let user = JSON.parse(req.body);
+    console.log(user);
+    let username = user.username;
+    let password = user.password.toString();
     console.log(`login: ${username + " " + password}`);
 
     // Check the db if username exists
