@@ -9,6 +9,7 @@ router.get("/api", async (req, res) => {
 
 // Creates user
 router.post("/api/signup", async (req, res) => {
+    console.log(req.body);
     let user = JSON.parse(req.body);
     console.log(user);
     let username = user.username;
@@ -27,6 +28,7 @@ router.post("/api/signup", async (req, res) => {
 
 // Handles login
 router.post("/api/auth", async (req, res) => {
+    console.log(req.body);
     let user = JSON.parse(req.body);
     console.log(user);
     let username = user.username;
