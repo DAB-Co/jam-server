@@ -17,6 +17,7 @@ router.post("/api/signup", async (req, res) => {
     console.log(`register: ${username + " " + password}`);
     // Check the db if username exists
     if (await db_utils.usernameExists(username)) {
+        res.status(500);
         return res.send("This username is taken, try again.");
     }
     // Hash the password
@@ -38,8 +39,10 @@ router.post("/api/auth", async (req, res) => {
     // Check the db if username exists
     let usernameExists = await db_utils.usernameExists(username);
     if (!usernameExists) {
+        res.status(500);
         return res.send("This username does not exist.");
     } else if (await db_utils.getPassword(username) != password) {
+        res.status(500);
         return res.send("Wrong Password");
     } else {
         res.send("OK");
