@@ -24,6 +24,7 @@ router.post("/api/signup", async (req, res) => {
     // let hashedPassword = await hashPassword(password);
     // Create and login
     await db_utils.addUser(username, password);
+    res.status(200);
     res.send("OK");
 });
 
@@ -45,6 +46,7 @@ router.post("/api/auth", async (req, res) => {
         res.status(500);
         return res.send("Wrong Password");
     } else {
+        res.status(200);
         res.send("OK");
     }
 });
