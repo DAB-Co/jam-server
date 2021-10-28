@@ -1,5 +1,6 @@
 const express = require("express"); // framework for nodejs
 const path = require("path"); // useful for joining file paths
+const body_parser = require("body-parser");
 
 const argv = require("yargs")(process.argv.slice(2))
 	.option("port", {
@@ -15,8 +16,8 @@ const app = express(); // create express app
 // parse data, useful for post or put requests
 app.use(express.urlencoded({
     extended: true,
-    type: "application/json",
 }));
+app.use(body_parser.json());
 
 // Start listening to given port
 const server = app.listen(argv.port, () => {
