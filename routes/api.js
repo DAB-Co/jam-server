@@ -9,14 +9,14 @@ router.get("/api", async (req, res) => {
 
 // Creates user
 router.post("/api/signup", async (req, res) => {
-    console.log(req.body);
     let user = req.body;
-    console.log(user);
     let username = user.username;
     let password = user.password.toString();
     console.log(`register: ${username + " " + password}`);
+
     // Check the db if username exists
     if (await db_utils.usernameExists(username)) {
+        console.log("This username is taken, try again.");
         res.status(500);
         return res.send("This username is taken, try again.");
     }
@@ -24,15 +24,14 @@ router.post("/api/signup", async (req, res) => {
     // let hashedPassword = await hashPassword(password);
     // Create and login
     await db_utils.addUser(username, password);
+    console.log("OK");
     res.status(200);
     res.send("OK");
 });
 
 // Handles login
 router.post("/api/auth", async (req, res) => {
-    console.log(req.body);
     let user = req.body;
-    console.log(user);
     let username = user.username;
     let password = user.password.toString();
     console.log(`login: ${username + " " + password}`);
@@ -40,12 +39,15 @@ router.post("/api/auth", async (req, res) => {
     // Check the db if username exists
     let usernameExists = await db_utils.usernameExists(username);
     if (!usernameExists) {
+        console.log("This username does not exist.");
         res.status(500);
         return res.send("This username does not exist.");
     } else if (await db_utils.getPassword(username) != password) {
+        console.log("Wrong Password");
         res.status(500);
         return res.send("Wrong Password");
     } else {
+        console.log("Wrong Password");
         res.status(200);
         res.send("OK");
     }
