@@ -47,7 +47,7 @@ router.post("/api/auth", async (req, res) => {
         res.status(500);
         return res.send("Wrong Password");
     } else {
-        console.log("Wrong Password");
+        console.log("OK");
         res.status(200);
         res.send("OK");
     }
