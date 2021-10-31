@@ -1,7 +1,7 @@
 {
-  "name": "jam_matching_algorithm",
+  "name": "jam-server",
   "version": "1.0.0",
-  "description": "matching algorithm for jam",
+  "description": "node js server for jam",
   "main": "main.js",
   "scripts": {
     "test": "node main.js",
@@ -9,16 +9,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/DAB-Co/jam-matching-algorithm.git"
+    "url": "git+https://github.com/DAB-Co/jam-server.git"
   },
   "author": "DAB Co.",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/DAB-Co/jam-matching-algorithm/issues"
+    "url": "https://github.com/DAB-Co/jam-server/issues"
   },
-  "homepage": "https://github.com/DAB-Co/jam-matching-algorithm#readme",
+  "homepage": "https://github.com/DAB-Co/jam-server#readme",
   "dependencies": {
+    "@dab-co/jam-sqlite": "^0.2.1",
     "express": "^4.17.1",
-    "sqlite3": "^4.2.0"
+    "sqlite3": "^4.2.0",
+    "yargs": "^17.2.1"
   }
 }

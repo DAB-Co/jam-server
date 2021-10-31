@@ -1,7 +1,7 @@
 const express = require("express"); // import express
 const router = express.Router();
 
-const db_utils = require("../db/db_utils.js");
+const db_utils = require("../db_utils.js");
 
 router.get("/api", async (req, res) => {
     res.send("api documentation");
