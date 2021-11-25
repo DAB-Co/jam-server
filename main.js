@@ -16,7 +16,6 @@ const app = express(); // create express app
 // parse data, useful for post or put requests
 app.use(express.urlencoded({
     extended: true,
-	type: "application/json",
 }));
 app.use(body_parser.json());
 
