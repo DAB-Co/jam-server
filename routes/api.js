@@ -4,11 +4,12 @@ const router = express.Router();
 const path = require("path");
 const bcrypt = require("bcrypt");
 
-const database = require(path.join("..", "initializeDatabase.js"));
+const database = require(path.join(__dirname, "..", "utils", "initializeDatabase.js"));
 const AccountUtils = require("@dab-co/jam-sqlite").Utils.AccountUtils;
-
+const Validators = require(path.join(__dirname, "..", "utils", "validators.js"));
 
 const accountUtils = new AccountUtils(database);
+const validators = new Validators;
 
 router.get("/api", async (req, res) => {
     res.send("api documentation");
@@ -18,8 +19,9 @@ router.get("/api", async (req, res) => {
 router.post("/api/signup", async (req, res) => {
     let user = req.body;
     console.log(req.body);
-    if (user.username !== undefined && user.password !== undefined) {
+    if (user.username !== undefined && user.email !== undefined && user.password !== undefined) {
         let username = user.username;
+        let email = user.email;
         let password = user.password.toString();
         console.log(`register: ${username + " " + password}`);
 
@@ -29,11 +31,34 @@ router.post("/api/signup", async (req, res) => {
             res.status(500);
             return res.send("This username is taken, try again.");
         }
+        else if (accountUtils.emailExists(email)) {
+            console.log("This email is taken, try again.");
+            res.status(500);
+            return res.send("This email is taken, try again.");
+        }
+        let usernameValid = validators.validateUsername(username);
+        if (usernameValid !== 'OK') {
+            console.log(usernameValid);
+            res.status(500);
+            return res.send(usernameValid);
+        }
+        let passwordValid = validators.validatePassword(password);
+        if (passwordValid !== 'OK') {
+            console.log(passwordValid);
+            res.status(500);
+            return res.send(passwordValid);
+        }
+        let emailValid = validators.validateEmail(email);
+        if (emailValid !== 'OK') {
+            console.log(emailValid);
+            res.status(500);
+            return res.send(emailValid);
+        }
         // Hash the password
         // let hashedPassword = await hashPassword(password);
         // Create and login
         bcrypt.hash(password, await bcrypt.genSalt(), function (err, hash){
-            accountUtils.addUser(username, hash);
+            accountUtils.addUser(email, username, hash);
             console.log("OK");
             res.status(200);
             res.send("OK");
@@ -50,23 +75,26 @@ router.post("/api/signup", async (req, res) => {
 router.post("/api/auth", async (req, res) => {
     let user = req.body;
 
-    if (user.username !== undefined && user.password !== undefined) {
-        let username = user.username;
+    if (user.email !== undefined && user.password !== undefined) {
+        let email = user.email;
         let password = user.password.toString();
-        console.log(`login: ${username + " " + password}`);
+        console.log(`login: ${email + " " + password}`);
 
         // Check the db if username exists
-        let usernameExists = accountUtils.usernameExists(username);
-        if (!usernameExists) {
-            console.log("This username does not exist.");
+        let emailExists = accountUtils.emailExists(email);
+        if (!emailExists) {
+            console.log("Wrong email.");
             res.status(500);
-            return res.send("This username does not exist.");
+            return res.send("This email does not exist.");
         } else {
-            bcrypt.compare(password, accountUtils.getPassword(username), function (err, result) {
+            bcrypt.compare(password, accountUtils.getPassword(email), function (err, result) {
                 if (result) {
-                    console.log("OK");
+                    let info = {
+                        "username": email
+                    }
+                    console.log(info);
                     res.status(200);
-                    res.send("OK");
+                    res.send(JSON.stringify(info));
                 } else {
                     console.log("Wrong Password");
                     res.status(500);
