@@ -87,10 +87,14 @@ router.post("/api/auth", async (req, res) => {
             res.status(500);
             return res.send("This email does not exist.");
         } else {
-            bcrypt.compare(password, accountUtils.getPassword(email), function (err, result) {
+            let userPass = accountUtils.getUsernameAndPass(email);
+            console.log(userPass);
+            let pass = userPass.user_password_hash;
+            let username = userPass.username;
+            bcrypt.compare(password, pass, function (err, result) {
                 if (result) {
                     let info = {
-                        "username": email
+                        "username": username,
                     }
                     console.log(info);
                     res.status(200);
