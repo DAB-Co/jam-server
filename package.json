@@ -2,7 +2,7 @@
   "name": "jam-server",
   "version": "1.0.0",
   "description": "node js server for jam",
-  "main": "main.js",
+  "main": "jam_server_main.js",
   "scripts": {
     "test": "node main.js",
     "nodemon": "nodemon main.js"
