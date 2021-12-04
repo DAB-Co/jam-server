@@ -23,6 +23,7 @@ router.post("/api/signup", async (req, res) => {
         let username = user.username;
         let email = user.email;
         let password = user.password.toString();
+        let token = user.token;
         console.log(`register: ${username + " " + password}`);
 
         // Check the db if username exists
@@ -58,7 +59,13 @@ router.post("/api/signup", async (req, res) => {
         // let hashedPassword = await hashPassword(password);
         // Create and login
         bcrypt.hash(password, await bcrypt.genSalt(), function (err, hash){
-            accountUtils.addUser(email, username, hash);
+            if (token) {
+                console.log("has token");
+                accountUtils.addUserWithToken(email, username, hash, token);
+            } else {
+                console.log("no token");
+                accountUtils.addUser(email, username, hash);
+            }
             console.log("OK");
             res.status(200);
             res.send("OK");
@@ -78,6 +85,7 @@ router.post("/api/auth", async (req, res) => {
     if (user.email !== undefined && user.password !== undefined) {
         let email = user.email;
         let password = user.password.toString();
+        let token = user.token;
         console.log(`login: ${email + " " + password}`);
 
         // Check the db if username exists
@@ -93,6 +101,10 @@ router.post("/api/auth", async (req, res) => {
             let username = userPass.username;
             bcrypt.compare(password, pass, function (err, result) {
                 if (result) {
+                    let oldToken = accountUtils.getNotificationToken(username);
+                    if (oldToken != token) {
+                        accountUtils.updateNotificationToken(username, token);
+                    }
                     let info = {
                         "username": username,
                     }
