@@ -18,9 +18,13 @@
   },
   "homepage": "https://github.com/DAB-Co/jam-server#readme",
   "dependencies": {
-    "@dab-co/jam-sqlite": "^1.7.0",
+    "@dab-co/jam-sqlite": "^1.8.0",
     "bcrypt": "^5.0.1",
     "dotenv": "^10.0.0",
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "yargs": "^17.3.0"
+  },
+  "devDependencies": {
+    "axios": "^0.24.0"
   }
 }

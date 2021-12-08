@@ -16,7 +16,7 @@ router.get("/api", async (req, res) => {
 });
 
 // Creates user
-router.post("/api/signup", async (req, res) => {
+router.post("/api/signup", async (req, res, next) => {
     let user = req.body;
     console.log(req.body);
     if (user.username !== undefined && user.email !== undefined && user.password !== undefined) {
@@ -32,7 +32,7 @@ router.post("/api/signup", async (req, res) => {
             res.status(500);
             return res.send("This username is taken, try again.");
         }
-        else if (accountUtils.emailExists(email)) {
+        if (accountUtils.emailExists(email)) {
             console.log("This email is taken, try again.");
             res.status(500);
             return res.send("This email is taken, try again.");
@@ -56,22 +56,29 @@ router.post("/api/signup", async (req, res) => {
             return res.send(emailValid);
         }
         // Hash the password
-        // let hashedPassword = await hashPassword(password);
         // Create and login
-        bcrypt.hash(password, await bcrypt.genSalt(), function (err, hash){
-            if (token) {
-                console.log("has token");
-                accountUtils.addUserWithToken(email, username, hash, token);
-            } else {
-                console.log("no token");
-                accountUtils.addUser(email, username, hash);
+        bcrypt.hash(password, await bcrypt.genSalt(), function (err, hash) {
+            // async functions require next() to be called explicitly in case of error
+            try {
+                if (err) {
+                    next(err);
+                } else {
+                    if (token) {
+                        console.log("has token");
+                        accountUtils.addUserWithToken(email, username, hash, token);
+                    } else {
+                        console.log("no token");
+                        accountUtils.addUser(email, username, hash);
+                    }
+                    console.log("OK");
+                    res.status(200);
+                    res.send("OK");
+                }
+            } catch (e) {
+                next(e);
             }
-            console.log("OK");
-            res.status(200);
-            res.send("OK");
         });
-    }
-    else {
+    } else {
         res.status(400);
         res.send("Bad Request");
     }
@@ -79,7 +86,7 @@ router.post("/api/signup", async (req, res) => {
 });
 
 // Handles login
-router.post("/api/auth", async (req, res) => {
+router.post("/api/auth", async (req, res, next) => {
     let user = req.body;
 
     if (user.email !== undefined && user.password !== undefined) {
@@ -95,31 +102,37 @@ router.post("/api/auth", async (req, res) => {
             res.status(500);
             return res.send("This email does not exist.");
         } else {
-            let userPass = accountUtils.getUsernameAndPass(email);
+            let userPass = accountUtils.getUsernameAndPassByEmail(email);
             console.log(userPass);
             let pass = userPass.user_password_hash;
             let username = userPass.username;
             bcrypt.compare(password, pass, function (err, result) {
-                if (result) {
-                    let oldToken = accountUtils.getNotificationToken(username);
-                    if (oldToken != token) {
-                        accountUtils.updateNotificationToken(username, token);
+                // async functions require next() to be called explicitly in case of error
+                try {
+                    if (err) {
+                        next(err);
+                    } else if (result) {
+                        let oldToken = accountUtils.getNotificationTokenByUsername(username);
+                        if (oldToken != token) {
+                            accountUtils.updateNotificationTokenByUsername(username, token);
+                        }
+                        let info = {
+                            "username": username,
+                        }
+                        console.log(info);
+                        res.status(200);
+                        res.send(JSON.stringify(info));
+                    } else {
+                        console.log("Wrong Password");
+                        res.status(500);
+                        return res.send("Wrong Password");
                     }
-                    let info = {
-                        "username": username,
-                    }
-                    console.log(info);
-                    res.status(200);
-                    res.send(JSON.stringify(info));
-                } else {
-                    console.log("Wrong Password");
-                    res.status(500);
-                    return res.send("Wrong Password");
+                } catch (e) {
+                    next(e);
                 }
             });
         }
-    }
-    else {
+    } else {
         res.status(400);
         res.send("Bad Request");
     }
