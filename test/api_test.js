@@ -16,6 +16,10 @@ function post(domain, data, expectedStatus, expectedResponse) {
                 resolve();
             })
             .catch(error => {
+                if (error.response === undefined) {
+                    console.log(error);
+                    return;
+                }
                 let res = error.response;
                 console.log(`response to POST`);
                 console.log(data);
