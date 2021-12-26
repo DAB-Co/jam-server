@@ -11,6 +11,8 @@ const Validators = require(path.join(__dirname, "..", "utils", "validators.js"))
 const accountUtils = new AccountUtils(database);
 const validators = new Validators;
 
+const generate_client = require("@dab-co/tls-utils").generate_client;
+
 router.get("/api", async (req, res) => {
     res.send("api documentation");
 });
@@ -135,8 +137,29 @@ router.post("/api/auth", async (req, res, next) => {
 });
 
 router.post("/api/reqtls", function (req, res, next) {
+    // this will not work on windows since generate_client requires the openssl command, which is available on linux
     let username = req.body.username;
     let token = req.body.token;
+    let db_token = accountUtils.getPasswordFromUsername(username);
+    bcrypt.compare(token, db_token, function (err, valid) {
+        try {
+            if (err) {
+                next(err);
+            }
+            else if (valid) {
+                let client = generate_client(process.env.ca_cert_path, process.env.ca_key_path);
+                res.status(200);
+                res.send(JSON.stringify(client));
+            }
+            else {
+                console.log("Wrong Password");
+                res.status(500);
+                return res.send("Wrong Password");
+            }
+        } catch (e) {
+            next(e);
+        }
+    })
 });
 
 
