@@ -1,6 +1,7 @@
 const express = require("express"); // framework for nodejs
 const path = require("path"); // useful for joining file paths
 const body_parser = require("body-parser");
+const fs = require("fs");
 require("dotenv").config({ path: path.join(__dirname, ".env.local") });
 // read command line arguments
 const argv = require("yargs")(process.argv.slice(1))
