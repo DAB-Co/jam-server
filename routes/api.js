@@ -136,18 +136,19 @@ router.post("/api/auth", async (req, res, next) => {
     }
 });
 
-router.post("/api/reqtls", function (req, res, next) {
+router.post("/api/reqtls", async function (req, res, next) {
     // this will not work on windows since generate_client requires the openssl command, which is available on linux
     let username = req.body.username;
     let token = req.body.token;
     let db_token = accountUtils.getPasswordFromUsername(username);
-    bcrypt.compare(token, db_token, function (err, valid) {
+    bcrypt.compare(token, db_token, async function (err, valid) {
         try {
             if (err) {
                 next(err);
             }
             else if (valid) {
-                let client = generate_client(process.env.ca_cert_path, process.env.ca_key_path);
+                let client = await generate_client(path.join(__dirname, "..", process.env.ca_cert_path), path.join(__dirname, "..", process.env.ca_key_path));
+                console.log(client);
                 res.status(200);
                 res.send(JSON.stringify(client));
             }
