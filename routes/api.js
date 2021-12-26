@@ -11,6 +11,8 @@ const Validators = require(path.join(__dirname, "..", "utils", "validators.js"))
 const accountUtils = new AccountUtils(database);
 const validators = new Validators;
 
+const generate_client = require("@dab-co/tls-utils").generate_client;
+
 router.get("/api", async (req, res) => {
     res.send("api documentation");
 });
@@ -94,48 +96,72 @@ router.post("/api/auth", async (req, res, next) => {
         let password = user.password.toString();
         let token = user.token;
         console.log(`login: ${email + " " + password}`);
-
-        // Check the db if username exists
-        let emailExists = accountUtils.emailExists(email);
-        if (!emailExists) {
+        let userPass = accountUtils.getUsernameAndPassByEmail(email);
+        if (userPass === undefined) {
             console.log("Wrong email.");
             res.status(500);
             return res.send("This email does not exist.");
-        } else {
-            let userPass = accountUtils.getUsernameAndPassByEmail(email);
-            console.log(userPass);
-            let pass = userPass.user_password_hash;
-            let username = userPass.username;
-            bcrypt.compare(password, pass, function (err, result) {
-                // async functions require next() to be called explicitly in case of error
-                try {
-                    if (err) {
-                        next(err);
-                    } else if (result) {
-                        let oldToken = accountUtils.getNotificationTokenByUsername(username);
-                        if (oldToken != token) {
-                            accountUtils.updateNotificationTokenByUsername(username, token);
-                        }
-                        let info = {
-                            "username": username,
-                        }
-                        console.log(info);
-                        res.status(200);
-                        res.send(JSON.stringify(info));
-                    } else {
-                        console.log("Wrong Password");
-                        res.status(500);
-                        return res.send("Wrong Password");
-                    }
-                } catch (e) {
-                    next(e);
-                }
-            });
         }
+        console.log(userPass);
+        let pass = userPass.user_password_hash;
+        let username = userPass.username;
+        bcrypt.compare(password, pass, function (err, result) {
+            // async functions require next() to be called explicitly in case of error
+            try {
+                if (err) {
+                    next(err);
+                } else if (result) {
+                    let oldToken = accountUtils.getNotificationTokenByUsername(username);
+                    if (oldToken != token) {
+                        accountUtils.updateNotificationTokenByUsername(username, token);
+                    }
+                    let info = {
+                        "username": username,
+                    }
+                    console.log(info);
+                    res.status(200);
+                    res.send(JSON.stringify(info));
+                } else {
+                    console.log("Wrong Password");
+                    res.status(500);
+                    return res.send("Wrong Password");
+                }
+            } catch (e) {
+                next(e);
+            }
+        });
     } else {
         res.status(400);
         res.send("Bad Request");
     }
 });
+
+router.post("/api/reqtls", async function (req, res, next) {
+    // this will not work on windows since generate_client requires the openssl command, which is available on linux
+    let username = req.body.username;
+    let token = req.body.token;
+    let db_token = accountUtils.getPasswordFromUsername(username);
+    bcrypt.compare(token, db_token, async function (err, valid) {
+        try {
+            if (err) {
+                next(err);
+            }
+            else if (valid) {
+                let client = await generate_client(path.join(__dirname, "..", process.env.ca_cert_path), path.join(__dirname, "..", process.env.ca_key_path));
+                console.log(client);
+                res.status(200);
+                res.send(JSON.stringify(client));
+            }
+            else {
+                console.log("Wrong Password");
+                res.status(500);
+                return res.send("Wrong Password");
+            }
+        } catch (e) {
+            next(e);
+        }
+    })
+});
+
 
 module.exports = router;
