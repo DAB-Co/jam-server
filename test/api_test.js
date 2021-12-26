@@ -11,7 +11,7 @@ function post(domain, data, expectedStatus, expectedResponse) {
                 console.log(data);
                 console.log(`from ${domain}:`, res.statusText);
                 console.assert(res.status === expectedStatus, `expected status code: ${expectedStatus}, got ${res.status}`);
-                console.assert(res.statusText === expectedResponse, `expected response: ${expectedResponse}, got ${res.statusText}`);
+                console.assert(res.statusText === expectedResponse, `expected response: "${expectedResponse}", got "${res.statusText}"`);
                 console.log("---");
                 resolve();
             })
@@ -21,7 +21,7 @@ function post(domain, data, expectedStatus, expectedResponse) {
                 console.log(data);
                 console.log(`from ${domain}:`, res.data);
                 console.assert(res.status === expectedStatus, `expected status code: ${expectedStatus}, got ${res.status}`);
-                console.assert(res.data === expectedResponse, `expected response: ${expectedResponse}, got ${res.data}`);
+                console.assert(res.data === expectedResponse, `expected response: "${expectedResponse}", got "${res.data}"`);
                 console.log("---");
                 resolve();
             });
