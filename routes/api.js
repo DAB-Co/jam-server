@@ -141,6 +141,12 @@ router.post("/api/reqtls", async function (req, res, next) {
     let username = req.body.username;
     let token = req.body.token;
     let db_token = accountUtils.getPasswordFromUsername(username);
+    if (db_token === undefined) {
+        console.log("User does not exist");
+        res.status(500);
+        res.send("User does not exist");
+        return;
+    }
     bcrypt.compare(token, db_token, async function (err, valid) {
         try {
             if (err) {
