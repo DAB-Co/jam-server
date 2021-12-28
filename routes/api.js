@@ -136,6 +136,8 @@ router.post("/api/auth", async (req, res, next) => {
     }
 });
 
+/*
+this is unnecessary
 router.post("/api/reqtls", async function (req, res, next) {
     // this will not work on windows since generate_client requires the openssl command, which is available on linux
     let username = req.body.username;
@@ -162,6 +164,6 @@ router.post("/api/reqtls", async function (req, res, next) {
         }
     })
 });
-
+ */
 
 module.exports = router;
