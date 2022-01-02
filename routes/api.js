@@ -6,12 +6,14 @@ const bcrypt = require("bcrypt");
 
 const database = require(path.join(__dirname, "..", "utils", "initializeDatabase.js"));
 const AccountUtils = require("@dab-co/jam-sqlite").Utils.AccountUtils;
+const UserFriendsUtils = require("@dab-co/jam-sqlite").Utils.UserFriendsUtils;
 const Validators = require(path.join(__dirname, "..", "utils", "validators.js"));
 
 const accountUtils = new AccountUtils(database);
+const userFriendsUtils = new UserFriendsUtils(database);
 const validators = new Validators;
 
-const generate_client = require("@dab-co/tls-utils").generate_client;
+// const generate_client = require("@dab-co/tls-utils").generate_client;
 
 router.get("/api", async (req, res) => {
     res.send("api documentation");
@@ -72,6 +74,7 @@ router.post("/api/signup", async (req, res, next) => {
                         console.log("no token");
                         accountUtils.addUser(email, username, hash);
                     }
+                    userFriendsUtils.addUser(accountUtils.getIdByUsername(username)); // add user to friend table
                     console.log("OK");
                     res.status(200);
                     res.send("OK");
@@ -134,6 +137,28 @@ router.post("/api/auth", async (req, res, next) => {
         res.status(400);
         res.send("Bad Request");
     }
+});
+
+// Get users someone can message
+router.post("/api/friends", async (req, res, next) => {
+    let username = req.body.username;
+    if (username === undefined) {
+        res.status(400);
+        res.send("Bad Request");
+        return;
+    }
+    console.log(`${username} wants to get friends`);
+    let friends = userFriendsUtils.getFriendsByUsername(username);
+    console.log(friends);
+    res.status(200);
+    let friendList = [];
+    if (friends !== undefined) {
+        for (let friend in friends) {
+            if (!friends[friend].blocked)
+                friendList.push(friend);
+        }
+    }
+    res.send(friendList);
 });
 
 /*
