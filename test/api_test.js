@@ -9,7 +9,7 @@ function post(domain, data, expectedStatus, expectedResponse) {
                 let status = res.status;
                 console.log(`response to POST`);
                 console.log(data);
-                console.log(`from ${domain}:`, res.statusText);
+                console.log(`from ${domain}:`, res.data);
                 console.assert(res.status === expectedStatus, `expected status code: ${expectedStatus}, got ${res.status}`);
                 console.assert(res.statusText === expectedResponse, `expected response: "${expectedResponse}", got "${res.statusText}"`);
                 console.log("---");
@@ -66,34 +66,11 @@ async function login_wrong_password() {
     await post(domain+"/api/auth", data, 500, "Wrong Password");
 }
 
-function request_certificate() {
-    return new Promise(function (resolve, reject) {
-        console.log("requesting certificate");
-        let data = {
-            username: "test_user",
-            token: "12345678"
-        }
-        axios
-            .post(domain+"/api/reqtls", data)
-            .then(res => {
-                console.log(res.data.key);
-                console.log(res.data.cert);
-                resolve();
-            })
-            .catch(error => {
-                console.log("error:", error)
-                resolve();
-            })
-        console.log("---");
-    });
-}
-
 async function main() {
     await register();
     await register_existing();
     await login();
     await login_wrong_password();
-    await request_certificate();
 }
 
 main().then();

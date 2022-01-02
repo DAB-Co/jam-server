@@ -13,8 +13,6 @@ const accountUtils = new AccountUtils(database);
 const userFriendsUtils = new UserFriendsUtils(database);
 const validators = new Validators;
 
-// const generate_client = require("@dab-co/tls-utils").generate_client;
-
 router.get("/api", async (req, res) => {
     res.send("api documentation");
 });
@@ -75,9 +73,12 @@ router.post("/api/signup", async (req, res, next) => {
                         accountUtils.addUser(email, username, hash);
                     }
                     userFriendsUtils.addUser(accountUtils.getIdByUsername(username)); // add user to friend table
-                    console.log("OK");
+                    let response = {
+                        "user_id": accountUtils.getIdByUsername(username)
+                    }
+                    console.log(JSON.stringify(response));
                     res.status(200);
-                    res.send("OK");
+                    res.send(JSON.stringify(response));
                 }
             } catch (e) {
                 next(e);
@@ -99,15 +100,15 @@ router.post("/api/auth", async (req, res, next) => {
         let password = user.password.toString();
         let token = user.token;
         console.log(`login: ${email + " " + password}`);
-        let userPass = accountUtils.getUsernameAndPassByEmail(email);
-        if (userPass === undefined) {
+        let user_data = accountUtils.getRowByEmail(email);
+        if (user_data === undefined) {
             console.log("Wrong email.");
             res.status(500);
             return res.send("This email does not exist.");
         }
-        console.log(userPass);
-        let pass = userPass.user_password_hash;
-        let username = userPass.username;
+        console.log(user_data);
+        let pass = user_data.user_password_hash;
+        let username = user_data.username;
         bcrypt.compare(password, pass, function (err, result) {
             // async functions require next() to be called explicitly in case of error
             try {
@@ -120,6 +121,7 @@ router.post("/api/auth", async (req, res, next) => {
                     }
                     let info = {
                         "username": username,
+                        "user_id": user_data.user_id
                     }
                     console.log(info);
                     res.status(200);
@@ -141,60 +143,17 @@ router.post("/api/auth", async (req, res, next) => {
 
 // Get users someone can message
 router.post("/api/friends", async (req, res, next) => {
-    let username = req.body.username;
-    if (username === undefined) {
+    let user_id = req.body.user_id;
+    if (user_id === undefined) {
         res.status(400);
         res.send("Bad Request");
         return;
     }
-    console.log(`${username} wants to get friends`);
-    let friends = userFriendsUtils.getFriendsByUsername(username);
+    console.log(`${user_id} wants to get friends`);
+    let friends = userFriendsUtils.getFriends(user_id);
     console.log(friends);
+    res.send(JSON.stringify(friends));
     res.status(200);
-    let friendList = [];
-    if (friends !== undefined) {
-        for (let friend in friends) {
-            if (!friends[friend].blocked)
-                friendList.push(friend);
-        }
-    }
-    res.send(friendList);
 });
-
-/*
-this is unnecessary
-router.post("/api/reqtls", async function (req, res, next) {
-    // this will not work on windows since generate_client requires the openssl command, which is available on linux
-    let username = req.body.username;
-    let token = req.body.token;
-    let db_token = accountUtils.getPasswordFromUsername(username);
-    if (db_token === undefined) {
-        console.log("User does not exist");
-        res.status(500);
-        res.send("User does not exist");
-        return;
-    }
-    bcrypt.compare(token, db_token, async function (err, valid) {
-        try {
-            if (err) {
-                next(err);
-            }
-            else if (valid) {
-                let client = await generate_client(path.join(__dirname, "..", process.env.ca_cert_path), path.join(__dirname, "..", process.env.ca_key_path));
-                console.log(client);
-                res.status(200);
-                res.send(JSON.stringify(client));
-            }
-            else {
-                console.log("Wrong Password");
-                res.status(500);
-                return res.send("Wrong Password");
-            }
-        } catch (e) {
-            next(e);
-        }
-    })
-});
- */
 
 module.exports = router;
