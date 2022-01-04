@@ -176,7 +176,7 @@ router.post("/api/logout", async function (req, res, next) {
     console.log("------------------------------------");
     if (req.body.user_id !== undefined && req.body.api_token !== undefined) {
         let user_id = req.body.user_id;
-        let token = req.body.api_token;console.log("token_auth:", req.body);
+        let token = req.body.api_token;console.log("logout:", req.body);
         let correct_token = accountUtils.getApiToken(user_id);
         console.log("correct api token:", correct_token);
         if (token !== undefined && token !== "" && token !== null && token === correct_token) {
