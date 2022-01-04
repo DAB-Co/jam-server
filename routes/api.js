@@ -152,7 +152,11 @@ router.post("/api/token_auth", async function (req, res, next) {
         console.log("token_auth:", req.body);
         let correct_token = accountUtils.getApiToken(user_id);
         console.log("correct token:", correct_token);
-        if (token === correct_token) {
+        if (correct_token === undefined || correct_token === "" || correct_token === null) {
+            console.log("Wrong token");
+            res.status(500);
+            return res.send("Wrong token");
+        } else if (token === correct_token) {
             console.log("OK");
             res.status(200);
             res.send("OK");
