@@ -253,8 +253,8 @@ router.post("/api/friends", async (req, res, next) => {
     }
     let friends = userFriendsUtils.getFriends(user_id);
     console.log(friends);
-    res.send(JSON.stringify(friends));
     res.status(200);
+    res.send(JSON.stringify(friends));
 });
 
 /**Returns true if token and id match */
