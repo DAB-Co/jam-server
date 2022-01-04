@@ -214,16 +214,35 @@ router.get("/api/get_token", async function (req, res, next) {
 // Get users someone can message
 router.post("/api/friends", async (req, res, next) => {
     let user_id = req.body.user_id;
-    if (user_id === undefined) {
+    let token = req.body.api_token;
+    if (user_id === undefined || token === undefined) {
         res.status(400);
         res.send("Bad Request");
         return;
     }
     console.log(`${user_id} wants to get friends`);
+    if (!isCorrectToken(token, user_id)) {
+        console.log("Wrong api token");
+        res.status(403);
+        res.send("Wrong api token");
+
+    }
     let friends = userFriendsUtils.getFriends(user_id);
     console.log(friends);
     res.send(JSON.stringify(friends));
     res.status(200);
 });
+
+/**Returns true if token and id match */
+function isCorrectToken(token, user_id) {
+    let correct_token = accountUtils.getApiToken(user_id);
+    if (correct_token === undefined || correct_token === "" || correct_token === null) {
+        return false;
+    } else if (token === correct_token) {
+        return true;
+    } else {
+        return false;
+    }
+}
 
 module.exports = router;
