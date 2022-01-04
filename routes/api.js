@@ -1,5 +1,6 @@
 const express = require("express"); // import express
 const router = express.Router();
+const crypto = require("crypto");
 
 const path = require("path");
 const bcrypt = require("bcrypt");
@@ -20,12 +21,13 @@ router.get("/api", async (req, res) => {
 // Creates user
 router.post("/api/signup", async (req, res, next) => {
     let user = req.body;
-    console.log(req.body);
+    console.log("------------------------------------");
+    console.log("signup:",req.body);
     if (user.username !== undefined && user.email !== undefined && user.password !== undefined) {
         let username = user.username;
         let email = user.email;
         let password = user.password.toString();
-        let token = user.token;
+        let notification_token = user.notification_token;
         console.log(`register: ${username + " " + password}`);
 
         // Check the db if username exists
@@ -65,18 +67,20 @@ router.post("/api/signup", async (req, res, next) => {
                 if (err) {
                     next(err);
                 } else {
-                    if (token) {
+                    let api_token = crypto.randomBytes(17).toString('hex');
+                    if (notification_token) {
                         console.log("has token");
-                        accountUtils.addUserWithToken(email, username, hash, token);
+                        accountUtils.addUserWithNotificationToken(email, username, hash, api_token, notification_token);
                     } else {
                         console.log("no token");
-                        accountUtils.addUser(email, username, hash);
+                        accountUtils.addUser(email, username, hash, api_token);
                     }
                     userFriendsUtils.addUser(accountUtils.getIdByUsername(username)); // add user to friend table
                     let response = {
-                        "user_id": accountUtils.getIdByUsername(username)
+                        "user_id": accountUtils.getIdByUsername(username),
+                        "api_token": api_token
                     }
-                    console.log(JSON.stringify(response));
+                    console.log("response:", JSON.stringify(response));
                     res.status(200);
                     res.send(JSON.stringify(response));
                 }
@@ -91,14 +95,14 @@ router.post("/api/signup", async (req, res, next) => {
 
 });
 
-// Handles login
+// Handles login via email
 router.post("/api/auth", async (req, res, next) => {
     let user = req.body;
-
+    console.log("------------------------------------");
     if (user.email !== undefined && user.password !== undefined) {
         let email = user.email;
         let password = user.password.toString();
-        let token = user.token;
+        let notification_token = user.notification_token;
         console.log(`login: ${email + " " + password}`);
         let user_data = accountUtils.getRowByEmail(email);
         if (user_data === undefined) {
@@ -115,21 +119,20 @@ router.post("/api/auth", async (req, res, next) => {
                 if (err) {
                     next(err);
                 } else if (result) {
-                    let oldToken = accountUtils.getNotificationTokenByUsername(username);
-                    if (oldToken != token) {
-                        accountUtils.updateNotificationTokenByUsername(username, token);
-                    }
+                    let api_token = crypto.randomBytes(17).toString('hex');
+                    accountUtils.updateTokens(user_data.user_id, api_token, notification_token);
                     let info = {
                         "username": username,
-                        "user_id": user_data.user_id
+                        "user_id": user_data.user_id,
+                        "api_token": api_token
                     }
-                    console.log(info);
+                    console.log("response:", info);
                     res.status(200);
                     res.send(JSON.stringify(info));
                 } else {
                     console.log("Wrong Password");
                     res.status(500);
-                    return res.send("Wrong Password");
+                    res.send("Wrong Password");
                 }
             } catch (e) {
                 next(e);
@@ -140,6 +143,69 @@ router.post("/api/auth", async (req, res, next) => {
         res.send("Bad Request");
     }
 });
+
+router.post("/api/token_auth", async function (req, res, next) {
+    console.log("------------------------------------");
+    if (req.body.user_id !== undefined && req.body.api_token !== undefined) {
+        let user_id = req.body.user_id;
+        let token = req.body.api_token;
+        console.log("token_auth:", req.body);
+        let correct_token = accountUtils.getApiToken(user_id);
+        console.log("correct token:", correct_token);
+        if (token === correct_token) {
+            console.log("OK");
+            res.status(200);
+            res.send("OK");
+        } else {
+            console.log("Wrong token");
+            res.status(500);
+            return res.send("Wrong token");
+        }
+    } else {
+        res.status(400);
+        res.send("Bad Request");
+    }
+});
+
+/*
+router.get("/api/get_token", async function (req, res, next) {
+    // this will generate a new token and wipe the old token from database
+    if (req.body.user_id !== undefined && req.body.password !== undefined) {
+        let user_id = req.body.user_id;
+        let password = req.body.password;
+        let correct_password_hash = accountUtils.getPasswordHash(user_id);
+        if (correct_password_hash === undefined) {
+            res.status(500);
+            return res.send("This username does not exist.");
+        }
+        else {
+            bcrypt.compare(password, correct_password_hash, function (error, result) {
+                try {
+                    if (error) {
+                        next(error);
+                    }
+                    else if (result) {
+                        let new_token = crypto.randomBytes(17).toString('hex');
+                        accountUtils.updateApiToken(user_id, new_token);
+                        res.status(200);
+                        res.send(new_token);
+                    }
+                    else {
+                        res.status(500);
+                        res.send("Wrong Password");
+                    }
+                } catch (e) {
+                    next(e);
+                }
+            });
+        }
+    }
+    else {
+        res.status(400);
+        res.send("Bad Request");
+    }
+});
+ */
 
 // Get users someone can message
 router.post("/api/friends", async (req, res, next) => {

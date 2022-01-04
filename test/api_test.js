@@ -13,7 +13,7 @@ function post(domain, data, expectedStatus, expectedResponse) {
                 console.assert(res.status === expectedStatus, `expected status code: ${expectedStatus}, got ${res.status}`);
                 console.assert(res.statusText === expectedResponse, `expected response: "${expectedResponse}", got "${res.statusText}"`);
                 console.log("---");
-                resolve();
+                resolve(res.data);
             })
             .catch(error => {
                 if (error.response === undefined) {
@@ -27,7 +27,7 @@ function post(domain, data, expectedStatus, expectedResponse) {
                 console.assert(res.status === expectedStatus, `expected status code: ${expectedStatus}, got ${res.status}`);
                 console.assert(res.data === expectedResponse, `expected response: "${expectedResponse}", got "${res.data}"`);
                 console.log("---");
-                resolve();
+                resolve(res.data);
             });
     });
 }
@@ -55,7 +55,7 @@ async function login() {
         email: "test_user@email.com",
         password: "12345678"
     };
-    await post(domain+"/api/auth", data, 200, "OK");
+    return await post(domain+"/api/auth", data, 200, "OK");
 }
 
 async function login_wrong_password() {
@@ -66,11 +66,20 @@ async function login_wrong_password() {
     await post(domain+"/api/auth", data, 500, "Wrong Password");
 }
 
+async function login_api_token(user_id, api_token) {
+    let data = {
+        user_id: user_id,
+        api_token: api_token
+    };
+    await post(domain+"/api/token_auth", data, 200, "OK");
+}
+
 async function main() {
     await register();
     await register_existing();
-    await login();
+    let { user_id, api_token} = await login();
     await login_wrong_password();
+    await login_api_token(user_id, api_token);
 }
 
 main().then();
