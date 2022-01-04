@@ -69,10 +69,10 @@ router.post("/api/signup", async (req, res, next) => {
                 } else {
                     let api_token = crypto.randomBytes(17).toString('hex');
                     if (notification_token) {
-                        console.log("has token");
+                        console.log("has notification token");
                         accountUtils.addUserWithNotificationToken(email, username, hash, api_token, notification_token);
                     } else {
-                        console.log("no token");
+                        console.log("no notification token");
                         accountUtils.addUser(email, username, hash, api_token);
                     }
                     userFriendsUtils.addUser(accountUtils.getIdByUsername(username)); // add user to friend table
@@ -151,19 +151,43 @@ router.post("/api/token_auth", async function (req, res, next) {
         let token = req.body.api_token;
         console.log("token_auth:", req.body);
         let correct_token = accountUtils.getApiToken(user_id);
-        console.log("correct token:", correct_token);
+        console.log("correct api token:", correct_token);
         if (correct_token === undefined || correct_token === "" || correct_token === null) {
-            console.log("Wrong token");
+            console.log("Wrong api token");
             res.status(500);
-            return res.send("Wrong token");
+            return res.send("Wrong api token");
         } else if (token === correct_token) {
             console.log("OK");
             res.status(200);
             res.send("OK");
         } else {
-            console.log("Wrong token");
+            console.log("Wrong api token");
             res.status(500);
-            return res.send("Wrong token");
+            return res.send("Wrong api token");
+        }
+    } else {
+        res.status(400);
+        res.send("Bad Request");
+    }
+});
+
+router.post("/api/logout", async function (req, res, next) {
+    // deletes the api and notification token from database
+    console.log("------------------------------------");
+    if (req.body.user_id !== undefined && req.body.api_token !== undefined) {
+        let user_id = req.body.user_id;
+        let token = req.body.api_token;console.log("token_auth:", req.body);
+        let correct_token = accountUtils.getApiToken(user_id);
+        console.log("correct api token:", correct_token);
+        if (token !== undefined && token !== "" && token !== null && token === correct_token) {
+            accountUtils.clearTokens(user_id);
+            console.log("OK");
+            res.status(200);
+            res.send("OK");
+        } else {
+            console.log("Wrong api token");
+            res.status(500);
+            return res.send("Wrong api token");
         }
     } else {
         res.status(400);
