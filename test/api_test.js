@@ -74,12 +74,39 @@ async function login_api_token(user_id, api_token) {
     await post(domain+"/api/token_auth", data, 200, "OK");
 }
 
+async function clear_tokens(user_id, api_token) {
+    let data = {
+        user_id: user_id,
+        api_token: api_token
+    }
+    await post(domain+"/api/logout", data, 200, "OK");
+}
+
+async function login_empty_api_token(user_id, api_token) {
+    let data = {
+        user_id: user_id,
+        api_token: api_token
+    };
+    await post(domain+"/api/token_auth", data, 500, "Wrong api token");
+}
+
+async function login_api_token_after_clear(user_id, api_token) {
+    let data = {
+        user_id: user_id,
+        api_token: api_token
+    };
+    await post(domain+"/api/token_auth", data, 500, "Wrong api token");
+}
+
 async function main() {
     await register();
     await register_existing();
     let { user_id, api_token} = await login();
     await login_wrong_password();
     await login_api_token(user_id, api_token);
+    await clear_tokens(user_id, api_token);
+    await login_empty_api_token(user_id, "");
+    await login_api_token_after_clear(user_id, api_token);
 }
 
 main().then();
