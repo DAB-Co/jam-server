@@ -68,16 +68,17 @@ router.post("/api/signup", async (req, res, next) => {
                     next(err);
                 } else {
                     let api_token = crypto.randomBytes(17).toString('hex');
+                    let user_id = -1;
                     if (notification_token) {
                         console.log("has notification token");
-                        accountUtils.addUserWithNotificationToken(email, username, hash, api_token, notification_token);
+                        user_id = accountUtils.addUserWithNotificationToken(email, username, hash, api_token, notification_token).lastInsertRowid;
                     } else {
                         console.log("no notification token");
-                        accountUtils.addUser(email, username, hash, api_token);
+                        user_id = accountUtils.addUser(email, username, hash, api_token).lastInsertRowid;
                     }
-                    userFriendsUtils.addUser(accountUtils.getIdByUsername(username)); // add user to friend table
+                    userFriendsUtils.addUser(user_id); // add user to friend table
                     let response = {
-                        "user_id": accountUtils.getIdByUsername(username),
+                        "user_id": user_id,
                         "api_token": api_token
                     }
                     console.log("response:", JSON.stringify(response));
