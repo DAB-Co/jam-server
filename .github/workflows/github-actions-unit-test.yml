@@ -1,0 +1,15 @@
+name: jam-server-unit-tests
+
+on: push
+
+jobs:
+  ubuntu-latest-test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: npm ci
+        run: npm ci
+      - name: npm test
+        run: npm test
