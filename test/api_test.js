@@ -1,6 +1,8 @@
 const axios = require('axios');
 const assert = require("assert");
-const domain = "http://localhost";
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, "..", ".env.local") });
+const domain = "http://localhost:"+process.env.http_port;
 
 describe(__filename, function() {
     let users = {
