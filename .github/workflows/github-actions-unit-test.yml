@@ -11,5 +11,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: npm ci
         run: npm ci
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.READ_PACKAGE_API_KEY }}
       - name: npm test
         run: npm test
