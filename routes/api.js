@@ -33,30 +33,30 @@ router.post("/api/signup", async (req, res, next) => {
         // Check the db if username exists
         if (accountUtils.usernameExists(username)) {
             console.log("This username is taken, try again.");
-            res.status(500);
+            res.status(403);
             return res.send("This username is taken, try again.");
         }
         if (accountUtils.emailExists(email)) {
             console.log("This email is taken, try again.");
-            res.status(500);
+            res.status(403);
             return res.send("This email is taken, try again.");
         }
         let usernameValid = validators.validateUsername(username);
         if (usernameValid !== 'OK') {
             console.log(usernameValid);
-            res.status(500);
+            res.status(403);
             return res.send(usernameValid);
         }
         let passwordValid = validators.validatePassword(password);
         if (passwordValid !== 'OK') {
             console.log(passwordValid);
-            res.status(500);
+            res.status(403);
             return res.send(passwordValid);
         }
         let emailValid = validators.validateEmail(email);
         if (emailValid !== 'OK') {
             console.log(emailValid);
-            res.status(500);
+            res.status(403);
             return res.send(emailValid);
         }
         // Hash the password
@@ -68,16 +68,17 @@ router.post("/api/signup", async (req, res, next) => {
                     next(err);
                 } else {
                     let api_token = crypto.randomBytes(17).toString('hex');
+                    let user_id = -1;
                     if (notification_token) {
                         console.log("has notification token");
-                        accountUtils.addUserWithNotificationToken(email, username, hash, api_token, notification_token);
+                        user_id = accountUtils.addUserWithNotificationToken(email, username, hash, api_token, notification_token).lastInsertRowid;
                     } else {
                         console.log("no notification token");
-                        accountUtils.addUser(email, username, hash, api_token);
+                        user_id = accountUtils.addUser(email, username, hash, api_token).lastInsertRowid;
                     }
-                    userFriendsUtils.addUser(accountUtils.getIdByUsername(username)); // add user to friend table
+                    userFriendsUtils.addUser(user_id); // add user to friend table
                     let response = {
-                        "user_id": accountUtils.getIdByUsername(username),
+                        "user_id": user_id,
                         "api_token": api_token
                     }
                     console.log("response:", JSON.stringify(response));
@@ -107,7 +108,7 @@ router.post("/api/auth", async (req, res, next) => {
         let user_data = accountUtils.getRowByEmail(email);
         if (user_data === undefined) {
             console.log("Wrong email.");
-            res.status(500);
+            res.status(403);
             return res.send("This email does not exist.");
         }
         console.log(user_data);
@@ -131,7 +132,7 @@ router.post("/api/auth", async (req, res, next) => {
                     res.send(JSON.stringify(info));
                 } else {
                     console.log("Wrong Password");
-                    res.status(500);
+                    res.status(403);
                     res.send("Wrong Password");
                 }
             } catch (e) {
@@ -154,7 +155,7 @@ router.post("/api/token_auth", async function (req, res, next) {
         console.log("correct api token:", correct_token);
         if (correct_token === undefined || correct_token === "" || correct_token === null) {
             console.log("Wrong api token");
-            res.status(500);
+            res.status(403);
             return res.send("Wrong api token");
         } else if (token === correct_token) {
             console.log("OK");
@@ -162,7 +163,7 @@ router.post("/api/token_auth", async function (req, res, next) {
             res.send("OK");
         } else {
             console.log("Wrong api token");
-            res.status(500);
+            res.status(403);
             return res.send("Wrong api token");
         }
     } else {
@@ -186,7 +187,7 @@ router.post("/api/logout", async function (req, res, next) {
             res.send("OK");
         } else {
             console.log("Wrong api token");
-            res.status(500);
+            res.status(403);
             return res.send("Wrong api token");
         }
     } else {
@@ -194,46 +195,6 @@ router.post("/api/logout", async function (req, res, next) {
         res.send("Bad Request");
     }
 });
-
-/*
-router.get("/api/get_token", async function (req, res, next) {
-    // this will generate a new token and wipe the old token from database
-    if (req.body.user_id !== undefined && req.body.password !== undefined) {
-        let user_id = req.body.user_id;
-        let password = req.body.password;
-        let correct_password_hash = accountUtils.getPasswordHash(user_id);
-        if (correct_password_hash === undefined) {
-            res.status(500);
-            return res.send("This username does not exist.");
-        }
-        else {
-            bcrypt.compare(password, correct_password_hash, function (error, result) {
-                try {
-                    if (error) {
-                        next(error);
-                    }
-                    else if (result) {
-                        let new_token = crypto.randomBytes(17).toString('hex');
-                        accountUtils.updateApiToken(user_id, new_token);
-                        res.status(200);
-                        res.send(new_token);
-                    }
-                    else {
-                        res.status(500);
-                        res.send("Wrong Password");
-                    }
-                } catch (e) {
-                    next(e);
-                }
-            });
-        }
-    }
-    else {
-        res.status(400);
-        res.send("Bad Request");
-    }
-});
- */
 
 // Get users someone can message
 router.post("/api/friends", async (req, res, next) => {
