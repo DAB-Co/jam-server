@@ -4,7 +4,7 @@
   "description": "node js server for jam",
   "main": "jam_server_main.js",
   "scripts": {
-    "test": "node overwrite_database.js && ./run.sh && mocha --recursive --exit && ./kill.sh"
+    "test": "echo http_port=8080 > .env.local && node overwrite_database.js && node jam_server_main.js --no_https && mocha --recursive --exit && ./kill.sh"
   },
   "repository": {
     "type": "git",
