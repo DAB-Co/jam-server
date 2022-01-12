@@ -42,7 +42,7 @@ describe(__filename, function() {
                 })
                 .catch(function (error) {
                     let res = error.response;
-                    assert.strictEqual(res.status, 500);
+                    assert.strictEqual(res.status, 403);
                     assert.strictEqual(res.data, "This username is taken, try again.");
                 });
         });
@@ -79,7 +79,7 @@ describe(__filename, function() {
                 })
                 .catch(function (error) {
                     let res = error.response;
-                    assert.strictEqual(res.status, 500);
+                    assert.strictEqual(res.status, 403);
                     assert.strictEqual(res.data, "Wrong Password");
                 });
         });
@@ -114,7 +114,7 @@ describe(__filename, function() {
                 })
                 .catch(function (error) {
                     let res = error.response;
-                    assert.strictEqual(res.status, 500);
+                    assert.strictEqual(res.status, 403);
                     assert.strictEqual(res.data, "Wrong api token");
                 });
         });
@@ -149,7 +149,7 @@ describe(__filename, function() {
                 })
                 .catch(function (error) {
                     let res = error.response;
-                    assert.strictEqual(res.status, 500);
+                    assert.strictEqual(res.status, 403);
                     assert.strictEqual(res.data, "Wrong api token");
                 });
         });
@@ -167,7 +167,7 @@ describe(__filename, function() {
                 })
                 .catch(function (error) {
                     let res = error.response;
-                    assert.strictEqual(res.status, 500);
+                    assert.strictEqual(res.status, 403);
                     assert.strictEqual(res.data, "Wrong api token");
                 });
         });
