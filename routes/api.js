@@ -218,16 +218,17 @@ router.post("/api/friends", async (req, res, next) => {
     res.send(JSON.stringify(friends));
 });
 
-/**Returns true if token and id match */
+/**
+ * Returns true if token and id match
+ * @param token
+ * @param user_id
+ * @returns {boolean}
+ */
 function isCorrectToken(token, user_id) {
     let correct_token = accountUtils.getApiToken(user_id);
     if (correct_token === undefined || correct_token === "" || correct_token === null) {
         return false;
-    } else if (token === correct_token) {
-        return true;
-    } else {
-        return false;
-    }
+    } else return token === correct_token;
 }
 
 module.exports = router;
