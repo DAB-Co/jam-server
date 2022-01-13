@@ -1,4 +1,4 @@
 #!/bin/bash
 
-nohup sudo node jam_server_main.js > output &
+#nohup node jam_server_main.js --no_https > output &
 
