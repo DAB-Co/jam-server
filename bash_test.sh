@@ -15,6 +15,7 @@ if (npm run mocha); then
 	kill_server
 	exit 0
 else
+	echo '---server output---'
 	cat output
 	kill_server
 	exit 2 
