@@ -123,23 +123,6 @@ describe(__filename, function() {
     });
 
     describe("", function() {
-        it("logout test user to clear api token",  async function() {
-            let data = {
-                user_id: users.test_user.user_id,
-                api_token: users.test_user.api_token,
-            }
-            await axios.post(domain+"/api/logout", data)
-                .then(function (res) {
-                    assert.strictEqual(res.status, 200);
-                    assert.strictEqual(res.data, "OK");
-                })
-                .catch(function (error) {
-                    assert.fail(error.response.data);
-                });
-        });
-    });
-
-    describe("", function() {
         it("login test_user with empty api token",  async function() {
             let data = {
                 user_id: users.test_user.user_id,
@@ -147,24 +130,6 @@ describe(__filename, function() {
             };
             await axios.post(domain+"/api/token_auth", data)
                 .then(function(res) {
-                    assert.fail(res.data);
-                })
-                .catch(function (error) {
-                    let res = error.response;
-                    assert.strictEqual(res.status, 403);
-                    assert.strictEqual(res.data, "Wrong api token");
-                });
-        });
-    });
-
-    describe("", function() {
-        it("login with old api token after logout", async function() {
-            let data = {
-                user_id: users.test_user.user_id,
-                api_token: users.test_user.api_token
-            }
-            await axios.post(domain+"/api/token_auth", data)
-                .then(function(res){
                     assert.fail(res.data);
                 })
                 .catch(function (error) {
