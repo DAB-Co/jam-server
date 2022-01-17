@@ -8,7 +8,7 @@ describe(__filename, function () {
     describe("signup bad request suite", function () {
         it("empty request to signup", async function () {
             let data = {};
-            await axios.post(domain + "/signup")
+            await axios.post(domain + "/api/signup")
                 .then(function (res) {
                     assert.fail(res.data);
                 })
