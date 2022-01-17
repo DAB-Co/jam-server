@@ -6,7 +6,10 @@ function kill_server(){
 }
 
 echo http_port=8080 > .env.local
-node overwrite_database.js
+if !(node overwrite_database.js); then
+	echo 'error running node overwrite_database.js'
+	exit 1
+fi
 nohup node jam_server_main.js --no_https > output &
 if (npm run mocha); then
 	kill_server
@@ -14,6 +17,6 @@ if (npm run mocha); then
 else
 	cat output
 	kill_server
-	exit 1
+	exit 2 
 fi
 
