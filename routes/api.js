@@ -185,8 +185,7 @@ router.post("/api/friends", async (req, res, next) => {
     if (!isCorrectToken(token, user_id)) {
         console.log("Wrong api token");
         res.status(403);
-        res.send("Wrong api token");
-
+        return res.send("Wrong api token");
     }
     let friends = userFriendsUtils.getFriends(user_id);
     console.log(friends);
