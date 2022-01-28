@@ -100,3 +100,5 @@ sqlite/
 node_modules
 output
 .env.local
+american_psycho.js
+
