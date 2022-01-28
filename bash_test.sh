@@ -6,6 +6,7 @@ function kill_server(){
 }
 
 echo http_port=8080 > .env.local
+echo 'db_path=sqlite/database.db' >> .env.local
 if ! (node overwrite_database.js); then
 	echo 'error running node overwrite_database.js'
 	exit 1
