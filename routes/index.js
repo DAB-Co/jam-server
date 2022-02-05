@@ -9,10 +9,17 @@ router.get("/", async (req, res) => {
 });
 
 // Handle api requests
-const api = require("./api");
+const api = require(path.join(__dirname, "api.js"));
 router.get("/api", api);
 router.post("/api", api);
 router.get("/api/*", api);
 router.post("/api/*", api);
+
+// handle suggestion
+const suggestion = require(path.join(__dirname, "suggestion.js"));
+router.get("/suggestion", suggestion);
+router.post("/suggestion", suggestion);
+router.get("/suggestion/*", suggestion);
+router.post("/suggestion/*", suggestion);
 
 module.exports = router;

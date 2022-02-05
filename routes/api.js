@@ -14,6 +14,8 @@ const accountUtils = new AccountUtils(database);
 const userFriendsUtils = new UserFriendsUtils(database);
 const validators = new Validators;
 
+const isCorrectToken = require(path.join(__dirname, "..", "utils", "isCorrectToken.js"));
+
 router.get("/api", async (req, res) => {
     res.send("api documentation");
 });
@@ -21,8 +23,8 @@ router.get("/api", async (req, res) => {
 // Creates user
 router.post("/api/signup", async (req, res, next) => {
     let user = req.body;
-    console.log("------------------------------------");
-    console.log("signup:",req.body);
+    console.log("------/api/signup------");
+    console.log("signup:", req.body);
     if (user.username !== undefined && user.email !== undefined && user.password !== undefined) {
         let username = user.username;
         let email = user.email;
@@ -91,6 +93,7 @@ router.post("/api/signup", async (req, res, next) => {
         });
     } else {
         res.status(400);
+        console.log("Bad Request:", req.body);
         res.send("Bad Request");
     }
 
@@ -99,7 +102,7 @@ router.post("/api/signup", async (req, res, next) => {
 // Handles login via email
 router.post("/api/auth", async (req, res, next) => {
     let user = req.body;
-    console.log("------------------------------------");
+    console.log("------/api/auth------");
     if (user.email !== undefined && user.password !== undefined) {
         let email = user.email;
         let password = user.password.toString();
@@ -141,48 +144,47 @@ router.post("/api/auth", async (req, res, next) => {
         });
     } else {
         res.status(400);
+        console.log("Bad Request:", req.body);
         res.send("Bad Request");
     }
 });
 
 router.post("/api/token_auth", async function (req, res, next) {
-    console.log("------------------------------------");
+    console.log("------/api/token_auth------");
     if (req.body.user_id !== undefined && req.body.api_token !== undefined) {
         let user_id = req.body.user_id;
         let token = req.body.api_token;
         console.log("token_auth:", req.body);
-        let correct_token = accountUtils.getApiToken(user_id);
-        console.log("correct api token:", correct_token);
-        if (correct_token === undefined || correct_token === "" || correct_token === null) {
-            console.log("Wrong api token");
-            res.status(403);
-            return res.send("Wrong api token");
-        } else if (token === correct_token) {
+        if (isCorrectToken(token, user_id, accountUtils)) {
             console.log("OK");
             res.status(200);
             res.send("OK");
-        } else {
+        }
+        else {
             console.log("Wrong api token");
             res.status(403);
-            return res.send("Wrong api token");
+            res.send("Wrong api token");
         }
     } else {
         res.status(400);
+        console.log("Bad Request:", req.body);
         res.send("Bad Request");
     }
 });
 
 // Get users someone can message
 router.post("/api/friends", async (req, res, next) => {
+    console.log("------/api/friends------");
     let user_id = req.body.user_id;
     let token = req.body.api_token;
     if (user_id === undefined || token === undefined) {
         res.status(400);
+        console.log("Bad Request:", req.body);
         res.send("Bad Request");
         return;
     }
     console.log(`${user_id} wants to get friends`);
-    if (!isCorrectToken(token, user_id)) {
+    if (!isCorrectToken(token, user_id, accountUtils)) {
         console.log("Wrong api token");
         res.status(403);
         return res.send("Wrong api token");
@@ -193,17 +195,6 @@ router.post("/api/friends", async (req, res, next) => {
     res.send(JSON.stringify(friends));
 });
 
-/**
- * Returns true if token and id match
- * @param token
- * @param user_id
- * @returns {boolean}
- */
-function isCorrectToken(token, user_id) {
-    let correct_token = accountUtils.getApiToken(user_id);
-    if (correct_token === undefined || correct_token === "" || correct_token === null) {
-        return false;
-    } else return token === correct_token;
-}
+
 
 module.exports = router;
