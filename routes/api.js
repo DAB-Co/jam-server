@@ -23,7 +23,7 @@ router.get("/api", async (req, res) => {
 // Creates user
 router.post("/api/signup", async (req, res, next) => {
     let user = req.body;
-    console.log("------------------------------------");
+    console.log("------/api/signup------");
     console.log("signup:", req.body);
     if (user.username !== undefined && user.email !== undefined && user.password !== undefined) {
         let username = user.username;
@@ -93,6 +93,7 @@ router.post("/api/signup", async (req, res, next) => {
         });
     } else {
         res.status(400);
+        console.log("Bad Request:", req.body);
         res.send("Bad Request");
     }
 
@@ -101,7 +102,7 @@ router.post("/api/signup", async (req, res, next) => {
 // Handles login via email
 router.post("/api/auth", async (req, res, next) => {
     let user = req.body;
-    console.log("------------------------------------");
+    console.log("------/api/auth------");
     if (user.email !== undefined && user.password !== undefined) {
         let email = user.email;
         let password = user.password.toString();
@@ -143,12 +144,13 @@ router.post("/api/auth", async (req, res, next) => {
         });
     } else {
         res.status(400);
+        console.log("Bad Request:", req.body);
         res.send("Bad Request");
     }
 });
 
 router.post("/api/token_auth", async function (req, res, next) {
-    console.log("------------------------------------");
+    console.log("------/api/token_auth------");
     if (req.body.user_id !== undefined && req.body.api_token !== undefined) {
         let user_id = req.body.user_id;
         let token = req.body.api_token;
@@ -165,16 +167,19 @@ router.post("/api/token_auth", async function (req, res, next) {
         }
     } else {
         res.status(400);
+        console.log("Bad Request:", req.body);
         res.send("Bad Request");
     }
 });
 
 // Get users someone can message
 router.post("/api/friends", async (req, res, next) => {
+    console.log("------/api/friends------");
     let user_id = req.body.user_id;
     let token = req.body.api_token;
     if (user_id === undefined || token === undefined) {
         res.status(400);
+        console.log("Bad Request:", req.body);
         res.send("Bad Request");
         return;
     }
