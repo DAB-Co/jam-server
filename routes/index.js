@@ -22,4 +22,10 @@ router.post("/suggestion", suggestion);
 router.get("/suggestion/*", suggestion);
 router.post("/suggestion/*", suggestion);
 
+const spotify = require(path.join(__dirname, "spotify.js"));
+router.get("/spotify", spotify);
+router.post("/spotify", spotify);
+router.get("/spotify/*", spotify);
+router.post("/spotify/*", spotify);
+
 module.exports = router;
