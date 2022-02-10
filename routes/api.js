@@ -195,6 +195,27 @@ router.post("/api/friends", async (req, res, next) => {
     res.send(JSON.stringify(friends));
 });
 
-
+// Block other users
+router.post("/api/block", async (req, res, next) => {
+    console.log("------/api/block------");
+    let user_id = req.body.user_id;
+    let token = req.body.api_token;
+    let blocked = req.body.blocked;
+    if (user_id === undefined || token === undefined || blocked === undefined) {
+        res.status(400);
+        console.log("Bad Request:", req.body);
+        res.send("Bad Request");
+        return;
+    }
+    console.log(`${user_id} wants to block ${blocked}`);
+    if (!isCorrectToken(token, user_id, accountUtils)) {
+        console.log("Wrong api token");
+        res.status(403);
+        return res.send("Wrong api token");
+    }
+    userFriendsUtils.blockUser(user_id, blocked);
+    res.status(200);
+    res.send("OK");
+});
 
 module.exports = router;
