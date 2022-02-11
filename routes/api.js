@@ -159,8 +159,7 @@ router.post("/api/token_auth", async function (req, res, next) {
             console.log("OK");
             res.status(200);
             res.send("OK");
-        }
-        else {
+        } else {
             console.log("Wrong api token");
             res.status(403);
             res.send("Wrong api token");

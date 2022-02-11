@@ -26,7 +26,7 @@ describe(__filename, function() {
                    users.test_user.api_token = res.data.api_token;
                })
                .catch(function (error) {
-                   assert.fail(error);
+                   assert.fail(error.response.data);
                });
        });
    });
