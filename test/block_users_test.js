@@ -103,8 +103,30 @@ describe(__filename, function () {
     });
 
     describe("", function () {
-        it("1 blocks 3 and his friends don't change", function () {
-            // TODO
+        it("1 blocks 3 and his friends don't change", async function () {
+            let data = {
+                user_id: 2,
+                api_token: users[2].api_token
+            };
+
+            let friends1 = undefined;
+
+            await axios.post(domain+"/api/friends", data)
+                .then(function (response) {
+                    friends1 = response.data;
+                })
+                .catch(function (error) {
+                    assert.fail(error.response.data);
+                });
+
+            await axios.post(domain+"/api/friends", data)
+                .then(function (response) {
+                    assert.ok(friends1 !== undefined);
+                    assert.strictEqual(JSON.stringify(response.data), JSON.stringify(friends1));
+                })
+                .catch(function (error) {
+                    assert.fail(error.response.data);
+                });
         });
     });
 
