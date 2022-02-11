@@ -69,30 +69,30 @@ describe(__filename, function () {
     });
 
     describe("", function () {
-        it("1 gets friends and checks if 2 is blocked", async function (){
+        it("1 gets friends and checks if 2 is blocked", async function () {
             let data = {
                 user_id: 1,
                 api_token: users[1].api_token
             };
 
-            await axios.post(domain+"/api/friends", data)
+            await axios.post(domain + "/api/friends", data)
                 .then(function (response) {
                     assert.ok(response.data[2].blocked);
                 })
                 .catch(function (error) {
-                   assert.fail(error.response.data);
+                    assert.fail(error.response.data);
                 });
         });
     });
 
     describe("", function () {
-        it("2 gets friends and 1 is not blocked", async function() {
+        it("2 gets friends and 1 is not blocked", async function () {
             let data = {
                 user_id: 2,
                 api_token: users[2].api_token
             };
 
-            await axios.post(domain+"/api/friends", data)
+            await axios.post(domain + "/api/friends", data)
                 .then(function (response) {
                     assert.ok(!response.data[1].blocked);
                 })
@@ -104,22 +104,39 @@ describe(__filename, function () {
 
     describe("", function () {
         it("1 blocks 3 and his friends don't change", async function () {
-            let data = {
-                user_id: 2,
-                api_token: users[2].api_token
+            let bdata = {
+                user_id: 1,
+                api_token: users[1].api_token,
+                blocked: 3
             };
+
+            let fdata = {
+                user_id: 1,
+                api_token: users[1].api_token,
+            }
 
             let friends1 = undefined;
 
-            await axios.post(domain+"/api/friends", data)
+            await axios.post(domain + "/api/friends", fdata)
                 .then(function (response) {
+                    assert.strictEqual(response.status, 200);
                     friends1 = response.data;
+                    assert.ok(friends1 !== undefined);
                 })
                 .catch(function (error) {
                     assert.fail(error.response.data);
                 });
 
-            await axios.post(domain+"/api/friends", data)
+            await axios.post(domain + "/api/block", bdata)
+                .then(function (res) {
+                    assert.strictEqual(res.status, 200);
+                    assert.strictEqual(res.data, "OK");
+                })
+                .catch(function (error) {
+                    assert.fail(error.response.data);
+                });
+
+            await axios.post(domain + "/api/friends", fdata)
                 .then(function (response) {
                     assert.ok(friends1 !== undefined);
                     assert.strictEqual(JSON.stringify(response.data), JSON.stringify(friends1));
