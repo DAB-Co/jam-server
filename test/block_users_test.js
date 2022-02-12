@@ -103,7 +103,7 @@ describe(__filename, function () {
     });
 
     describe("", function () {
-        it("1 blocks 3 and his friends don't change", async function () {
+        it("1 blocks 3(non existent) and his friends don't change", async function () {
             let bdata = {
                 user_id: 1,
                 api_token: users[1].api_token,
@@ -147,4 +147,114 @@ describe(__filename, function () {
         });
     });
 
+    describe("", function () {
+       it("2 unblocks 1 but 2 is still blocked in 1", async function () {
+           let ubdata = {
+               user_id: 2,
+               api_token: users[2].api_token,
+               unblocked: 1
+           };
+
+           let f1data = {
+               user_id: 1,
+               api_token: users[1].api_token,
+           };
+
+           await axios.post(domain+"/api/unblock", ubdata)
+               .then(function (res) {
+                   assert.strictEqual(res.data, "OK");
+                   assert.strictEqual(res.status, 200);
+               })
+               .catch(function (error) {
+                   assert.fail(error.response.data);
+               });
+
+           await axios.post(domain+"/api/friends", f1data)
+               .then(function (res) {
+                   let data = res.data;
+                   assert.ok(data !== undefined && 2 in data && data[2]["blocked"]);
+               })
+               .catch(function (error) {
+                   assert.fail(error.response.data);
+               })
+
+       });
+    });
+
+    describe("", function () {
+        it("1 unblocks 2", async function () {
+            let ubdata = {
+                user_id: 1,
+                api_token: users[1].api_token,
+                unblocked: 2
+            };
+
+            let f1data = {
+                user_id: 1,
+                api_token: users[1].api_token,
+            };
+
+            await axios.post(domain+"/api/unblock", ubdata)
+                .then(function (res) {
+                    assert.strictEqual(res.data, "OK");
+                    assert.strictEqual(res.status, 200);
+                })
+                .catch(function (error) {
+                    assert.fail(error.response.data);
+                });
+
+            await axios.post(domain+"/api/friends", f1data)
+                .then(function (res) {
+                    console.log(res.data);
+                    let data = res.data;
+                    assert.ok(data !== undefined && 2 in data && !data[2]["blocked"]);
+                })
+                .catch(function (error) {
+                    assert.fail(error.response.data);
+                })
+        });
+    });
+
+    describe("", function () {
+        it("1 unblocking 3 changes nothing for 1(3 is nonexistent)", async function () {
+            let ubdata = {
+                user_id: 1,
+                api_token: users[1].api_token,
+                unblocked: 3
+            };
+
+            let f1data = {
+                user_id: 1,
+                api_token: users[1].api_token,
+            };
+
+            let data = undefined;
+
+            await axios.post(domain+"/api/friends", f1data)
+                .then(function (res) {
+                    data = res.data;
+                    assert.ok(data !== undefined);
+                })
+                .catch(function (error) {
+                    assert.fail(error.response.data);
+                })
+
+            await axios.post(domain+"/api/unblock", ubdata)
+                .then(function (res) {
+                    assert.strictEqual(res.data, "OK");
+                    assert.strictEqual(res.status, 200);
+                })
+                .catch(function (error) {
+                    assert.fail(error.response.data);
+                });
+
+            await axios.post(domain+"/api/friends", f1data)
+                .then(function (res) {
+                    assert.strictEqual(JSON.stringify(res.data), JSON.stringify(data));
+                })
+                .catch(function (error) {
+                    assert.fail(error.response.data);
+                })
+        });
+    });
 });
