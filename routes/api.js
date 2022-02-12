@@ -78,7 +78,6 @@ router.post("/api/signup", async (req, res, next) => {
                         console.log("no notification token");
                         user_id = accountUtils.addUser(email, username, hash, api_token).lastInsertRowid;
                     }
-                    userFriendsUtils.addUser(user_id); // add user to friend table
                     let response = {
                         "user_id": user_id,
                         "api_token": api_token
