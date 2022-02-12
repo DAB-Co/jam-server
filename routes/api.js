@@ -78,7 +78,6 @@ router.post("/api/signup", async (req, res, next) => {
                         console.log("no notification token");
                         user_id = accountUtils.addUser(email, username, hash, api_token).lastInsertRowid;
                     }
-                    userFriendsUtils.addUser(user_id); // add user to friend table
                     let response = {
                         "user_id": user_id,
                         "api_token": api_token
@@ -149,7 +148,7 @@ router.post("/api/auth", async (req, res, next) => {
     }
 });
 
-router.post("/api/token_auth", async function (req, res, next) {
+router.post("/api/token_auth", function (req, res, next) {
     console.log("------/api/token_auth------");
     if (req.body.user_id !== undefined && req.body.api_token !== undefined) {
         let user_id = req.body.user_id;
@@ -172,7 +171,7 @@ router.post("/api/token_auth", async function (req, res, next) {
 });
 
 // Get users someone can message
-router.post("/api/friends", async (req, res, next) => {
+router.post("/api/friends", function (req, res, next) {
     console.log("------/api/friends------");
     let user_id = req.body.user_id;
     let token = req.body.api_token;
@@ -195,7 +194,7 @@ router.post("/api/friends", async (req, res, next) => {
 });
 
 // Block other users
-router.post("/api/block", async (req, res, next) => {
+router.post("/api/block", function (req, res, next) {
     console.log("------/api/block------");
     let user_id = req.body.user_id;
     let token = req.body.api_token;
@@ -213,6 +212,28 @@ router.post("/api/block", async (req, res, next) => {
         return res.send("Wrong api token");
     }
     userFriendsUtils.blockUser(user_id, blocked);
+    res.status(200);
+    res.send("OK");
+});
+
+router.post("/api/unblock", function (req, res) {
+   console.log("------/api/unblock------");
+   let user_id = req.body.user_id;
+   let token = req.body.api_token;
+   let unblocked = req.body.unblocked;
+   if (user_id === undefined || token === undefined || unblocked === undefined) {
+       res.status(400);
+       console.log("Bad Request", req.body);
+       res.send("Bad Request");
+       return;
+   }
+   console.log(`${user_id} wants to unblock ${unblocked}`);
+    if (!isCorrectToken(token, user_id, accountUtils)) {
+        console.log("Wrong api token");
+        res.status(403);
+        return res.send("Wrong api token");
+    }
+    userFriendsUtils.unblockUser(user_id, unblocked);
     res.status(200);
     res.send("OK");
 });
