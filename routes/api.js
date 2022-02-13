@@ -180,7 +180,7 @@ router.post("/api/wake", async function (req, res, next) {
         res.send("Bad Request");
         return;
     }
-    console.log(`${user_id} wants to get friends`);
+    console.log(`${user_id} called wake`);
     if (!isCorrectToken(token, user_id)) {
         console.log("Wrong api token");
         res.status(403);
@@ -193,6 +193,29 @@ router.post("/api/wake", async function (req, res, next) {
     console.log(response);
     res.status(200);
     res.send(JSON.stringify(response));
+});
+
+// Get users someone can message
+router.post("/api/friends", function (req, res, next) {
+    console.log("------/api/friends------");
+    let user_id = req.body.user_id;
+    let token = req.body.api_token;
+    if (user_id === undefined || token === undefined) {
+        res.status(400);
+        console.log("Bad Request:", req.body);
+        res.send("Bad Request");
+        return;
+    }
+    console.log(`${user_id} wants to get friends`);
+    if (!isCorrectToken(token, user_id, accountUtils)) {
+        console.log("Wrong api token");
+        res.status(403);
+        return res.send("Wrong api token");
+    }
+    let friends = userFriendsUtils.getFriends(user_id);
+    console.log(friends);
+    res.status(200);
+    res.send(JSON.stringify(friends));
 });
 
 // Block other users
