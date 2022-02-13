@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: npm ci
-        run: npm ci
+        run: npm config set @dab-co:registry https://npm.pkg.github.com && npm ci
         env:
           NPM_AUTH_TOKEN: ${{ secrets.READ_PACKAGE_API_KEY }}
       - name: npm test
