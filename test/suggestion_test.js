@@ -7,10 +7,9 @@ const path = require("path");
 require("dotenv").config({path: path.join(__dirname, "..", ".env.local")});
 const domain = "http://localhost:" + process.env.http_port;
 
-const database = require(path.join(__dirname, "..", "utils", "initializeDatabase.js"));
-const AccountUtils = require("@dab-co/jam-sqlite").Utils.AccountUtils;
+const utilsInitializer = require(path.join(__dirname, "..", "utils", "initializeUtils.js"));
 
-const accountUtils = new AccountUtils(database);
+const accountUtils = utilsInitializer.accountUtils();
 
 let data = {
     "user_id": 2,

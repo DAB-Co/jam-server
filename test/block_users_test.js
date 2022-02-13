@@ -205,7 +205,6 @@ describe(__filename, function () {
 
             await axios.post(domain+"/api/friends", f1data)
                 .then(function (res) {
-                    console.log(res.data);
                     let data = res.data;
                     assert.ok(data !== undefined && 2 in data && !data[2]["blocked"]);
                 })

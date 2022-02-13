@@ -5,16 +5,15 @@ const crypto = require("crypto");
 const path = require("path");
 const bcrypt = require("bcrypt");
 
-const database = require(path.join(__dirname, "..", "utils", "initializeDatabase.js"));
-const AccountUtils = require("@dab-co/jam-sqlite").Utils.AccountUtils;
-const UserFriendsUtils = require("@dab-co/jam-sqlite").Utils.UserFriendsUtils;
+const utilsInitializer = require(path.join(__dirname, "..", "utils", "initializeUtils.js"));
 const Validators = require(path.join(__dirname, "..", "utils", "validators.js"));
 
-const accountUtils = new AccountUtils(database);
-const userFriendsUtils = new UserFriendsUtils(database);
-const validators = new Validators;
+const accountUtils = utilsInitializer.accountUtils();
+const userFriendsUtils = utilsInitializer.userFriendsUtils();
+const validators = new Validators();
 
 const isCorrectToken = require(path.join(__dirname, "..", "utils", "isCorrectToken.js"));
+const algorithmEntryPoint = require(path.join(__dirname, "..", "utils", "algorithmEntryPoint.js"));
 
 router.get("/api", async (req, res) => {
     res.send("api documentation");
@@ -154,7 +153,7 @@ router.post("/api/token_auth", function (req, res, next) {
         let user_id = req.body.user_id;
         let token = req.body.api_token;
         console.log("token_auth:", req.body);
-        if (isCorrectToken(token, user_id, accountUtils)) {
+        if (isCorrectToken(token, user_id)) {
             console.log("OK");
             res.status(200);
             res.send("OK");
@@ -170,9 +169,9 @@ router.post("/api/token_auth", function (req, res, next) {
     }
 });
 
-// Get users someone can message
-router.post("/api/friends", function (req, res, next) {
-    console.log("------/api/friends------");
+// api call when app is opened
+router.post("/api/wake", async function (req, res, next) {
+    console.log("------/api/wake------");
     let user_id = req.body.user_id;
     let token = req.body.api_token;
     if (user_id === undefined || token === undefined) {
@@ -182,15 +181,18 @@ router.post("/api/friends", function (req, res, next) {
         return;
     }
     console.log(`${user_id} wants to get friends`);
-    if (!isCorrectToken(token, user_id, accountUtils)) {
+    if (!isCorrectToken(token, user_id)) {
         console.log("Wrong api token");
         res.status(403);
         return res.send("Wrong api token");
     }
-    let friends = userFriendsUtils.getFriends(user_id);
-    console.log(friends);
+    let response = {
+        friends: userFriendsUtils.getFriends(user_id),
+        refresh_token_expired: await algorithmEntryPoint.update_access_token(user_id)
+    }
+    console.log(response);
     res.status(200);
-    res.send(JSON.stringify(friends));
+    res.send(JSON.stringify(response));
 });
 
 // Block other users
@@ -206,7 +208,7 @@ router.post("/api/block", function (req, res, next) {
         return;
     }
     console.log(`${user_id} wants to block ${blocked}`);
-    if (!isCorrectToken(token, user_id, accountUtils)) {
+    if (!isCorrectToken(token, user_id)) {
         console.log("Wrong api token");
         res.status(403);
         return res.send("Wrong api token");
@@ -228,7 +230,7 @@ router.post("/api/unblock", function (req, res) {
        return;
    }
    console.log(`${user_id} wants to unblock ${unblocked}`);
-    if (!isCorrectToken(token, user_id, accountUtils)) {
+    if (!isCorrectToken(token, user_id)) {
         console.log("Wrong api token");
         res.status(403);
         return res.send("Wrong api token");

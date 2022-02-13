@@ -13,10 +13,9 @@ const refreshToken = process.env.email_refresh_token;
 
 const isCorrectToken = require(path.join(__dirname, "..", "utils", "isCorrectToken.js"));
 
-const database = require(path.join(__dirname, "..", "utils", "initializeDatabase.js"));
-const AccountUtils = require("@dab-co/jam-sqlite").Utils.AccountUtils;
+const utilsInitializer = require(path.join(__dirname, "..", "utils", "initializeUtils.js"));
 
-const accountUtils = new AccountUtils(database);
+const accountUtils = utilsInitializer.accountUtils();
 
 const nodemailer_transporter = nodemailer.createTransport({
     host: host,

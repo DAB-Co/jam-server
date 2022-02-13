@@ -1,11 +1,13 @@
+const path = require("path");
+const accountUtils = require(path.join(__dirname, "initializeUtils.js")).accountUtils();
+
 /**
  * Returns true if token and id match
  * @param token
  * @param user_id
- * @param accountUtils
  * @returns {boolean}
  */
-function isCorrectToken(token, user_id, accountUtils) {
+function isCorrectToken(token, user_id) {
     if (token === undefined || token === "" || token === null) {
         return false;
     }
