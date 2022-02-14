@@ -18,8 +18,8 @@ const algorithmEntryPoint = require(path.join(__dirname, "..", "utils", "algorit
 let login_states = {};
 
 router.get("/spotify/login", function (req, res) {
-    const user_id = req.headers.user_id;
-    const api_token = req.headers.api_token;
+    const user_id = req.query.user_id;
+    const api_token = req.query.api_token;
     if (user_id === undefined || api_token === undefined) {
         res.status(400);
         return res.send("Bad Request");
