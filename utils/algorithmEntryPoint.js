@@ -7,6 +7,33 @@ const client_id = process.env.client_id;
 const client_secret = process.env.client_secret;
 
 const spotifyUtils = require(path.join(__dirname, "initializeUtils.js")).spotifyUtils();
+const userPreferencesUtils = require(path.join(__dirname, "initializeUtils.js")).userPreferencesUtils();
+
+const type_weights = {
+    "track": 2,
+    "artist": 1
+}
+
+/**
+ * This does not update connections, it just merely writes preference to the database
+ *
+ * @param user_id
+ * @param raw_preference
+ */
+function save_preference(user_id, raw_preference) {
+    for (let i=0; i<raw_preference.items.length; i++) {
+        const item = raw_preference.items[i];
+        const type = item.type;
+        const id = item.id;
+        const type_weight = type_weights[type];
+        if (userPreferencesUtils.getPreference(user_id, type, id) === undefined) {
+            userPreferencesUtils.addPreference(user_id, type, id, type_weight, i+1);
+        }
+        else{
+            userPreferencesUtils.updatePreferenceWeights(user_id, type, id, type_weight, i+1);
+        }
+    }
+}
 
 class AlgorithmEntryPoint {
     constructor() {
@@ -52,10 +79,17 @@ class AlgorithmEntryPoint {
             })
     }
 
-    updatePreferences(user_id) {
-        // TODO
-        // when called, will make api call to spotify server
-        // get the data and feed it to the algorithm
+    async _get_tracks(user_id) {
+
+    }
+
+    async _get_artists(user_id) {
+
+    }
+
+    async updatePreferences(user_id) {
+        save_preference(user_id, await this._get_artists(user_id));
+        save_preference(user_id, await this._get_tracks(user_id));
     }
 }
 
