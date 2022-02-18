@@ -80,11 +80,43 @@ class AlgorithmEntryPoint {
     }
 
     async _get_tracks(user_id) {
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + this.access_tokens[user_id],
+                "limit": 50,
+            }
+        };
 
+        await axios.get('https://api.spotify.com/v1/me/top/tracks', config)
+            .then(function (response) {
+                return JSON.stringify(response.data);
+            })
+            .catch(function (error) {
+                console.log(error.response.status, error.response.statusText);
+                console.log(error.response.headers);
+                return undefined;
+            });
     }
 
     async _get_artists(user_id) {
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + this.access_tokens[user_id],
+                "limit": 50,
+            }
+        };
 
+        await axios.get('https://api.spotify.com/v1/me/top/tracks', config)
+            .then(function (response) {
+                return JSON.stringify(response.data);
+            })
+            .catch(function (error) {
+                console.log(error.response.status, error.response.statusText);
+                console.log(error.response.headers);
+                return undefined;
+            });
     }
 
     async updatePreferences(user_id) {
