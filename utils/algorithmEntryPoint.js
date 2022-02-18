@@ -94,8 +94,8 @@ class AlgorithmEntryPoint {
                 return JSON.stringify(response.data);
             })
             .catch(function (error) {
-                console.log(error.response.status, error.response.statusText);
-                console.log(error.response.headers);
+                //console.log(error.response.status, error.response.statusText);
+                //console.log(error.response.headers);
                 return undefined;
             });
     }
@@ -114,8 +114,8 @@ class AlgorithmEntryPoint {
                 return JSON.stringify(response.data);
             })
             .catch(function (error) {
-                console.log(error.response.status, error.response.statusText);
-                console.log(error.response.headers);
+                //console.log(error.response.status, error.response.statusText);
+                //console.log(error.response.headers);
                 return undefined;
             });
     }
