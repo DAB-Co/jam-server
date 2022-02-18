@@ -188,7 +188,7 @@ router.post("/api/wake", async function (req, res, next) {
     }
     let response = {
         friends: userFriendsUtils.getFriends(user_id),
-        refresh_token_expired: await algorithmEntryPoint.update_access_token(user_id)
+        refresh_token_expired: !(await algorithmEntryPoint.update_access_token(user_id))
     }
     console.log(response);
     res.status(200);
