@@ -26,7 +26,8 @@ function save_preference(user_id, raw_preference) {
         const type = item.type;
         const id = item.id;
         const type_weight = type_weights[type];
-        if (userPreferencesUtils.getPreference(user_id, type, id) === undefined) {
+        const existing_data = userPreferencesUtils.getPreference(user_id, type, id);
+        if (existing_data === undefined) {
             userPreferencesUtils.addPreference(user_id, type, id, type_weight, i+1);
         }
         else{
@@ -51,7 +52,7 @@ class AlgorithmEntryPoint {
      * refresh token might need to be requested again by the user via get request to /spotify/login
      *
      * @param user_id
-     * @returns {Promise<void>}
+     * @returns {Promise<boolean>}
      */
     async update_access_token(user_id) {
         //console.log("update access token called for", user_id);
