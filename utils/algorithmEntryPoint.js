@@ -30,7 +30,7 @@ function save_preference(user_id, raw_preference) {
         if (existing_data === undefined) {
             userPreferencesUtils.addPreference(user_id, type, id, type_weight, i+1);
         }
-        else{
+        else if (existing_data.preference_type_weight !== type_weight || existing_data.preference_identifier_weight !== i+1){
             userPreferencesUtils.updatePreferenceWeights(user_id, type, id, type_weight, i+1);
         }
     }
