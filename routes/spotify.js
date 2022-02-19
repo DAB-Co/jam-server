@@ -11,11 +11,25 @@ const client_id = process.env.client_id;
 const client_secret = process.env.client_secret;
 const redirect_uri =  process.env.redirect_uri;
 
+const isCorrectToken = require(path.join(__dirname, "..", "utils", "isCorrectToken.js"));
+
+const algorithmEntryPoint = require(path.join(__dirname, "..", "utils", "algorithmEntryPoint.js"));
+
 let login_states = {};
 
 router.get("/spotify/login", function (req, res) {
+    const user_id = req.query.user_id;
+    const api_token = req.query.api_token;
+    if (user_id === undefined || api_token === undefined) {
+        res.status(400);
+        return res.send("Bad Request");
+    }
+    if (!isCorrectToken(api_token, user_id)) {
+        res.status(403);
+        return res.send("Wrong api token");
+    }
     let login_state = crypto.randomBytes(8).toString('hex');
-    login_states[login_state] = true;
+    login_states[login_state] = user_id;
     res.redirect('https://accounts.spotify.com/authorize?' +
         querystring.stringify({
             response_type: 'code',
@@ -33,7 +47,7 @@ router.get("/spotify/callback", function (req, res) {
     if (state === null || !(state in login_states)) {
         res.send("unable to login: state mismatch");
     } else {
-
+        const user_id = login_states[state];
         delete login_states[state];
 
         const data = {
@@ -51,10 +65,13 @@ router.get("/spotify/callback", function (req, res) {
 
         axios.post('https://accounts.spotify.com/api/token', querystring.stringify(data), config)
             .then(function (spotify_response) {
-                res.send(spotify_response.data);
+                algorithmEntryPoint.updateTokens(user_id, spotify_response.data.access_token, spotify_response.data.refresh_token);
+                res.status(200);
+                res.send("OK");
             })
             .catch(function (spotify_err) {
                 console.log(spotify_err.response.data);
+                res.status(500);
                 res.send(spotify_err.response.data);
             });
     }
