@@ -170,7 +170,7 @@ router.post("/api/token_auth", function (req, res, next) {
 });
 
 // api call when app is opened
-router.post("/api/wake", async function (req, res, next) {
+router.post("/api/wake", function (req, res, next) {
     console.log("------/api/wake------");
     let user_id = req.body.user_id;
     let token = req.body.api_token;
@@ -188,7 +188,7 @@ router.post("/api/wake", async function (req, res, next) {
     }
     let response = {
         friends: userFriendsUtils.getFriends(user_id),
-        refresh_token_expired: !(await algorithmEntryPoint.update_access_token(user_id))
+        refresh_token_expired: algorithmEntryPoint.refreshTokenExpired(user_id)
     }
     console.log(response);
     res.status(200);

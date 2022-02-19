@@ -47,6 +47,12 @@ class AlgorithmEntryPoint {
         this.access_tokens[user_id] = access_token;
     }
 
+    refreshTokenExpired(user_id) {
+        const token = spotifyUtils.getRefreshToken(user_id);
+        return token === ''; // if token is undefined, it technically is not expired?
+        // undefined means nonexistent user id is sent
+    }
+
     /**
      * updates spotify access token for user. will return false if there is an error, indicating
      * refresh token might need to be requested again by the user via get request to /spotify/login
@@ -76,6 +82,7 @@ class AlgorithmEntryPoint {
             })
             .catch(function (err) {
                 //console.log(err.response.headers);
+                spotifyUtils.updateRefreshToken(user_id, '');
                 return false;
             })
     }
