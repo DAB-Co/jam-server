@@ -26,28 +26,29 @@ function add_preference(user_id, raw_preference) {
         const type = item.type;
         const id = item.id;
         const existing_data = userPreferencesUtils.getPreference(user_id, type, id);
+        let weight_to_be_added = (i + 1)*type_weights[type];
         if (existing_data === undefined) {
-            userPreferencesUtils.addPreference(user_id, type, id, i + 1);
+            userPreferencesUtils.addPreference(user_id, type, id, weight_to_be_added);
             let users_to_update = userPreferencesUtils.getCommonUserIds(type, id);
             for (let i = 0; i < users_to_update.length; i++) {
                 if (users_to_update[i] !== user_id) {
-                    let weight = userConnectionsUtils.getWeight(users_to_update[i], user_id);
-                    if (weight === undefined) {
-                        userConnectionsUtils.addConnection(users_to_update[i], user_id, i + 1);
+                    let old_weight = userConnectionsUtils.getWeight(users_to_update[i], user_id);
+                    if (old_weight === undefined) {
+                        userConnectionsUtils.addConnection(users_to_update[i], user_id, weight_to_be_added);
                     } else {
-                        userConnectionsUtils.updateConnection(users_to_update[i], user_id, weight + i + 1);
+                        userConnectionsUtils.updateConnection(users_to_update[i], user_id, old_weight+weight_to_be_added);
                     }
                 }
             }
         } else if (existing_data.preference_weight !== i + 1) {
-            userPreferencesUtils.updatePreferenceWeight(user_id, type, id, i + 1);
+            userPreferencesUtils.updatePreferenceWeight(user_id, type, id, weight_to_be_added);
             if (users_to_update[i] !== user_id) {
-                let weight = userConnectionsUtils.getWeight(users_to_update[i], user_id);
-                if (weight === undefined) {
-                    userConnectionsUtils.addConnection(users_to_update[i], user_id, i + 1);
+                let old_weight = userConnectionsUtils.getWeight(users_to_update[i], user_id);
+                if (old_weight === undefined) {
+                    userConnectionsUtils.addConnection(users_to_update[i], user_id, weight_to_be_added);
                 } else {
-                    weight -= existing_data.preference_weight;
-                    userConnectionsUtils.updateConnection(users_to_update[i], user_id, weight + i + 1);
+                    old_weight -= existing_data.preference_weight;
+                    userConnectionsUtils.updateConnection(users_to_update[i], user_id, old_weight + weight_to_be_added);
                 }
             }
         }
@@ -154,7 +155,7 @@ class AlgorithmEntryPoint {
                 spotifyUtils.updateRefreshToken(user_id, '');
                 return;
             }
-            raw_tracks = await this._get_artists(user_id);
+            raw_artists = await this._get_artists(user_id);
         }
         let raw_tracks = await this._get_tracks(user_id);
         if (raw_tracks === undefined) {
