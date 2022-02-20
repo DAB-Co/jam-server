@@ -64,7 +64,7 @@ class AlgorithmEntryPoint {
     }
 
     updateTokens(user_id, access_token, refresh_token) {
-        spotifyUtils.updateToken(user_id, refresh_token);
+        spotifyUtils.updateRefreshToken(user_id, refresh_token);
         this.access_tokens[user_id] = access_token;
     }
 
