@@ -8,6 +8,7 @@ const client_secret = process.env.client_secret;
 
 const spotifyUtils = require(path.join(__dirname, "initializeUtils.js")).spotifyUtils();
 const userPreferencesUtils = require(path.join(__dirname, "initializeUtils.js")).userPreferencesUtils();
+const userConnectionsUtils = require(path.join(__dirname, "initializeUtils.js")).userConnectionsUtils();
 
 const type_weights = {
     "track": 2,
@@ -15,23 +16,40 @@ const type_weights = {
 }
 
 /**
- * This does not update connections, it just merely writes preference to the database
  *
  * @param user_id
  * @param raw_preference
  */
-function save_preference(user_id, raw_preference) {
-    for (let i=0; i<raw_preference.items.length; i++) {
+function add_preference(user_id, raw_preference) {
+    for (let i = 0; i < raw_preference.items.length; i++) {
         const item = raw_preference.items[i];
         const type = item.type;
         const id = item.id;
-        const type_weight = type_weights[type];
         const existing_data = userPreferencesUtils.getPreference(user_id, type, id);
         if (existing_data === undefined) {
-            userPreferencesUtils.addPreference(user_id, type, id, type_weight, i+1);
-        }
-        else if (existing_data.preference_type_weight !== type_weight || existing_data.preference_identifier_weight !== i+1){
-            userPreferencesUtils.updatePreferenceWeights(user_id, type, id, type_weight, i+1);
+            userPreferencesUtils.addPreference(user_id, type, id, i + 1);
+            let users_to_update = userPreferencesUtils.getCommonUserIds(type, id);
+            for (let i = 0; i < users_to_update.length; i++) {
+                if (users_to_update[i] !== user_id) {
+                    let weight = userConnectionsUtils.getWeight(users_to_update[i], user_id);
+                    if (weight === undefined) {
+                        userConnectionsUtils.addConnection(users_to_update[i], user_id, i + 1);
+                    } else {
+                        userConnectionsUtils.updateConnection(users_to_update[i], user_id, weight + i + 1);
+                    }
+                }
+            }
+        } else if (existing_data.preference_weight !== i + 1) {
+            userPreferencesUtils.updatePreferenceWeight(user_id, type, id, i + 1);
+            if (users_to_update[i] !== user_id) {
+                let weight = userConnectionsUtils.getWeight(users_to_update[i], user_id);
+                if (weight === undefined) {
+                    userConnectionsUtils.addConnection(users_to_update[i], user_id, i + 1);
+                } else {
+                    weight -= existing_data.preference_weight;
+                    userConnectionsUtils.updateConnection(users_to_update[i], user_id, weight + i + 1);
+                }
+            }
         }
     }
 }
@@ -40,6 +58,8 @@ class AlgorithmEntryPoint {
     constructor() {
         // user_id: access_token
         this.access_tokens = {};
+        const day_length = 86400000;
+        setInterval(this.run, day_length);
     }
 
     updateTokens(user_id, access_token, refresh_token) {
@@ -128,8 +148,15 @@ class AlgorithmEntryPoint {
     }
 
     async updatePreferences(user_id) {
-        save_preference(user_id, await this._get_artists(user_id));
-        save_preference(user_id, await this._get_tracks(user_id));
+        add_preference(user_id, await this._get_artists(user_id));
+        add_preference(user_id, await this._get_tracks(user_id));
+    }
+
+    run() {
+        let users = spotifyUtils.getAllPrimaryKeys();
+        for (let i=0; i<users.length; i++) {
+            this.updatePreferences(users[i]);
+        }
     }
 }
 
