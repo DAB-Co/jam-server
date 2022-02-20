@@ -40,7 +40,7 @@ router.get("/spotify/login", function (req, res) {
         }));
 });
 
-router.get("/spotify/callback", function (req, res) {
+router.get("/spotify/callback", function (req, res, next) {
     const code = req.query.code || null;
     const state = req.query.state || null;
 
@@ -70,9 +70,14 @@ router.get("/spotify/callback", function (req, res) {
                 res.send("OK");
             })
             .catch(function (spotify_err) {
-                console.log(spotify_err.response.data);
                 res.status(500);
-                res.send(spotify_err.response.data);
+                if (spotify_err !== undefined && spotify_err.response !== undefined && spotify_err.response.data !== undefined) {
+                    console.log(spotify_err.response.data);
+                    res.send(spotify_err.response.data);
+                }
+                else {
+                    next(spotify_err);
+                }
             });
     }
 });
