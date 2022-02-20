@@ -148,8 +148,24 @@ class AlgorithmEntryPoint {
     }
 
     async updatePreferences(user_id) {
-        add_preference(user_id, await this._get_artists(user_id));
-        add_preference(user_id, await this._get_tracks(user_id));
+        let raw_artists = await this._get_artists(user_id);
+        if (raw_artists === undefined) {
+            if (!await this.update_access_token(user_id)) {
+                spotifyUtils.updateRefreshToken(user_id, '');
+                return;
+            }
+            raw_tracks = await this._get_artists(user_id);
+        }
+        let raw_tracks = await this._get_tracks(user_id);
+        if (raw_tracks === undefined) {
+            if (!await this.update_access_token(user_id)) {
+                spotifyUtils.updateRefreshToken(user_id, '');
+                return;
+            }
+            raw_tracks = await this._get_tracks(user_id);
+        }
+        add_preference(user_id, raw_artists);
+        add_preference(user_id, raw_tracks);
     }
 
     run() {
