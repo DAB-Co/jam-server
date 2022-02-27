@@ -64,6 +64,7 @@ class AlgorithmEntryPoint {
     constructor(auto_run=true) {
         // user_id: access_token
         this.access_tokens = {};
+        this.matches = {};
         const day_length = 86400000;
         if (auto_run) {
             setInterval(this.run, day_length);
@@ -199,8 +200,30 @@ class AlgorithmEntryPoint {
      */
     async run() {
         let users = spotifyUtils.getAllPrimaryKeys();
+        this._finalize_matches();
         for (let i=0; i<users.length; i++) {
             await this.updatePreferences(users[i]);
+        }
+        this.matches = {};
+        for (let i=0; i<users.length; i++) {
+            if (!(users[i] in matches)) {
+                let match = userConnectionsUtils.getMatch(users[i]);
+                this.matches[match] = users[i];
+                this.matches[users[i]] = match;
+            }
+        }
+    }
+
+    getMatch(user_id) {
+        return this.matches[user_id];
+    }
+
+    _finalize_matches() {
+        let finalized = {};
+        for (let user_id in this.matches) {
+            if (!(user_id in finalized)) {
+                userConnectionsUtils.finalizeMatch(user_id, this.matches[user_id]);
+            }
         }
     }
 }
