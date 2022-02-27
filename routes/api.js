@@ -69,7 +69,7 @@ router.post("/api/signup", async (req, res, next) => {
                     next(err);
                 } else {
                     let api_token = crypto.randomBytes(17).toString('hex');
-                    let user_id = -1;
+                    let user_id = undefined;
                     if (notification_token) {
                         console.log("has notification token");
                         user_id = accountUtils.addUserWithNotificationToken(email, username, hash, api_token, notification_token).lastInsertRowid;
@@ -261,6 +261,28 @@ router.post("/api/unblock", function (req, res) {
     userFriendsUtils.unblockUser(user_id, unblocked);
     res.status(200);
     res.send("OK");
+});
+
+router.post("/api/update_languages", function (req, res) {
+    console.log("------/api/update_languages------");
+    let user_id = req.body.user_id;
+    let token = req.body.api_token;
+    let add_languages = req.body.add_languages;
+    let remove_languages = req.body.remove_languages;
+    if (user_id === undefined || token === undefined || add_languages === undefined || !("push" in add_languages) || remove_languages === undefined|| !("push" in remove_languages)) {
+        res.status(400);
+        console.log("Bad Request", req.body);
+        res.send("Bad Request");
+        return;
+    }
+    if (!isCorrectToken(token, user_id)) {
+        console.log("Wrong api token");
+        res.status(403);
+        return res.send("Wrong api token");
+    }
+
+    utilsInitializer.userLanguagesUtils().addLanguages(user_id, add_languages);
+    utilsInitializer.userLanguagesUtils().removeLanguages(user_id, remove_languages);
 });
 
 module.exports = router;
