@@ -215,7 +215,7 @@ class AlgorithmEntryPoint {
     _create_match_cache(users) {
         this.matches = {};
         for (let i=0; i<users.length; i++) {
-            if (!(users[i] in matches)) {
+            if (!(users[i] in this.matches)) {
                 let match = userConnectionsUtils.getMatch(users[i]);
                 this.matches[match] = users[i];
                 this.matches[users[i]] = match;
