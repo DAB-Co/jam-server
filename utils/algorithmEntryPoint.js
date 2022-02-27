@@ -9,6 +9,7 @@ const client_secret = process.env.client_secret;
 const spotifyUtils = require(path.join(__dirname, "initializeUtils.js")).spotifyUtils();
 const userPreferencesUtils = require(path.join(__dirname, "initializeUtils.js")).userPreferencesUtils();
 const userConnectionsUtils = require(path.join(__dirname, "initializeUtils.js")).userConnectionsUtils();
+const userFriendsUtils = require(path.join(__dirname, "initializeUtils.js")).userFriendsUtils();
 
 const type_weights = {
     "track": 2,
@@ -204,7 +205,17 @@ class AlgorithmEntryPoint {
         for (let i=0; i<users.length; i++) {
             await this.updatePreferences(users[i]);
         }
-        this._create_match_cache(users);
+
+        this.matches = {};
+
+        for (let i=0; i<users.length; i++) {
+            if (!(users[i] in this.matches)) {
+                let match = userConnectionsUtils.getMatch(users[i]);
+                this.matches[match] = users[i];
+                this.matches[users[i]] = match;
+                userFriendsUtils.addFriend(match, users[i]);
+            }
+        }
     }
 
     /**
@@ -212,7 +223,7 @@ class AlgorithmEntryPoint {
      * @param users
      * @private
      */
-    _create_match_cache(users) {
+    refresh_match_cache(users) {
         this.matches = {};
         for (let i=0; i<users.length; i++) {
             if (!(users[i] in this.matches)) {
