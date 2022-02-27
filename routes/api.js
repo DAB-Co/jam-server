@@ -15,6 +15,8 @@ const validators = new Validators();
 const isCorrectToken = require(path.join(__dirname, "..", "utils", "isCorrectToken.js"));
 const algorithmEntryPoint = require(path.join(__dirname, "..", "utils", "algorithmEntryPoint.js"));
 
+const iso_dict = require(path.join(__dirname, "..", "utils", "languages.js"));
+
 router.get("/api", async (req, res) => {
     res.send("api documentation");
 });
@@ -281,8 +283,26 @@ router.post("/api/update_languages", function (req, res) {
         return res.send("Wrong api token");
     }
 
+    for (let i=0; i<add_languages.length; i++) {
+        if (!(add_languages[i] in iso_dict)) {
+            res.status(422);
+            res.send("Unrecognized iso code");
+            return;
+        }
+    }
+
+    for (let i=0; i<remove_languages.length; i++) {
+        if (!(remove_languages[i] in iso_dict)) {
+            res.status(422);
+            res.send("Unrecognized iso code");
+            return;
+        }
+    }
+
     utilsInitializer.userLanguagesUtils().addLanguages(user_id, add_languages);
     utilsInitializer.userLanguagesUtils().removeLanguages(user_id, remove_languages);
+    res.status(200);
+    res.send("OK");
 });
 
 module.exports = router;
