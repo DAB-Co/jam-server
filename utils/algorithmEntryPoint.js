@@ -9,6 +9,7 @@ const client_secret = process.env.client_secret;
 const spotifyUtils = require(path.join(__dirname, "initializeUtils.js")).spotifyUtils();
 const userPreferencesUtils = require(path.join(__dirname, "initializeUtils.js")).userPreferencesUtils();
 const userConnectionsUtils = require(path.join(__dirname, "initializeUtils.js")).userConnectionsUtils();
+const userFriendsUtils = require(path.join(__dirname, "initializeUtils.js")).userFriendsUtils();
 
 const type_weights = {
     "track": 2,
@@ -26,10 +27,10 @@ function add_preference(user_id, raw_preference) {
         const type = item.type;
         const id = item.id;
         const existing_data = userPreferencesUtils.getPreference(user_id, type, id);
+        let users_to_update = userPreferencesUtils.getCommonUserIds(type, id);
         let weight_to_be_added = (i + 1)*type_weights[type];
         if (existing_data === undefined) {
             userPreferencesUtils.addPreference(user_id, type, id, weight_to_be_added);
-            let users_to_update = userPreferencesUtils.getCommonUserIds(type, id);
             for (let i = 0; i < users_to_update.length; i++) {
                 if (users_to_update[i] !== user_id) {
                     let old_weight = userConnectionsUtils.getWeight(users_to_update[i], user_id);
@@ -55,19 +56,38 @@ function add_preference(user_id, raw_preference) {
     }
 }
 
+
 class AlgorithmEntryPoint {
-    constructor() {
+    /**
+     *
+     * @param auto_run
+     */
+    constructor(auto_run=true) {
         // user_id: access_token
         this.access_tokens = {};
+        this.matches = {};
         const day_length = 86400000;
-        setInterval(this.run, day_length);
+        if (auto_run) {
+            setInterval(this.run, day_length);
+        }
     }
 
+    /**
+     *
+     * @param user_id
+     * @param access_token
+     * @param refresh_token
+     */
     updateTokens(user_id, access_token, refresh_token) {
         spotifyUtils.updateRefreshToken(user_id, refresh_token);
         this.access_tokens[user_id] = access_token;
     }
 
+    /**
+     *
+     * @param user_id
+     * @returns {boolean}
+     */
     refreshTokenExpired(user_id) {
         const token = spotifyUtils.getRefreshToken(user_id);
         return token === ''; // if token is undefined, it technically is not expired?
@@ -148,6 +168,12 @@ class AlgorithmEntryPoint {
             });
     }
 
+    /**
+     * get/update preferences and database
+     *
+     * @param user_id
+     * @returns {Promise<void>}
+     */
     async updatePreferences(user_id) {
         let raw_artists = await this._get_artists(user_id);
         if (raw_artists === undefined) {
@@ -169,10 +195,55 @@ class AlgorithmEntryPoint {
         add_preference(user_id, raw_tracks);
     }
 
-    run() {
+    /**
+     *
+     * @returns {Promise<void>}
+     */
+    async run() {
         let users = spotifyUtils.getAllPrimaryKeys();
+        this._finalize_matches();
         for (let i=0; i<users.length; i++) {
-            this.updatePreferences(users[i]);
+            await this.updatePreferences(users[i]);
+        }
+
+        this.matches = {};
+
+        for (let i=0; i<users.length; i++) {
+            if (!(users[i] in this.matches)) {
+                let match = userConnectionsUtils.getMatch(users[i]);
+                this.matches[match] = users[i];
+                this.matches[users[i]] = match;
+                userFriendsUtils.addFriend(match, users[i]);
+            }
+        }
+    }
+
+    /**
+     *
+     * @param users
+     * @private
+     */
+    refresh_match_cache(users) {
+        this.matches = {};
+        for (let i=0; i<users.length; i++) {
+            if (!(users[i] in this.matches)) {
+                let match = userConnectionsUtils.getMatch(users[i]);
+                this.matches[match] = users[i];
+                this.matches[users[i]] = match;
+            }
+        }
+    }
+
+    getMatch(user_id) {
+        return this.matches[user_id];
+    }
+
+    _finalize_matches() {
+        let finalized = {};
+        for (let user_id in this.matches) {
+            if (!(user_id in finalized)) {
+                userConnectionsUtils.finalizeMatch(user_id, this.matches[user_id]);
+            }
         }
     }
 }
