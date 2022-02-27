@@ -204,6 +204,15 @@ class AlgorithmEntryPoint {
         for (let i=0; i<users.length; i++) {
             await this.updatePreferences(users[i]);
         }
+        this._create_match_cache(users);
+    }
+
+    /**
+     *
+     * @param users
+     * @private
+     */
+    _create_match_cache(users) {
         this.matches = {};
         for (let i=0; i<users.length; i++) {
             if (!(users[i] in matches)) {
