@@ -55,19 +55,37 @@ function add_preference(user_id, raw_preference) {
     }
 }
 
+
 class AlgorithmEntryPoint {
-    constructor() {
+    /**
+     *
+     * @param auto_run
+     */
+    constructor(auto_run=true) {
         // user_id: access_token
         this.access_tokens = {};
         const day_length = 86400000;
-        setInterval(this.run, day_length);
+        if (auto_run) {
+            setInterval(this.run, day_length);
+        }
     }
 
+    /**
+     *
+     * @param user_id
+     * @param access_token
+     * @param refresh_token
+     */
     updateTokens(user_id, access_token, refresh_token) {
         spotifyUtils.updateRefreshToken(user_id, refresh_token);
         this.access_tokens[user_id] = access_token;
     }
 
+    /**
+     *
+     * @param user_id
+     * @returns {boolean}
+     */
     refreshTokenExpired(user_id) {
         const token = spotifyUtils.getRefreshToken(user_id);
         return token === ''; // if token is undefined, it technically is not expired?
@@ -148,6 +166,12 @@ class AlgorithmEntryPoint {
             });
     }
 
+    /**
+     * get/update preferences and database
+     *
+     * @param user_id
+     * @returns {Promise<void>}
+     */
     async updatePreferences(user_id) {
         let raw_artists = await this._get_artists(user_id);
         if (raw_artists === undefined) {
@@ -169,6 +193,10 @@ class AlgorithmEntryPoint {
         add_preference(user_id, raw_tracks);
     }
 
+    /**
+     *
+     * @returns {Promise<void>}
+     */
     async run() {
         let users = spotifyUtils.getAllPrimaryKeys();
         for (let i=0; i<users.length; i++) {
