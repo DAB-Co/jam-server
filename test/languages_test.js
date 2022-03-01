@@ -34,6 +34,20 @@ describe(__filename, function () {
                 .catch(function (err) {
                     assert.fail(err.response.data);
                 });
+
+            await axios.post(domain+"/api/get_languages", {user_id: parseInt(b_id), api_token: "inout"})
+                .then(function (res) {
+                    assert.strictEqual(res.status, 200);
+                    assert.ok(res.data.length === 1 && res.data[0] === "DE");
+                })
+                .catch(function (err) {
+                    if ("response" in err) {
+                        assert.fail(err.response.data);
+                    }
+                    else {
+                        assert.fail(err);
+                    }
+                });
         });
     });
 
@@ -53,6 +67,23 @@ describe(__filename, function () {
                .catch(function (err) {
                    assert.fail(err.response.data);
                });
+
+           await axios.post(domain+"/api/get_languages", {user_id: parseInt(b_id), api_token: "inout"})
+               .then(function (res) {
+                   assert.strictEqual(res.status, 200);
+                   assert.ok(res.data.length === 4);
+                   for (let i=0; i<res.data; i++) {
+                       assert.ok(["DE", "FR", "EN", "PL"].indexOf(res.data[i]) !== -1);
+                   }
+               })
+               .catch(function (err) {
+                   if ("response" in err) {
+                       assert.fail(err.response.data);
+                   }
+                   else {
+                       assert.fail(err);
+                   }
+               });
        });
     });
 
@@ -62,7 +93,7 @@ describe(__filename, function () {
                user_id: parseInt(b_id),
                api_token: "inout",
                add_languages: ["ar", "fa"],
-               remove_languages: ["en"],
+               remove_languages: ["en", "fr"],
            }
            await axios.post(domain+"/api/update_languages", data)
                .then(function (res){
@@ -71,6 +102,23 @@ describe(__filename, function () {
                })
                .catch(function (err) {
                    assert.fail(err.response.data);
+               });
+
+           await axios.post(domain+"/api/get_languages", {user_id: parseInt(b_id), api_token: "inout"})
+               .then(function (res) {
+                   assert.strictEqual(res.status, 200);
+                   assert.ok(res.data.length === 4);
+                   for (let i=0; i<res.data; i++) {
+                       assert.ok(["DE", "AR", "FA", "PL"].indexOf(res.data[i]) !== -1);
+                   }
+               })
+               .catch(function (err) {
+                   if ("response" in err) {
+                       assert.fail(err.response.data);
+                   }
+                   else {
+                       assert.fail(err);
+                   }
                });
        });
     });
@@ -91,6 +139,23 @@ describe(__filename, function () {
                .catch(function (err) {
                    assert.fail(err.response.data);
                });
+
+           await axios.post(domain+"/api/get_languages", {user_id: parseInt(b_id), api_token: "inout"})
+               .then(function (res) {
+                   assert.strictEqual(res.status, 200);
+                   assert.ok(res.data.length === 3);
+                   for (let i=0; i<res.data; i++) {
+                       assert.ok(["DE", "FR", "EN"].indexOf(res.data[i]) !== -1);
+                   }
+               })
+               .catch(function (err) {
+                   if ("response" in err) {
+                       assert.fail(err.response.data);
+                   }
+                   else {
+                       assert.fail(err);
+                   }
+               });
        });
     });
 
@@ -109,6 +174,23 @@ describe(__filename, function () {
                 })
                 .catch(function (err) {
                     assert.fail(err.response.data);
+                });
+
+            await axios.post(domain+"/api/get_languages", {user_id: parseInt(b_id), api_token: "inout"})
+                .then(function (res) {
+                    assert.strictEqual(res.status, 200);
+                    assert.ok(res.data.length === 1);
+                    for (let i=0; i<res.data; i++) {
+                        assert.ok(["DE"].indexOf(res.data[i]) !== -1);
+                    }
+                })
+                .catch(function (err) {
+                    if ("response" in err) {
+                        assert.fail(err.response.data);
+                    }
+                    else {
+                        assert.fail(err);
+                    }
                 });
         });
     });

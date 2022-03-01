@@ -305,4 +305,30 @@ router.post("/api/update_languages", function (req, res) {
     res.send("OK");
 });
 
+router.post("/api/get_languages", function (req, res) {
+    console.log("------/api/get_languages------")
+    let user_id = req.body.user_id;
+    let api_token = req.body.api_token;
+
+    if (user_id === undefined || api_token === undefined) {
+        res.status(400);
+        console.log("Bad Request", req.body);
+        res.send("Bad Request");
+        return;
+    }
+
+    if (!isCorrectToken(api_token, user_id)) {
+        console.log("Wrong api token");
+        res.status(403);
+        return res.send("Wrong api token");
+    }
+
+    let languages = utilsInitializer.userLanguagesUtils().getUserLanguages(user_id);
+
+    console.log(user_id, ":", languages);
+
+    res.status(200);
+    return res.send(JSON.stringify(languages));
+})
+
 module.exports = router;
