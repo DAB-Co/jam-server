@@ -15,16 +15,15 @@ describe(__filename, function () {
     before(function() {
         database = new Database(path.join(__dirname, "..", "sqlite", "database.db"));
         utilsInitializer = new UtilsInitializer(database);
-        b_id = utilsInitializer.accountUtils().addUser("beethoven@email.com", "beethoven", "ilovethe9th", "inout").lastInserRowId;
-        console.log(b_id);
+        b_id = utilsInitializer.accountUtils().addUser("beethoven@email.com", "beethoven", "ilovethe9th", "inout").lastInsertRowid;
     });
 
     describe("", function() {
         it("beethoven adds language german", async function () {
             let data = {
-                user_id: b_id,
+                user_id: parseInt(b_id),
                 api_token: "inout",
-                add_languages: ["ger"],
+                add_languages: ["de"],
                 remove_languages: [],
             }
             await axios.post(domain+"/api/update_languages", data)
@@ -41,9 +40,9 @@ describe(__filename, function () {
     describe("", function() {
        it("beethoven adds languages french, english and polish", async function () {
            let data = {
-               user_id: b_id,
+               user_id: parseInt(b_id),
                api_token: "inout",
-               add_languages: ["fr", "en", "pol"],
+               add_languages: ["fr", "en", "pl"],
                remove_languages: [],
            }
            await axios.post(domain+"/api/update_languages", data)
@@ -60,9 +59,9 @@ describe(__filename, function () {
     describe("", function() {
        it("beethoven adds arabic and persian and removes french and english", async function () {
            let data = {
-               user_id: b_id,
+               user_id: parseInt(b_id),
                api_token: "inout",
-               add_languages: ["ar", "per"],
+               add_languages: ["ar", "fa"],
                remove_languages: ["en"],
            }
            await axios.post(domain+"/api/update_languages", data)
@@ -79,10 +78,10 @@ describe(__filename, function () {
     describe("", function () {
        it("beethoven removes polish", async function () {
            let data = {
-               user_id: b_id,
+               user_id: parseInt(b_id),
                api_token: "inout",
                add_languages: [],
-               remove_languages: ["pol"],
+               remove_languages: ["pl"],
            }
            await axios.post(domain+"/api/update_languages", data)
                .then(function (res){
@@ -98,10 +97,10 @@ describe(__filename, function () {
     describe("", function () {
         it("beethoven removes arabic and persian", async function () {
             let data = {
-                user_id: b_id,
+                user_id: parseInt(b_id),
                 api_token: "inout",
                 add_languages: [],
-                remove_languages: ["ar", "per"],
+                remove_languages: ["ar", "fa"],
             }
             await axios.post(domain+"/api/update_languages", data)
                 .then(function (res){
