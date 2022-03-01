@@ -25,13 +25,12 @@ router.get("/api", async (req, res) => {
 router.post("/api/signup", async (req, res, next) => {
     let user = req.body;
     console.log("------/api/signup------");
-    console.log("signup:", req.body);
     if (user.username !== undefined && user.email !== undefined && user.password !== undefined) {
         let username = user.username;
         let email = user.email;
         let password = user.password.toString();
         let notification_token = user.notification_token;
-        console.log(`register: ${username + " " + password}`);
+        console.log(`register: ${username}`);
 
         // Check the db if username exists
         if (accountUtils.usernameExists(username)) {
@@ -107,7 +106,7 @@ router.post("/api/auth", async (req, res, next) => {
         let email = user.email;
         let password = user.password.toString();
         let notification_token = user.notification_token;
-        console.log(`login: ${email + " " + password}`);
+        console.log(`login: ${email}`);
         let user_data = accountUtils.getRowByEmail(email);
         if (user_data === undefined) {
             console.log("Wrong email.");
