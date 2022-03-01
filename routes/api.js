@@ -15,6 +15,8 @@ const validators = new Validators();
 const isCorrectToken = require(path.join(__dirname, "..", "utils", "isCorrectToken.js"));
 const algorithmEntryPoint = require(path.join(__dirname, "..", "utils", "algorithmEntryPoint.js"));
 
+const iso_dict = require(path.join(__dirname, "..", "utils", "languages.js"));
+
 router.get("/api", async (req, res) => {
     res.send("api documentation");
 });
@@ -69,7 +71,7 @@ router.post("/api/signup", async (req, res, next) => {
                     next(err);
                 } else {
                     let api_token = crypto.randomBytes(17).toString('hex');
-                    let user_id = -1;
+                    let user_id = undefined;
                     if (notification_token) {
                         console.log("has notification token");
                         user_id = accountUtils.addUserWithNotificationToken(email, username, hash, api_token, notification_token).lastInsertRowid;
@@ -262,5 +264,71 @@ router.post("/api/unblock", function (req, res) {
     res.status(200);
     res.send("OK");
 });
+
+router.post("/api/update_languages", function (req, res) {
+    console.log("------/api/update_languages------");
+    let user_id = req.body.user_id;
+    let token = req.body.api_token;
+    let add_languages = req.body.add_languages;
+    let remove_languages = req.body.remove_languages;
+    if (user_id === undefined || token === undefined || add_languages === undefined || !("push" in add_languages) || remove_languages === undefined|| !("push" in remove_languages)) {
+        res.status(400);
+        console.log("Bad Request", req.body);
+        res.send("Bad Request");
+        return;
+    }
+    if (!isCorrectToken(token, user_id)) {
+        console.log("Wrong api token");
+        res.status(403);
+        return res.send("Wrong api token");
+    }
+
+    for (let i=0; i<add_languages.length; i++) {
+        if (!(add_languages[i] in iso_dict)) {
+            res.status(422);
+            res.send("Unrecognized iso code");
+            return;
+        }
+    }
+
+    for (let i=0; i<remove_languages.length; i++) {
+        if (!(remove_languages[i] in iso_dict)) {
+            res.status(422);
+            res.send("Unrecognized iso code");
+            return;
+        }
+    }
+
+    utilsInitializer.userLanguagesUtils().addLanguages(user_id, add_languages);
+    utilsInitializer.userLanguagesUtils().removeLanguages(user_id, remove_languages);
+    res.status(200);
+    res.send("OK");
+});
+
+router.post("/api/get_languages", function (req, res) {
+    console.log("------/api/get_languages------")
+    let user_id = req.body.user_id;
+    let api_token = req.body.api_token;
+
+    if (user_id === undefined || api_token === undefined) {
+        res.status(400);
+        console.log("Bad Request", req.body);
+        res.send("Bad Request");
+        return;
+    }
+
+    if (!isCorrectToken(api_token, user_id)) {
+        console.log("Wrong api token");
+        res.status(403);
+        return res.send("Wrong api token");
+    }
+
+    let languages = utilsInitializer.userLanguagesUtils().getUserLanguages(user_id);
+
+    console.log(user_id, ":", languages);
+
+    res.status(200);
+    return res.send(JSON.stringify(languages));
+})
 
 module.exports = router;
