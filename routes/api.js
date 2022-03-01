@@ -271,7 +271,7 @@ router.post("/api/update_languages", function (req, res) {
     let token = req.body.api_token;
     let add_languages = req.body.add_languages;
     let remove_languages = req.body.remove_languages;
-    if (user_id === undefined || token === undefined || add_languages === undefined || !("push" in add_languages) || remove_languages === undefined|| !("push" in remove_languages)) {
+    if (user_id === undefined || token === undefined || add_languages === undefined || remove_languages === undefined || !Array.isArray(add_languages) || !Array.isArray(remove_languages)) {
         res.status(400);
         console.log("Bad Request", req.body);
         res.send("Bad Request");
