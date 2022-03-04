@@ -252,5 +252,32 @@ describe(__filename, function () {
                 });
         });
     });
+
+    describe("", function () {
+        it("wake beethoven returns correct languages", async function () {
+            let data = {
+                user_id: parseInt(b_id),
+                api_token: "inout",
+            };
+            await axios.post(domain+"/api/wake", data)
+                .then(function (res) {
+                    assert.strictEqual(res.status, 200);
+                    assert.strictEqual(JSON.stringify(res.data.friends), '{}');
+                    assert.ok(res.data.refresh_token_expired);
+                    assert.ok(Array.isArray(res.data.languages));
+                    assert.ok(Array.isArray(res.data.languages));
+                    assert.strictEqual(res.data.languages.length, 1);
+                    assert.strictEqual(res.data.languages[0], "DE");
+                })
+                .catch(function (error) {
+                    if ("response" in error) {
+                        assert.fail(error.response.data);
+                    }
+                    else {
+                        assert.fail(error);
+                    }
+                })
+        });
+    })
 });
 
