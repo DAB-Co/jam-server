@@ -16,47 +16,6 @@ const type_weights = {
     "artist": 1
 }
 
-/**
- *
- * @param user_id
- * @param raw_preference
- */
-function add_preference(user_id, raw_preference) {
-    for (let i = 0; i < raw_preference.items.length; i++) {
-        const item = raw_preference.items[i];
-        const type = item.type;
-        const id = item.id;
-        const existing_data = userPreferencesUtils.getPreference(user_id, type, id);
-        let users_to_update = userPreferencesUtils.getCommonUserIds(type, id);
-        let weight_to_be_added = (i + 1)*type_weights[type];
-        if (existing_data === undefined) {
-            userPreferencesUtils.addPreference(user_id, type, id, weight_to_be_added);
-            for (let i = 0; i < users_to_update.length; i++) {
-                if (users_to_update[i] !== user_id) {
-                    let old_weight = userConnectionsUtils.getWeight(users_to_update[i], user_id);
-                    if (old_weight === undefined) {
-                        userConnectionsUtils.addConnection(users_to_update[i], user_id, weight_to_be_added);
-                    } else {
-                        userConnectionsUtils.updateConnection(users_to_update[i], user_id, old_weight+weight_to_be_added);
-                    }
-                }
-            }
-        } else if (existing_data.preference_weight !== i + 1) {
-            userPreferencesUtils.updatePreferenceWeight(user_id, type, id, weight_to_be_added);
-            if (users_to_update[i] !== user_id) {
-                let old_weight = userConnectionsUtils.getWeight(users_to_update[i], user_id);
-                if (old_weight === undefined) {
-                    userConnectionsUtils.addConnection(users_to_update[i], user_id, weight_to_be_added);
-                } else {
-                    old_weight -= existing_data.preference_weight;
-                    userConnectionsUtils.updateConnection(users_to_update[i], user_id, old_weight + weight_to_be_added);
-                }
-            }
-        }
-    }
-}
-
-
 class AlgorithmEntryPoint {
     constructor() {
         // user_id: access_token
@@ -118,6 +77,46 @@ class AlgorithmEntryPoint {
                 spotifyUtils.updateRefreshToken(user_id, '');
                 return false;
             })
+    }
+
+    /**
+     *
+     * @param user_id
+     * @param raw_preference
+     */
+    _add_preference(user_id, raw_preference) {
+        for (let i = 0; i < raw_preference.items.length; i++) {
+            const item = raw_preference.items[i];
+            const type = item.type;
+            const id = item.id;
+            const existing_data = userPreferencesUtils.getPreference(user_id, type, id);
+            let users_to_update = userPreferencesUtils.getCommonUserIds(type, id);
+            let weight_to_be_added = (i + 1)*type_weights[type];
+            if (existing_data === undefined) {
+                userPreferencesUtils.addPreference(user_id, type, id, weight_to_be_added);
+                for (let i = 0; i < users_to_update.length; i++) {
+                    if (users_to_update[i] !== user_id) {
+                        let old_weight = userConnectionsUtils.getWeight(users_to_update[i], user_id);
+                        if (old_weight === undefined) {
+                            userConnectionsUtils.addConnection(users_to_update[i], user_id, weight_to_be_added);
+                        } else {
+                            userConnectionsUtils.updateConnection(users_to_update[i], user_id, old_weight+weight_to_be_added);
+                        }
+                    }
+                }
+            } else if (existing_data.preference_weight !== i + 1) {
+                userPreferencesUtils.updatePreferenceWeight(user_id, type, id, weight_to_be_added);
+                if (users_to_update[i] !== user_id) {
+                    let old_weight = userConnectionsUtils.getWeight(users_to_update[i], user_id);
+                    if (old_weight === undefined) {
+                        userConnectionsUtils.addConnection(users_to_update[i], user_id, weight_to_be_added);
+                    } else {
+                        old_weight -= existing_data.preference_weight;
+                        userConnectionsUtils.updateConnection(users_to_update[i], user_id, old_weight + weight_to_be_added);
+                    }
+                }
+            }
+        }
     }
 
     async _get_tracks(user_id) {
@@ -183,8 +182,8 @@ class AlgorithmEntryPoint {
             }
             raw_tracks = await this._get_tracks(user_id);
         }
-        add_preference(user_id, raw_artists);
-        add_preference(user_id, raw_tracks);
+        this._add_preference(user_id, raw_artists);
+        this._add_preference(user_id, raw_tracks);
     }
 
     /**
