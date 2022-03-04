@@ -266,7 +266,7 @@ router.post("/api/unblock", function (req, res) {
     res.send("OK");
 });
 
-router.post("/api/update_languages", function (req, res) {
+router.post("/api/update_languages", function (req, res, next) {
     console.log("------/api/update_languages------");
     let user_id = req.body.user_id;
     let token = req.body.api_token;
@@ -300,7 +300,17 @@ router.post("/api/update_languages", function (req, res) {
         }
     }
 
-    utilsInitializer.userLanguagesUtils().addLanguages(user_id, add_languages);
+    try {
+        utilsInitializer.userLanguagesUtils().addLanguages(user_id, add_languages);
+    } catch (e) {
+        if (e.message === "this language for this user exists") {
+            res.status(422);
+            return res.send("Language already exists");
+        }
+        else {
+            return next(e);
+        }
+    }
     utilsInitializer.userLanguagesUtils().removeLanguages(user_id, remove_languages);
     res.status(200);
     res.send("OK");

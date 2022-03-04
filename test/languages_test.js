@@ -19,6 +19,26 @@ describe(__filename, function () {
     });
 
     describe("", function() {
+        it("beethoven adds language german and xy", async function () {
+            let data = {
+                user_id: parseInt(b_id),
+                api_token: "inout",
+                add_languages: ["de", "xy"],
+                remove_languages: [],
+            }
+
+            await axios.post(domain+"/api/update_languages", data)
+                .then(function (res){
+                    assert.fail(res.data);
+                })
+                .catch(function (err) {
+                    assert.strictEqual(err.response.status, 422);
+                    assert.strictEqual(err.response.data, "Unrecognized iso code")
+                });
+        });
+    });
+
+    describe("", function() {
         it("beethoven adds language german", async function () {
             let data = {
                 user_id: parseInt(b_id),
@@ -85,6 +105,25 @@ describe(__filename, function () {
                    }
                });
        });
+    });
+
+    describe("", function() {
+        it("beethoven adds languages french, english and polish again", async function () {
+            let data = {
+                user_id: parseInt(b_id),
+                api_token: "inout",
+                add_languages: ["fr", "en", "pl"],
+                remove_languages: [],
+            }
+            await axios.post(domain+"/api/update_languages", data)
+                .then(function (res){
+                    assert.fail(res.data);
+                })
+                .catch(function (err) {
+                    assert.strictEqual(err.response.status, 422);
+                    assert.strictEqual(err.response.data, "Language already exists");
+                });
+        });
     });
 
     describe("", function() {
