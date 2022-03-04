@@ -127,6 +127,25 @@ describe(__filename, function () {
     });
 
     describe("", function() {
+        it("beethoven fails to add languages french, turkish and arabic", async function () {
+            let data = {
+                user_id: parseInt(b_id),
+                api_token: "inout",
+                add_languages: ["fr", "tr", "ar"],
+                remove_languages: [],
+            }
+            await axios.post(domain+"/api/update_languages", data)
+                .then(function (res){
+                    assert.fail(res.data);
+                })
+                .catch(function (err) {
+                    assert.strictEqual(err.response.status, 422);
+                    assert.strictEqual(err.response.data, "Language already exists");
+                });
+        });
+    });
+
+    describe("", function() {
        it("beethoven adds arabic and persian and removes french and english", async function () {
            let data = {
                user_id: parseInt(b_id),
