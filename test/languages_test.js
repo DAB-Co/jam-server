@@ -265,7 +265,6 @@ describe(__filename, function () {
                     assert.strictEqual(JSON.stringify(res.data.friends), '{}');
                     assert.ok(res.data.refresh_token_expired);
                     assert.ok(Array.isArray(res.data.languages));
-                    assert.ok(Array.isArray(res.data.languages));
                     assert.strictEqual(res.data.languages.length, 1);
                     assert.strictEqual(res.data.languages[0], "DE");
                 })
