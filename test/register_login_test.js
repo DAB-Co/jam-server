@@ -61,10 +61,17 @@ describe(__filename, function() {
                     assert.strictEqual(res.status, 200);
                     assert.strictEqual(res.data.username, "test_user");
                     assert.strictEqual(res.data.user_id, users.test_user.user_id);
+                    assert.ok(Array.isArray(res.data.languages));
+                    assert.strictEqual(res.data.languages.length, 0);
                     users.test_user.api_token = res.data.api_token;
                 })
                 .catch(function (error) {
-                    assert.fail(error.response.data);
+                    if ("response" in error) {
+                        assert.fail(error.response.data);
+                    }
+                    else {
+                        assert.fail(error);
+                    }
                 });
         });
     });
@@ -139,4 +146,22 @@ describe(__filename, function() {
                 });
         });
     });
+
+    describe("", function () {
+        it("wake test_user", async function () {
+           let data = {
+               user_id: users.test_user.user_id,
+               api_token: users.test_user.api_token
+           };
+           await axios.post(domain+"/api/wake", data)
+               .then(function (res) {
+                   assert.strictEqual(res.status, 200);
+                   assert.ok(Array.isArray(res.data.friends));
+                   assert.strictEqual(res.data.friends.length, 0);
+                   assert.ok(res.data.refresh_token_expired);
+                   assert.ok(Array.isArray(res.data.languages));
+                   assert.strictEqual(res.data.languages.length, 0);
+               })
+        });
+    })
 });

@@ -25,7 +25,6 @@ describe(__filename, function () {
     let userFriendsUtils = undefined;
 
     before(async function () {
-        require(path.join(__dirname, "..", "overwrite_database.js"));
         await axios.post(domain + "/api/signup", users[1])
             .then(function (res) {
                 assert.strictEqual(res.status, 200);

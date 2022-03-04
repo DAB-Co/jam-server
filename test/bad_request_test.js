@@ -31,6 +31,8 @@ describe(__filename, function () {
                 });
         });
 
+        /*
+        TODO
         describe("signup bad request email suite", function () {
             it("request without email to signup");
 
@@ -62,6 +64,7 @@ describe(__filename, function () {
 
             it("request with length>37 password to signup");
         });
+         */
     });
 
     describe("suggestion bad request suite", function () {

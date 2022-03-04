@@ -127,7 +127,8 @@ router.post("/api/auth", async (req, res, next) => {
                     let info = {
                         "username": username,
                         "user_id": user_data.user_id,
-                        "api_token": api_token
+                        "api_token": api_token,
+                        "languages": utilsInitializer.userLanguagesUtils().getUserLanguages(user_data.user_id)
                     }
                     console.log("response:", info);
                     res.status(200);
@@ -189,6 +190,7 @@ router.post("/api/wake", function (req, res, next) {
     }
     let response = {
         friends: userFriendsUtils.getFriends(user_id),
+        languages: utilsInitializer.userLanguagesUtils().getUserLanguages(user_id),
         refresh_token_expired: algorithmEntryPoint.refreshTokenExpired(user_id)
     }
     console.log(response);
