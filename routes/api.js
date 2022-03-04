@@ -190,8 +190,8 @@ router.post("/api/wake", function (req, res, next) {
     }
     let response = {
         friends: userFriendsUtils.getFriends(user_id),
-        languages: utilsInitializer.userLanguagesUtils().getUserLanguages(user_id),
-        refresh_token_expired: algorithmEntryPoint.refreshTokenExpired(user_id)
+        //languages: utilsInitializer.userLanguagesUtils().getUserLanguages(user_id),
+        refresh_token_expired: algorithmEntryPoint.refreshTokenExpired(user_id),
     }
     console.log(response);
     res.status(200);

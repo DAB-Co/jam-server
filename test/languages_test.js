@@ -253,6 +253,7 @@ describe(__filename, function () {
         });
     });
 
+    /*
     describe("", function () {
         it("wake beethoven returns correct languages", async function () {
             let data = {
@@ -275,8 +276,9 @@ describe(__filename, function () {
                     else {
                         assert.fail(error);
                     }
-                })
+                });
         });
-    })
+    });
+     */
 });
 

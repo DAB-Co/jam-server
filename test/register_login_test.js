@@ -146,8 +146,8 @@ describe(__filename, function () {
                     assert.strictEqual(res.status, 200);
                     assert.strictEqual(JSON.stringify(res.data.friends), '{}');
                     assert.ok(res.data.refresh_token_expired);
-                    assert.ok(Array.isArray(res.data.languages));
-                    assert.strictEqual(res.data.languages.length, 0);
+                    //assert.ok(Array.isArray(res.data.languages));
+                    //assert.strictEqual(res.data.languages.length, 0);
                 })
                 .catch(function (err) {
                     if ("response" in err) {
