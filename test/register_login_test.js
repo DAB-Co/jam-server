@@ -91,10 +91,11 @@ describe(__filename, function () {
             let data = {
                 user_id: users.test_user.user_id, api_token: users.test_user.api_token,
             }
-            await axios.post(domain + "/api/token_auth", data)
+            await axios.post(domain + "/api/wake", data)
                 .then(function (res) {
                     assert.strictEqual(res.status, 200);
-                    assert.strictEqual(res.data, "OK");
+                    assert.strictEqual(JSON.stringify(res.data.friends), '{}');
+                    assert.ok(res.data.refresh_token_expired);
                 })
                 .catch(function (error) {
                     assert.fail(error.response.data);
@@ -107,7 +108,7 @@ describe(__filename, function () {
             let data = {
                 user_id: users.test_user.user_id, api_token: "wrong api token",
             }
-            await axios.post(domain + "/api/token_auth", data)
+            await axios.post(domain + "/api/wake", data)
                 .then(function (res) {
                     assert.fail(res.data);
                 })
@@ -124,7 +125,7 @@ describe(__filename, function () {
             let data = {
                 user_id: users.test_user.user_id, api_token: ""
             };
-            await axios.post(domain + "/api/token_auth", data)
+            await axios.post(domain + "/api/wake", data)
                 .then(function (res) {
                     assert.fail(res.data);
                 })
@@ -136,26 +137,22 @@ describe(__filename, function () {
         });
     });
 
-    describe("", function () {
-        it("wake test_user", async function () {
+    /*
+    describe("", function() {
+        it("login test_user with api token",  async function() {
             let data = {
-                user_id: users.test_user.user_id, api_token: users.test_user.api_token
-            };
-            await axios.post(domain + "/api/wake", data)
+                user_id: users.test_user.user_id,
+                api_token: users.test_user.api_token,
+            }
+            await axios.post(domain+"/api/token_auth", data)
                 .then(function (res) {
                     assert.strictEqual(res.status, 200);
-                    assert.strictEqual(JSON.stringify(res.data.friends), '{}');
-                    assert.ok(res.data.refresh_token_expired);
-                    //assert.ok(Array.isArray(res.data.languages));
-                    //assert.strictEqual(res.data.languages.length, 0);
+                    assert.strictEqual(res.data, "OK");
                 })
-                .catch(function (err) {
-                    if ("response" in err) {
-                        assert.fail(err.response.data);
-                    } else {
-                        assert.fail(err);
-                    }
+                .catch(function (error) {
+                    assert.fail(error.response.data);
                 });
         });
     });
+     */
 });

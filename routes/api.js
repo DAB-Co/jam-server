@@ -149,6 +149,7 @@ router.post("/api/auth", async (req, res, next) => {
     }
 });
 
+/*
 router.post("/api/token_auth", function (req, res, next) {
     console.log("------/api/token_auth------");
     if (req.body.user_id !== undefined && req.body.api_token !== undefined) {
@@ -170,6 +171,7 @@ router.post("/api/token_auth", function (req, res, next) {
         res.send("Bad Request");
     }
 });
+ */
 
 // api call when app is opened
 router.post("/api/wake", function (req, res, next) {
