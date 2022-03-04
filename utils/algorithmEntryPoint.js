@@ -58,18 +58,10 @@ function add_preference(user_id, raw_preference) {
 
 
 class AlgorithmEntryPoint {
-    /**
-     *
-     * @param auto_run
-     */
-    constructor(auto_run=true) {
+    constructor() {
         // user_id: access_token
         this.access_tokens = {};
         this.matches = {};
-        const day_length = 86400000;
-        if (auto_run) {
-            setInterval(this.run, day_length);
-        }
     }
 
     /**
