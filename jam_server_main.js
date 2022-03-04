@@ -1,8 +1,13 @@
-const express = require("express"); // framework for nodejs
-const path = require("path"); // useful for joining file paths
+const express = require("express");
+const path = require("path");
 const body_parser = require("body-parser");
 const fs = require("fs");
 require("dotenv").config({ path: path.join(__dirname, ".env.local") });
+const algorithmEntryPoint = require(path.join(__dirname, "utils", "algorithmEntryPoint.js"));
+
+const day_length = 86400000;
+setInterval(algorithmEntryPoint.run, day_length);
+
 // read command line arguments
 const argv = require("yargs")(process.argv.slice(1))
     .option("no_https", {
@@ -14,7 +19,7 @@ const argv = require("yargs")(process.argv.slice(1))
     .help().alias("help", "h")
     .parse();
 
-const app = express(); // create express app
+const app = express();
 
 // parse data, useful for post or put requests
 app.use(express.urlencoded({
@@ -23,12 +28,10 @@ app.use(express.urlencoded({
 app.use(body_parser.json());
 
 if (argv.no_https) {
-    // Start listening to http port
     const http_server = app.listen(process.env.http_port, () => {
         console.log(`Running on port ${http_server.address().port}`);
     });
 } else {
-    // Start listening to https port
     const https = require('https');
     const https_port = process.env.https_port;
     const credentials = {
@@ -40,8 +43,8 @@ if (argv.no_https) {
     });
 }
 
-// Let routes folder handle every get and post request
-const routes = require(path.join(__dirname, "routes", "index")); // look at index.js file in routes folder
+
+const routes = require(path.join(__dirname, "routes", "index"));
 app.get("*", routes);
 app.post("*", routes);
 
