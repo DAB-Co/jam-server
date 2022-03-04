@@ -156,7 +156,6 @@ describe(__filename, function() {
            await axios.post(domain+"/api/wake", data)
                .then(function (res) {
                    assert.strictEqual(res.status, 200);
-                   assert.ok(Array.isArray(res.data.friends));
                    assert.strictEqual(res.data.friends.length, 0);
                    assert.ok(res.data.refresh_token_expired);
                    assert.ok(Array.isArray(res.data.languages));
