@@ -3,6 +3,11 @@ const path = require("path"); // useful for joining file paths
 const body_parser = require("body-parser");
 const fs = require("fs");
 require("dotenv").config({ path: path.join(__dirname, ".env.local") });
+const algorithmEntryPoint = require(path.join(__dirname, "utils", "algorithmEntryPoint.js"));
+
+const day_length = 86400000;
+setInterval(this.run, algorithmEntryPoint.run);
+
 // read command line arguments
 const argv = require("yargs")(process.argv.slice(1))
     .option("no_https", {
