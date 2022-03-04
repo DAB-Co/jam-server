@@ -149,30 +149,6 @@ router.post("/api/auth", async (req, res, next) => {
     }
 });
 
-/*
-router.post("/api/token_auth", function (req, res, next) {
-    console.log("------/api/token_auth------");
-    if (req.body.user_id !== undefined && req.body.api_token !== undefined) {
-        let user_id = req.body.user_id;
-        let token = req.body.api_token;
-        console.log("token_auth:", req.body);
-        if (isCorrectToken(token, user_id)) {
-            console.log("OK");
-            res.status(200);
-            res.send("OK");
-        } else {
-            console.log("Wrong api token");
-            res.status(403);
-            res.send("Wrong api token");
-        }
-    } else {
-        res.status(400);
-        console.log("Bad Request:", req.body);
-        res.send("Bad Request");
-    }
-});
- */
-
 // api call when app is opened
 router.post("/api/wake", function (req, res, next) {
     console.log("------/api/wake------");

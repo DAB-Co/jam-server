@@ -136,23 +136,4 @@ describe(__filename, function () {
                 });
         });
     });
-
-    /*
-    describe("", function() {
-        it("login test_user with api token",  async function() {
-            let data = {
-                user_id: users.test_user.user_id,
-                api_token: users.test_user.api_token,
-            }
-            await axios.post(domain+"/api/token_auth", data)
-                .then(function (res) {
-                    assert.strictEqual(res.status, 200);
-                    assert.strictEqual(res.data, "OK");
-                })
-                .catch(function (error) {
-                    assert.fail(error.response.data);
-                });
-        });
-    });
-     */
 });
