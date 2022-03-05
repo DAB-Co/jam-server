@@ -127,7 +127,8 @@ router.post("/api/auth", async (req, res, next) => {
                     let info = {
                         "username": username,
                         "user_id": user_data.user_id,
-                        "api_token": api_token
+                        "api_token": api_token,
+                        "languages": utilsInitializer.userLanguagesUtils().getUserLanguages(user_data.user_id)
                     }
                     console.log("response:", info);
                     res.status(200);
@@ -141,28 +142,6 @@ router.post("/api/auth", async (req, res, next) => {
                 next(e);
             }
         });
-    } else {
-        res.status(400);
-        console.log("Bad Request:", req.body);
-        res.send("Bad Request");
-    }
-});
-
-router.post("/api/token_auth", function (req, res, next) {
-    console.log("------/api/token_auth------");
-    if (req.body.user_id !== undefined && req.body.api_token !== undefined) {
-        let user_id = req.body.user_id;
-        let token = req.body.api_token;
-        console.log("token_auth:", req.body);
-        if (isCorrectToken(token, user_id)) {
-            console.log("OK");
-            res.status(200);
-            res.send("OK");
-        } else {
-            console.log("Wrong api token");
-            res.status(403);
-            res.send("Wrong api token");
-        }
     } else {
         res.status(400);
         console.log("Bad Request:", req.body);
@@ -189,7 +168,8 @@ router.post("/api/wake", function (req, res, next) {
     }
     let response = {
         friends: userFriendsUtils.getFriends(user_id),
-        refresh_token_expired: algorithmEntryPoint.refreshTokenExpired(user_id)
+        //languages: utilsInitializer.userLanguagesUtils().getUserLanguages(user_id),
+        refresh_token_expired: algorithmEntryPoint.refreshTokenExpired(user_id),
     }
     console.log(response);
     res.status(200);
@@ -264,7 +244,7 @@ router.post("/api/unblock", function (req, res) {
     res.send("OK");
 });
 
-router.post("/api/update_languages", function (req, res) {
+router.post("/api/update_languages", function (req, res, next) {
     console.log("------/api/update_languages------");
     let user_id = req.body.user_id;
     let token = req.body.api_token;
@@ -298,7 +278,17 @@ router.post("/api/update_languages", function (req, res) {
         }
     }
 
-    utilsInitializer.userLanguagesUtils().addLanguages(user_id, add_languages);
+    try {
+        utilsInitializer.userLanguagesUtils().addLanguages(user_id, add_languages);
+    } catch (e) {
+        if (e.message === "this language for this user exists") {
+            res.status(422);
+            return res.send("Language already exists");
+        }
+        else {
+            return next(e);
+        }
+    }
     utilsInitializer.userLanguagesUtils().removeLanguages(user_id, remove_languages);
     res.status(200);
     res.send("OK");
