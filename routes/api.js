@@ -318,6 +318,27 @@ router.post("/api/get_languages", function (req, res) {
 
     res.status(200);
     return res.send(JSON.stringify(languages));
-})
+});
+
+router.post("/api/top_preferences", function (req, res) {
+    console.log("------/api/top_preferences------");
+    const user_id = req.body.user_id;
+    const api_token  = req.body.api_token;
+    const req_user = req.body.req_user;
+
+    if (user_id === undefined || api_token === undefined || req_user === undefined) {
+        console.log("Wrong api token");
+        res.status(403);
+        return res.send("Wrong api token");
+    }
+
+    if (user_id === req_user) {
+
+    }
+    else {
+
+    }
+
+});
 
 module.exports = router;
