@@ -88,12 +88,12 @@ class AlgorithmEntryPoint {
         for (let i = 0; i < raw_preference.items.length; i++) {
             const item = raw_preference.items[i];
             const type = item.type;
-            const id = item.id;
+            const id = item.uri;
             const existing_data = userPreferencesUtils.getPreference(user_id, id);
             let users_to_update = userPreferencesUtils.getCommonUserIds(id);
             let weight_to_be_added = (i + 1)*type_weights[type];
             if (existing_data === undefined) {
-                userPreferencesUtils.addPreference(user_id, type, id, weight_to_be_added);
+                userPreferencesUtils.addPreference(user_id, id, weight_to_be_added);
                 for (let i = 0; i < users_to_update.length; i++) {
                     if (users_to_update[i] !== user_id) {
                         let old_weight = userConnectionsUtils.getWeight(users_to_update[i], user_id);
