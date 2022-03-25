@@ -332,13 +332,22 @@ router.post("/api/top_preferences", function (req, res) {
         return res.send("Wrong api token");
     }
 
-    if (user_id === req_user) {
+    let response = {
+        user_data: [],
+        req_user_data: []
+    };
 
+
+    let user_preference_ids = utilsInitializer.userPreferencesUtils().getUserPreferences(user_id);
+    response.user_data = utilsInitializer.spotifyPreferencesUtils().get_preferences(user_preference_ids);
+
+    if (user_id !== req_user) {
+        let req_user_pref_ids = utilsInitializer.userPreferencesUtils().getUserPreferences(req_user);
+        response.req_user_data = utilsInitializer.spotifyPreferencesUtils().get_preferences(req_user_pref_ids);
     }
-    else {
 
-    }
-
+    res.status(200);
+    return res.send(JSON.stringify(response));
 });
 
 module.exports = router;
