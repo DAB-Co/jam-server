@@ -6,10 +6,12 @@ require("dotenv").config({path: path.join(__dirname, "..", ".env.local")});
 const client_id = process.env.client_id;
 const client_secret = process.env.client_secret;
 
-const spotifyUtils = require(path.join(__dirname, "initializeUtils.js")).spotifyUtils();
-const userPreferencesUtils = require(path.join(__dirname, "initializeUtils.js")).userPreferencesUtils();
-const userConnectionsUtils = require(path.join(__dirname, "initializeUtils.js")).userConnectionsUtils();
-const userFriendsUtils = require(path.join(__dirname, "initializeUtils.js")).userFriendsUtils();
+const utilsInitializer = require(path.join(__dirname, "initializeUtils.js"));
+const spotifyUtils = utilsInitializer.spotifyUtils();
+const userPreferencesUtils = utilsInitializer.userPreferencesUtils();
+const userConnectionsUtils = utilsInitializer.userConnectionsUtils();
+const userFriendsUtils = utilsInitializer.userFriendsUtils();
+const spotifyPreferencesUtils = utilsInitializer.spotifyPreferencesUtils();
 
 const type_weights = {
     "track": 2,
@@ -94,6 +96,7 @@ class AlgorithmEntryPoint {
             let weight_to_be_added = (i + 1)*type_weights[type];
             if (existing_data === undefined) {
                 userPreferencesUtils.addPreference(user_id, id, weight_to_be_added);
+                spotifyPreferencesUtils.update_preference(id, type, item.name, item.images);
                 for (let i = 0; i < users_to_update.length; i++) {
                     if (users_to_update[i] !== user_id) {
                         let old_weight = userConnectionsUtils.getWeight(users_to_update[i], user_id);
