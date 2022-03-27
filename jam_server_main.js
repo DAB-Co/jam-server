@@ -6,7 +6,11 @@ require("dotenv").config({ path: path.join(__dirname, ".env.local") });
 const algorithmEntryPoint = require(path.join(__dirname, "utils", "algorithmEntryPoint.js"));
 
 const day_length = 86400000;
-setInterval(algorithmEntryPoint.run, day_length);
+
+function run_algorithm() {
+    algorithmEntryPoint.run();
+}
+setInterval(run_algorithm, day_length);
 
 // read command line arguments
 const argv = require("yargs")(process.argv.slice(1))

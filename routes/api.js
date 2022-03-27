@@ -318,6 +318,41 @@ router.post("/api/get_languages", function (req, res) {
 
     res.status(200);
     return res.send(JSON.stringify(languages));
-})
+});
+
+router.post("/api/top_preferences", function (req, res) {
+    console.log("------/api/top_preferences------");
+    const user_id = req.body.user_id;
+    const api_token  = req.body.api_token;
+    const req_user = req.body.req_user;
+
+    if (user_id === undefined || api_token === undefined || req_user === undefined) {
+        console.log("Wrong api token");
+        res.status(403);
+        return res.send("Wrong api token");
+    }
+
+    let response = {
+        user_data: [],
+        req_user_data: []
+    };
+
+
+    let user_preference_ids = utilsInitializer.userPreferencesUtils().getUserPreferences(user_id);
+    response.user_data = utilsInitializer.spotifyPreferencesUtils().get_preferences(user_preference_ids);
+
+    if (user_id !== req_user) {
+        let friends = utilsInitializer.userFriendsUtils().getFriends(user_id);
+        if (!(req_user in friends)) {
+            res.status(403);
+            return res.send("req_user not in friends");
+        }
+        let req_user_pref_ids = utilsInitializer.userPreferencesUtils().getUserPreferences(req_user);
+        response.req_user_data = utilsInitializer.spotifyPreferencesUtils().get_preferences(req_user_pref_ids);
+    }
+
+    res.status(200);
+    return res.send(JSON.stringify(response));
+});
 
 module.exports = router;
