@@ -342,6 +342,11 @@ router.post("/api/top_preferences", function (req, res) {
     response.user_data = utilsInitializer.spotifyPreferencesUtils().get_preferences(user_preference_ids);
 
     if (user_id !== req_user) {
+        let friends = utilsInitializer.userFriendsUtils().getFriends(user_id);
+        if (!(req_user in friends)) {
+            res.status(403);
+            return res.send("req_user not in friends");
+        }
         let req_user_pref_ids = utilsInitializer.userPreferencesUtils().getUserPreferences(req_user);
         response.req_user_data = utilsInitializer.spotifyPreferencesUtils().get_preferences(req_user_pref_ids);
     }

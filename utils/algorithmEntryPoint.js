@@ -55,9 +55,14 @@ class AlgorithmEntryPoint {
      * @returns {Promise<boolean>}
      */
     async update_access_token(user_id) {
-        //console.log("update access token called for", user_id);
+        console.log("update access token called for", user_id);
+        const refresh_token = spotifyUtils.getRefreshToken(user_id);
+        if (refresh_token === undefined || refresh_token === '') {
+            console.log("no refresh token");
+            return false;
+        }
         const data = {
-            refresh_token: spotifyUtils.getRefreshToken(user_id),
+            refresh_token: refresh_token,
             grant_type: 'refresh_token'
         };
 
@@ -68,17 +73,30 @@ class AlgorithmEntryPoint {
             }
         };
 
+        let access_token = '';
+
         await axios.post('https://accounts.spotify.com/api/token', querystring.stringify(data), config)
             .then(function (response) {
-                //console.log(response.data);
-                this.access_tokens[user_id] = response.data.access_token;
-                return true;
+                console.log(response.data);
+                access_token = response.data.access_token;
             })
             .catch(function (err) {
-                //console.log(err.response.headers);
-                spotifyUtils.updateRefreshToken(user_id, '');
-                return false;
-            })
+                console.log("error:");
+                if (err.response === undefined) {
+                    console.log(err);
+                }
+                else {
+                    console.log(err.response);
+                }
+            });
+        if (access_token === '') {
+            this.access_tokens[user_id] = '';
+            return false;
+        }
+        else {
+            this.access_tokens[user_id] = access_token;
+            return true;
+        }
     }
 
     /**
@@ -91,12 +109,17 @@ class AlgorithmEntryPoint {
             const item = raw_preference.items[i];
             const type = item.type;
             const id = item.uri;
+            const name = item.name;
+            let images = [];
+            if (item.images !== undefined) {
+                images = item.images;
+            }
             const existing_data = userPreferencesUtils.getPreference(user_id, id);
             let users_to_update = userPreferencesUtils.getCommonUserIds(id);
             let weight_to_be_added = (i + 1)*type_weights[type];
             if (existing_data === undefined) {
                 userPreferencesUtils.addPreference(user_id, id, weight_to_be_added);
-                spotifyPreferencesUtils.update_preference(id, type, item.name, item.images);
+                spotifyPreferencesUtils.update_preference(id, type, name, images);
                 for (let i = 0; i < users_to_update.length; i++) {
                     if (users_to_update[i] !== user_id) {
                         let old_weight = userConnectionsUtils.getWeight(users_to_update[i], user_id);
@@ -109,13 +132,15 @@ class AlgorithmEntryPoint {
                 }
             } else if (existing_data.preference_weight !== i + 1) {
                 userPreferencesUtils.updatePreferenceWeight(user_id, id, weight_to_be_added);
-                if (users_to_update[i] !== user_id) {
-                    let old_weight = userConnectionsUtils.getWeight(users_to_update[i], user_id);
-                    if (old_weight === undefined) {
-                        userConnectionsUtils.addConnection(users_to_update[i], user_id, weight_to_be_added);
-                    } else {
-                        old_weight -= existing_data.preference_weight;
-                        userConnectionsUtils.updateConnection(users_to_update[i], user_id, old_weight + weight_to_be_added);
+                for (let i = 0; i < users_to_update.length; i++) {
+                    if (users_to_update[i] !== user_id) {
+                        let old_weight = userConnectionsUtils.getWeight(users_to_update[i], user_id);
+                        if (old_weight === undefined) {
+                            userConnectionsUtils.addConnection(users_to_update[i], user_id, weight_to_be_added);
+                        } else {
+                            old_weight -= existing_data.preference_weight;
+                            userConnectionsUtils.updateConnection(users_to_update[i], user_id, old_weight + weight_to_be_added);
+                        }
                     }
                 }
             }
@@ -123,43 +148,65 @@ class AlgorithmEntryPoint {
     }
 
     async _get_tracks(user_id) {
+        const token = this.access_tokens[user_id];
+        if (token === undefined || token === '') {
+            return undefined;
+        }
         const config = {
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + this.access_tokens[user_id],
+                'Authorization': 'Bearer ' + token,
                 "limit": 50,
             }
         };
 
+        let data = undefined;
+
         await axios.get('https://api.spotify.com/v1/me/top/tracks', config)
             .then(function (response) {
-                return JSON.stringify(response.data);
+                data = response.data;
             })
             .catch(function (error) {
                 //console.log(error.response.status, error.response.statusText);
                 //console.log(error.response.headers);
-                return undefined;
             });
+        if (data === undefined) {
+            return undefined;
+        }
+        else {
+            return data;
+        }
     }
 
     async _get_artists(user_id) {
+        const token = this.access_tokens[user_id];
+        if (token === undefined || token === '') {
+            return undefined;
+        }
         const config = {
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + this.access_tokens[user_id],
+                'Authorization': 'Bearer ' + token,
                 "limit": 50,
             }
         };
 
+        let data = undefined;
+
         await axios.get('https://api.spotify.com/v1/me/top/tracks', config)
             .then(function (response) {
-                return JSON.stringify(response.data);
+                data = response.data;
             })
             .catch(function (error) {
                 //console.log(error.response.status, error.response.statusText);
                 //console.log(error.response.headers);
-                return undefined;
             });
+        if (data === undefined) {
+            return undefined;
+        }
+        else {
+            return data;
+        }
     }
 
     /**
@@ -171,7 +218,7 @@ class AlgorithmEntryPoint {
     async updatePreferences(user_id) {
         let raw_artists = await this._get_artists(user_id);
         if (raw_artists === undefined) {
-            if (!await this.update_access_token(user_id)) {
+            if (!(await this.update_access_token(user_id))) {
                 spotifyUtils.updateRefreshToken(user_id, '');
                 return;
             }
@@ -179,7 +226,7 @@ class AlgorithmEntryPoint {
         }
         let raw_tracks = await this._get_tracks(user_id);
         if (raw_tracks === undefined) {
-            if (!await this.update_access_token(user_id)) {
+            if (!(await this.update_access_token(user_id))) {
                 spotifyUtils.updateRefreshToken(user_id, '');
                 return;
             }
