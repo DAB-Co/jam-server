@@ -251,7 +251,7 @@ class AlgorithmEntryPoint {
 
         for (let i=0; i<users.length; i++) {
             if (!(users[i] in this.matches)) {
-                let match = userConnectionsUtils.getMatch(users[i]);
+                let match = userConnectionsUtils.getNewMatch(users[i]);
                 this.matches[match] = users[i];
                 this.matches[users[i]] = match;
                 userFriendsUtils.addFriend(match, users[i]);
