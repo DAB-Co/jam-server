@@ -193,7 +193,7 @@ class AlgorithmEntryPoint {
 
         let data = undefined;
 
-        await axios.get('https://api.spotify.com/v1/me/top/tracks', config)
+        await axios.get('https://api.spotify.com/v1/me/top/artists', config)
             .then(function (response) {
                 data = response.data;
             })
