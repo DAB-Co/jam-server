@@ -5,7 +5,7 @@ const utilsInitializer = require(path.join(__dirname, "utils", "initializeUtils.
 const users = utilsInitializer.accountUtils().getAllPrimaryKeys();
 
 async function update_users() {
-	for (let i=0; i<users.lengh; i++){
+	for (let i=0; i<users.length; i++){
 		await algorithm.updatePreferences(users[i]);
 	}
 }
