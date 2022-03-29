@@ -327,6 +327,13 @@ router.post("/api/top_preferences", function (req, res) {
     const req_user = req.body.req_user;
 
     if (user_id === undefined || api_token === undefined || req_user === undefined) {
+        res.status(400);
+        console.log("Bad Request", req.body);
+        res.send("Bad Request");
+        return;
+    }
+
+    if (!isCorrectToken(api_token, user_id)) {
         console.log("Wrong api token");
         res.status(403);
         return res.send("Wrong api token");
