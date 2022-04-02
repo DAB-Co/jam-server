@@ -43,7 +43,7 @@ class AlgorithmEntryPoint {
      */
     refreshTokenExpired(user_id) {
         const token = spotifyUtils.getRefreshToken(user_id);
-        return token === ''; // if token is undefined, it technically is not expired?
+        return token === null || token === ''; // if token is undefined, it technically is not expired?
         // undefined means nonexistent user id is sent
     }
 
@@ -57,7 +57,7 @@ class AlgorithmEntryPoint {
     async update_access_token(user_id) {
         console.log("update access token called for", user_id);
         const refresh_token = spotifyUtils.getRefreshToken(user_id);
-        if (refresh_token === undefined || refresh_token === '') {
+        if (refresh_token === undefined || refresh_token === null || refresh_token === '') {
             console.log("no refresh token");
             return false;
         }
@@ -110,16 +110,12 @@ class AlgorithmEntryPoint {
             const type = item.type;
             const id = item.uri;
             const name = item.name;
-            let images = [];
-            if (item.images !== undefined) {
-                images = item.images;
-            }
             const existing_data = userPreferencesUtils.getPreference(user_id, id);
             let users_to_update = userPreferencesUtils.getCommonUserIds(id);
             let weight_to_be_added = (i + 1)*type_weights[type];
             if (existing_data === undefined) {
                 userPreferencesUtils.addPreference(user_id, id, weight_to_be_added);
-                spotifyPreferencesUtils.update_preference(id, type, name, images);
+                spotifyPreferencesUtils.update_preference(id, type, name, item);
                 for (let i = 0; i < users_to_update.length; i++) {
                     if (users_to_update[i] !== user_id) {
                         let old_weight = userConnectionsUtils.getWeight(users_to_update[i], user_id);
@@ -149,7 +145,7 @@ class AlgorithmEntryPoint {
 
     async _get_tracks(user_id) {
         const token = this.access_tokens[user_id];
-        if (token === undefined || token === '') {
+        if (token === undefined || token === null || token === '') {
             return undefined;
         }
         const config = {
@@ -180,7 +176,7 @@ class AlgorithmEntryPoint {
 
     async _get_artists(user_id) {
         const token = this.access_tokens[user_id];
-        if (token === undefined || token === '') {
+        if (token === undefined || token === null || token === '') {
             return undefined;
         }
         const config = {
@@ -219,7 +215,7 @@ class AlgorithmEntryPoint {
         let raw_artists = await this._get_artists(user_id);
         if (raw_artists === undefined) {
             if (!(await this.update_access_token(user_id))) {
-                spotifyUtils.updateRefreshToken(user_id, '');
+                spotifyUtils.updateRefreshToken(user_id, null);
                 return;
             }
             raw_artists = await this._get_artists(user_id);
@@ -227,7 +223,7 @@ class AlgorithmEntryPoint {
         let raw_tracks = await this._get_tracks(user_id);
         if (raw_tracks === undefined) {
             if (!(await this.update_access_token(user_id))) {
-                spotifyUtils.updateRefreshToken(user_id, '');
+                spotifyUtils.updateRefreshToken(user_id, null);
                 return;
             }
             raw_tracks = await this._get_tracks(user_id);

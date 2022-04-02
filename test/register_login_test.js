@@ -98,7 +98,12 @@ describe(__filename, function () {
                     assert.ok(res.data.refresh_token_expired);
                 })
                 .catch(function (error) {
-                    assert.fail(error.response.data);
+                    if (error.response === undefined) {
+                        assert.fail(error);
+                    }
+                    else {
+                        assert.fail(error.response.data);
+                    }
                 });
         });
     });
