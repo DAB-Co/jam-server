@@ -110,16 +110,12 @@ class AlgorithmEntryPoint {
             const type = item.type;
             const id = item.uri;
             const name = item.name;
-            let images = [];
-            if (item.images !== undefined) {
-                images = item.images;
-            }
             const existing_data = userPreferencesUtils.getPreference(user_id, id);
             let users_to_update = userPreferencesUtils.getCommonUserIds(id);
             let weight_to_be_added = (i + 1)*type_weights[type];
             if (existing_data === undefined) {
                 userPreferencesUtils.addPreference(user_id, id, weight_to_be_added);
-                spotifyPreferencesUtils.update_preference(id, type, name, images);
+                spotifyPreferencesUtils.update_preference(id, type, name, item);
                 for (let i = 0; i < users_to_update.length; i++) {
                     if (users_to_update[i] !== user_id) {
                         let old_weight = userConnectionsUtils.getWeight(users_to_update[i], user_id);
