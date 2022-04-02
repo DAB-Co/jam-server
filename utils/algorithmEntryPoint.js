@@ -43,7 +43,7 @@ class AlgorithmEntryPoint {
      */
     refreshTokenExpired(user_id) {
         const token = spotifyUtils.getRefreshToken(user_id);
-        return token === ''; // if token is undefined, it technically is not expired?
+        return token === null || token === ''; // if token is undefined, it technically is not expired?
         // undefined means nonexistent user id is sent
     }
 
