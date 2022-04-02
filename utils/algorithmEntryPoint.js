@@ -215,7 +215,7 @@ class AlgorithmEntryPoint {
         let raw_artists = await this._get_artists(user_id);
         if (raw_artists === undefined) {
             if (!(await this.update_access_token(user_id))) {
-                spotifyUtils.updateRefreshToken(user_id, '');
+                spotifyUtils.updateRefreshToken(user_id, null);
                 return;
             }
             raw_artists = await this._get_artists(user_id);
@@ -223,7 +223,7 @@ class AlgorithmEntryPoint {
         let raw_tracks = await this._get_tracks(user_id);
         if (raw_tracks === undefined) {
             if (!(await this.update_access_token(user_id))) {
-                spotifyUtils.updateRefreshToken(user_id, '');
+                spotifyUtils.updateRefreshToken(user_id, null);
                 return;
             }
             raw_tracks = await this._get_tracks(user_id);
