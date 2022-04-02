@@ -57,7 +57,7 @@ class AlgorithmEntryPoint {
     async update_access_token(user_id) {
         console.log("update access token called for", user_id);
         const refresh_token = spotifyUtils.getRefreshToken(user_id);
-        if (refresh_token === undefined || refresh_token === '') {
+        if (refresh_token === undefined || refresh_token === null || refresh_token === '') {
             console.log("no refresh token");
             return false;
         }
@@ -145,7 +145,7 @@ class AlgorithmEntryPoint {
 
     async _get_tracks(user_id) {
         const token = this.access_tokens[user_id];
-        if (token === undefined || token === '') {
+        if (token === undefined || token === null || token === '') {
             return undefined;
         }
         const config = {
@@ -176,7 +176,7 @@ class AlgorithmEntryPoint {
 
     async _get_artists(user_id) {
         const token = this.access_tokens[user_id];
-        if (token === undefined || token === '') {
+        if (token === undefined || token === null || token === '') {
             return undefined;
         }
         const config = {
