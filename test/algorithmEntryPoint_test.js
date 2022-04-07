@@ -1062,7 +1062,7 @@ describe(__filename, function () {
     before(function() {
         // create user data
         for (let i=0; i<3; i++) {
-            let id = utilsInitializer.accountUtils().addUser(`user${i}@email.com`, `user${i}`, "password", "api_token");
+            let id = utilsInitializer.accountUtils().addUser(`user${i}@email.com`, `user${i}`, "password", "api_token").lastInsertRowid;
             user_data[id] = [];
             // create users and tracks for user, order matters
         }
