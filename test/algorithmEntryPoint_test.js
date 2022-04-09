@@ -1,6 +1,9 @@
 const path = require("path");
 const algorithmEntryPoint = require(path.join(__dirname, "..", "utils", "algorithmEntryPoint.js"));
 const utilsInitializer = require(path.join(__dirname, "..", "utils", "initializeUtils.js"));
+require(path.join(__dirname, "..", "overwrite_database.js"));
+
+const assert = require("assert");
 
 // type, uri and name matter for the algorithm
 const raw_artist_template = {
@@ -276,6 +279,32 @@ const raw_track_template =  {
     "uri": "spotify:track:6iaQi9uPzHoXLMo5g490Bj"
 };
 
+/**
+ * Returns a random number between min (inclusive) and max (inclusive)
+ * https://futurestud.io/tutorials/generate-a-random-number-in-range-with-javascript-node-js
+ */
+function random(min, max) {
+    return Math.floor(
+        Math.random() * (max - min + 1) + min
+    )
+}
+
+function random_list(n) {
+    let l = [];
+    for (let i=0; i<n; i++) {
+        l.push(i);
+    }
+
+    for (let i=0; i<l.length; i++) {
+        let r = random(0, l.length-1);
+        let t = l[i];
+        l[i] = l[r];
+        l[r] = t;
+    }
+
+    return l;
+}
+
 
 function create_artist(name, uri) {
     let t = JSON.parse(JSON.stringify(raw_artist_template));
@@ -291,10 +320,40 @@ function create_track(name, uri) {
     return t;
 }
 
+function calculate_weight(u1, u2) {
+    // {top_artists: {items:[]}, top_tracks:{items:[]}}
+    let weight = 0;
+    for (let i=0; i<u1.top_tracks.items.length; i++) {
+        let curr_uri = u1.top_tracks.items[i].uri;
+        let curr_type = u1.top_tracks.items[i].type;
+        for (let j=0; j<u2.top_tracks.items.length; j++) {
+            if (curr_uri !== undefined && curr_uri === u2.top_tracks.items[j].uri) {
+                let curr_type2 = u2.top_tracks.items[j].type;
+                weight += ((i+1)*algorithmEntryPoint.type_weights[curr_type]) + ((j+1)*algorithmEntryPoint.type_weights[curr_type2]);
+                break;
+            }
+        }
+    }
+
+    for (let i=0; i<u1.top_artists.items.length; i++) {
+        let curr_uri = u1.top_artists.items[i].uri;
+        let curr_type = u1.top_artists.items[i].type;
+        for (let j=0; j<u2.top_artists.items.length; j++) {
+            if (curr_uri !== undefined && curr_uri === u2.top_artists.items[j].uri) {
+                let curr_type2 = u2.top_artists.items[j].type;
+                weight += ((i+1)*algorithmEntryPoint.type_weights[curr_type]) + ((j+1)*algorithmEntryPoint.type_weights[curr_type2]);
+                break;
+            }
+        }
+    }
+    return weight;
+}
+
 describe(__filename, function () {
     let user_data = {};
     let artists = [];
     let tracks = [];
+    this.timeout(10000);
     before(function() {
         // kullanici yarat
         // tercihler yarat
@@ -306,22 +365,22 @@ describe(__filename, function () {
         // kullanici yarat
         for (let i=0; i<user_count; i++) {
             let id = utilsInitializer.accountUtils().addUser(`user${i}@email.com`, `user${i}`, "password", "api_token").lastInsertRowid;
-            user_data[i] = {
-                "top_artists": [],
-                "top_tracks": []
+            user_data[id] = {
+                "top_artists": {"items":[]},
+                "top_tracks": {"items":[]}
             };
         }
 
         // artistler yarat
         for (let i=0; i<artist_count; i++) {
             let artist = create_artist(`artist${i}`, `artist_uri${i}`);
-            artists.push_back(artist);
+            artists.push(artist);
         }
 
         // trackler yarat
         for (let i=0; i<track_count; i++) {
-            let track = create_artist(`track${i}`, `track_uri${i}`);
-            tracks.push_back(track);
+            let track = create_track(`track${i}`, `track_uri${i}`);
+            tracks.push(track);
         }
 
         // user data bir sozluk
@@ -330,8 +389,40 @@ describe(__filename, function () {
         // ayni degereden iki tane olmasin
         // 3 artist 5 parca
         // bu yorumun altina yaz
+        for (let id in user_data) {
+            let artist_indexes = random_list(artists.length);
+            let track_indexes = random_list(tracks.length);
+
+            for (let i=0; i<3; i++) {
+                //user_data[id].top_artists.items.push(artists[artist_indexes[i]]);
+            }
+
+            for (let i=0; i<5; i++) {
+                user_data[id].top_tracks.items.push(tracks[track_indexes[i]]);
+            }
+        }
     });
 
     describe('', function () {
+        it("write raw_preferences to database", function() {
+            for (let id in user_data) {
+                //console.log(id);
+                algorithmEntryPoint._add_preference(id, user_data[id].top_tracks);
+                algorithmEntryPoint._add_preference(id, user_data[id].top_artists);
+            }
+        });
+    });
+
+    describe('', function() {
+       it("check if weights are correct", function() {
+           for (let id in user_data) {
+               for (let id2 in user_data) {
+                   if (id === id2) {
+                       continue;
+                   }
+                   assert.strictEqual(utilsInitializer.userConnectionsUtils().getWeight(id, id2), calculate_weight(user_data[id], user_data[id2]), `${id}---${id2}`);
+               }
+           }
+       });
     });
 });

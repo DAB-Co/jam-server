@@ -13,16 +13,15 @@ const userConnectionsUtils = utilsInitializer.userConnectionsUtils();
 const userFriendsUtils = utilsInitializer.userFriendsUtils();
 const spotifyPreferencesUtils = utilsInitializer.spotifyPreferencesUtils();
 
-const type_weights = {
-    "track": 2,
-    "artist": 1
-}
-
 class AlgorithmEntryPoint {
     constructor() {
         // user_id: access_token
         this.access_tokens = {};
         this.matches = {};
+        this.type_weights = {
+            "track": 2,
+            "artist": 1
+        };
     }
 
     /**
@@ -112,12 +111,13 @@ class AlgorithmEntryPoint {
             const name = item.name;
             const existing_data = userPreferencesUtils.getPreference(user_id, id);
             let users_to_update = userPreferencesUtils.getCommonUserIds(id);
-            let weight_to_be_added = (i + 1)*type_weights[type];
+            let weight_to_be_added = (i + 1)*this.type_weights[type];
             if (existing_data === undefined) {
                 userPreferencesUtils.addPreference(user_id, id, weight_to_be_added);
                 spotifyPreferencesUtils.update_preference(id, type, name, item);
                 for (let i = 0; i < users_to_update.length; i++) {
                     if (users_to_update[i] !== user_id) {
+                        console.log(id, user_id, users_to_update[i], weight_to_be_added);
                         let old_weight = userConnectionsUtils.getWeight(users_to_update[i], user_id);
                         if (old_weight === undefined) {
                             userConnectionsUtils.addConnection(users_to_update[i], user_id, weight_to_be_added);
