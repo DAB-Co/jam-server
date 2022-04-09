@@ -293,13 +293,43 @@ function create_track(name, uri) {
 
 describe(__filename, function () {
     let user_data = {};
+    let artists = [];
+    let tracks = [];
     before(function() {
-        // create user data
-        for (let i=0; i<3; i++) {
+        // kullanici yarat
+        // tercihler yarat
+        // kullanicilara rastgele tercihler ekle
+        const user_count = 10;
+        const artist_count = 5;
+        const track_count = 7;
+
+        // kullanici yarat
+        for (let i=0; i<user_count; i++) {
             let id = utilsInitializer.accountUtils().addUser(`user${i}@email.com`, `user${i}`, "password", "api_token").lastInsertRowid;
-            user_data[id] = [];
-            // create users and tracks for user, order matters
+            user_data[i] = {
+                "top_artists": [],
+                "top_tracks": []
+            };
         }
+
+        // artistler yarat
+        for (let i=0; i<artist_count; i++) {
+            let artist = create_artist(`artist${i}`, `artist_uri${i}`);
+            artists.push_back(artist);
+        }
+
+        // trackler yarat
+        for (let i=0; i<track_count; i++) {
+            let track = create_artist(`track${i}`, `track_uri${i}`);
+            tracks.push_back(track);
+        }
+
+        // user data bir sozluk
+        // int -> {satir 309}
+        // artist ve track listelerinde olan degerlerden rastgele secilmis degerler olsun
+        // ayni degereden iki tane olmasin
+        // 3 artist 5 parca
+        // bu yorumun altina yaz
     });
 
     describe('', function () {
