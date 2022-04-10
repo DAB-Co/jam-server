@@ -361,6 +361,7 @@ describe(__filename, function () {
     let user_data = {};
     let artists = [];
     let tracks = [];
+    this.timeout(5000);
     before(function() {
         // kullanici yarat
         // tercihler yarat
