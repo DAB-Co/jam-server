@@ -361,9 +361,9 @@ describe(__filename, function () {
     let user_data = {};
     let artists = [];
     let tracks = [];
-    const user_count = 1000;
-    const artist_count = 500;
-    const track_count = 700;
+    const user_count = 100;
+    const artist_count = 50;
+    const track_count = 70;
     this.timeout(Number.MAX_VALUE);
     before(function() {
         // kullanici yarat
@@ -417,32 +417,39 @@ describe(__filename, function () {
     describe('', function () {
         it("write raw_preferences to database", function() {
             console.time("write");
-            let user_ids = [];
             for (let id in user_data) {
                 console.log(`writing prefs progress %${(id/user_count)*100}`);
                 algorithmEntryPoint._add_preference(id, user_data[id].top_tracks);
                 algorithmEntryPoint._add_preference(id, user_data[id].top_artists);
-                user_ids.push(id);
             }
             console.timeEnd("write");
-            console.time("match");
-            algorithmEntryPoint._update_matches(user_ids);
-            console.timeEnd("match");
         });
     });
 
     describe('', function() {
+       it("match users", function() {
+           console.time("match");
+           algorithmEntryPoint._update_matches();
+           console.timeEnd("match");
+       });
+    });
+
+    describe('', function() {
         it("check if weights are correct", function() {
-            console.time("match");
+            console.time("check match");
             for (let id in user_data) {
                 for (let id2 in user_data) {
                     if (id === id2) {
                         continue;
                     }
-                    assert.strictEqual(utilsInitializer.userConnectionsUtils().getWeight(id, id2), calculate_weight(user_data[id], user_data[id2]), `${id}---${id2}`);
+                    let weight = utilsInitializer.userConnectionsUtils().getWeight(id, id2);
+                    if (weight === undefined) {
+                        weight = 0;
+                    }
+                    assert.strictEqual(weight, calculate_weight(user_data[id], user_data[id2]), `${id}---${id2}`);
                 }
             }
-            console.timeEnd("match");
+            console.timeEnd("check match");
         });
     });
 });

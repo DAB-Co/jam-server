@@ -413,15 +413,18 @@ describe(__filename, function () {
 
     describe('', function () {
         it("write raw_preferences to database", function() {
-            let user_ids = [];
             for (let id in user_data) {
                 //console.log(id);
                 algorithmEntryPoint._add_preference(id, user_data[id].top_tracks);
                 algorithmEntryPoint._add_preference(id, user_data[id].top_artists);
-                user_ids.push(id);
             }
-            algorithmEntryPoint._update_matches(user_ids);
         });
+    });
+
+    describe('', function() {
+       it("match users", function() {
+           algorithmEntryPoint._update_matches();
+       });
     });
 
     describe('', function() {
@@ -431,7 +434,11 @@ describe(__filename, function () {
                    if (id === id2) {
                        continue;
                    }
-                   assert.strictEqual(utilsInitializer.userConnectionsUtils().getWeight(id, id2), calculate_weight(user_data[id], user_data[id2]), `${id}---${id2}`);
+                   let weight = utilsInitializer.userConnectionsUtils().getWeight(id, id2);
+                   if (weight === undefined) {
+                       weight = 0;
+                   }
+                   assert.strictEqual(weight, calculate_weight(user_data[id], user_data[id2]), `${id}---${id2}`);
                }
            }
        });

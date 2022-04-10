@@ -119,28 +119,32 @@ class AlgorithmEntryPoint {
         }
     }
 
-    _update_matches(user_ids) {
-        for (let i = 0; i < user_ids.length; i++) {
-            let preferences = userPreferencesUtils.getUserPreferences(user_ids[i]);
-            for (let j = i+1; j < user_ids.length; j++) {
-                let preferences2 = userPreferencesUtils.getUserPreferences(user_ids[j]);
-                for (let k = 0; k < preferences.length; k++) {
-                    for (let l = 0; l < preferences2.length; l++) {
-                        if (preferences[k].preference_identifier === preferences2[l].preference_identifier) {
-                            let current_weight = userConnectionsUtils.getWeight(user_ids[i], user_ids[j]);
-                            if (current_weight === undefined) {
-                                userConnectionsUtils.addConnection(
-                                    user_ids[i], user_ids[j],
-                                    preferences[k].preference_weight + preferences2[l].preference_weight);
-                            } else {
-                                let new_weight = current_weight
-                                    + preferences[k].preference_weight + preferences2[l].preference_weight;
-                                userConnectionsUtils.updateConnection(user_ids[i], user_ids[j], new_weight);
-                            }
-                        }
+    _update_matches() {
+        let all_preferences = userPreferencesUtils.getAllCommonPreferences();
+        let c = 0;
+        let len = Object.keys(all_preferences).length;
+        for (let preference_id in all_preferences) {
+            console.log(`update matches progress %${(c/len)*100}`);
+            let users = all_preferences[preference_id];
+            for (let i=0; i<users.length; i++) {
+                let u1 = users[i][0];
+                let u1w = parseInt(users[i][1]);
+                for (let j=i+1; j<users.length; j++) {
+                    if (i === j) {
+                        continue;
+                    }
+                    let u2 = users[j][0];
+                    let u2w = parseInt(users[j][1]);
+                    let old_weight = userConnectionsUtils.getWeight(u1, u2);
+                    if (old_weight === undefined) {
+                        userConnectionsUtils.addConnection(u1, u2, u1w+u2w);
+                    }
+                    else {
+                        userConnectionsUtils.updateConnection(u1, u2, old_weight+u1w+u2w);
                     }
                 }
             }
+            c++;
         }
     }
 
