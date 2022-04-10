@@ -46,15 +46,15 @@ describe(__filename, function () {
             });
         database = new Database(path.join(__dirname, "..", "sqlite", "database.db"));
         userFriendsUtils = new UserFriendsUtils(database);
-        userFriendsUtils.addFriend(1, 2);
+        userFriendsUtils.addFriend(users[1].user_id, users[2].user_id);
     });
 
     describe("", function () {
         it("1 blocks 2", async function () {
             let data = {
-                user_id: 1,
+                user_id: users[1].user_id,
                 api_token: users[1].api_token,
-                blocked: 2
+                blocked: users[2].user_id
             };
             await axios.post(domain + "/api/block", data)
                 .then(function (response) {
@@ -70,13 +70,13 @@ describe(__filename, function () {
     describe("", function () {
         it("1 gets friends and checks if 2 is blocked", async function () {
             let data = {
-                user_id: 1,
+                user_id: users[1].user_id,
                 api_token: users[1].api_token
             };
 
             await axios.post(domain + "/api/friends", data)
                 .then(function (response) {
-                    assert.ok(response.data[2].blocked);
+                    assert.ok(response.data[users[2].user_id].blocked);
                 })
                 .catch(function (error) {
                     assert.fail(error.response.data);
@@ -87,13 +87,13 @@ describe(__filename, function () {
     describe("", function () {
         it("2 gets friends and 1 is not blocked", async function () {
             let data = {
-                user_id: 2,
+                user_id: users[2].user_id,
                 api_token: users[2].api_token
             };
 
             await axios.post(domain + "/api/friends", data)
                 .then(function (response) {
-                    assert.ok(!response.data[1].blocked);
+                    assert.ok(!response.data[users[1].user_id].blocked);
                 })
                 .catch(function (error) {
                     assert.fail(error.response.data);
@@ -102,15 +102,15 @@ describe(__filename, function () {
     });
 
     describe("", function () {
-        it("1 blocks 3(non existent) and his friends don't change", async function () {
+        it("1 blocks 331(non existent) and his friends don't change", async function () {
             let bdata = {
-                user_id: 1,
+                user_id: users[1].user_id,
                 api_token: users[1].api_token,
-                blocked: 3
+                blocked: 331
             };
 
             let fdata = {
-                user_id: 1,
+                user_id: users[1].user_id,
                 api_token: users[1].api_token,
             }
 
@@ -149,13 +149,13 @@ describe(__filename, function () {
     describe("", function () {
        it("2 unblocks 1 but 2 is still blocked in 1", async function () {
            let ubdata = {
-               user_id: 2,
+               user_id: users[2].user_id,
                api_token: users[2].api_token,
-               unblocked: 1
+               unblocked: users[1].user_id
            };
 
            let f1data = {
-               user_id: 1,
+               user_id: users[1].user_id,
                api_token: users[1].api_token,
            };
 
@@ -171,7 +171,7 @@ describe(__filename, function () {
            await axios.post(domain+"/api/friends", f1data)
                .then(function (res) {
                    let data = res.data;
-                   assert.ok(data !== undefined && 2 in data && data[2]["blocked"]);
+                   assert.ok(data !== undefined && users[2].user_id in data && data[users[2].user_id]["blocked"]);
                })
                .catch(function (error) {
                    assert.fail(error.response.data);
@@ -183,13 +183,13 @@ describe(__filename, function () {
     describe("", function () {
         it("1 unblocks 2", async function () {
             let ubdata = {
-                user_id: 1,
+                user_id: users[1].user_id,
                 api_token: users[1].api_token,
-                unblocked: 2
+                unblocked: users[2].user_id
             };
 
             let f1data = {
-                user_id: 1,
+                user_id: users[1].user_id,
                 api_token: users[1].api_token,
             };
 
@@ -205,7 +205,7 @@ describe(__filename, function () {
             await axios.post(domain+"/api/friends", f1data)
                 .then(function (res) {
                     let data = res.data;
-                    assert.ok(data !== undefined && 2 in data && !data[2]["blocked"]);
+                    assert.ok(data !== undefined && users[2].user_id in data && !data[users[2].user_id]["blocked"]);
                 })
                 .catch(function (error) {
                     assert.fail(error.response.data);
@@ -214,15 +214,15 @@ describe(__filename, function () {
     });
 
     describe("", function () {
-        it("1 unblocking 3 changes nothing for 1(3 is nonexistent)", async function () {
+        it("1 unblocking 331 changes nothing for 1(3 is nonexistent)", async function () {
             let ubdata = {
-                user_id: 1,
+                user_id: users[1].user_id,
                 api_token: users[1].api_token,
-                unblocked: 3
+                unblocked: 331
             };
 
             let f1data = {
-                user_id: 1,
+                user_id: users[1].user_id,
                 api_token: users[1].api_token,
             };
 

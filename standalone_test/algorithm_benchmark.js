@@ -1,7 +1,7 @@
 const path = require("path");
 const algorithmEntryPoint = require(path.join(__dirname, "..", "utils", "algorithmEntryPoint.js"));
 const utilsInitializer = require(path.join(__dirname, "..", "utils", "initializeUtils.js"));
-//require(path.join(__dirname, "..", "overwrite_database.js"));
+require(path.join(__dirname, "..", "overwrite_database.js"));
 
 const assert = require("assert");
 
@@ -361,17 +361,18 @@ describe(__filename, function () {
     let user_data = {};
     let artists = [];
     let tracks = [];
-    this.timeout(5000);
+    const user_count = 1000;
+    const artist_count = 500;
+    const track_count = 700;
+    this.timeout(Number.MAX_VALUE);
     before(function() {
         // kullanici yarat
         // tercihler yarat
         // kullanicilara rastgele tercihler ekle
-        const user_count = 10;
-        const artist_count = 5;
-        const track_count = 7;
 
         // kullanici yarat
         for (let i=0; i<user_count; i++) {
+            console.log(`creating users progress %${(i/user_count)*100}`);
             let id = utilsInitializer.accountUtils().addUser(`user${i}@email.com`, `user${i}`, "password", "api_token").lastInsertRowid;
             user_data[id] = {
                 "top_artists": {"items":[]},
@@ -381,12 +382,14 @@ describe(__filename, function () {
 
         // artistler yarat
         for (let i=0; i<artist_count; i++) {
+            console.log(`creating artists progress %${(i/artist_count)*100}`);
             let artist = create_artist(`artist${i}`, `artist_uri${i}`);
             artists.push(artist);
         }
 
         // trackler yarat
         for (let i=0; i<track_count; i++) {
+            console.log(`creating artists progress %${(i/track_count)*100}`);
             let track = create_track(`track${i}`, `track_uri${i}`);
             tracks.push(track);
         }
@@ -413,27 +416,33 @@ describe(__filename, function () {
 
     describe('', function () {
         it("write raw_preferences to database", function() {
+            console.time("write");
             let user_ids = [];
             for (let id in user_data) {
-                //console.log(id);
+                console.log(`writing prefs progress %${(id/user_count)*100}`);
                 algorithmEntryPoint._add_preference(id, user_data[id].top_tracks);
                 algorithmEntryPoint._add_preference(id, user_data[id].top_artists);
                 user_ids.push(id);
             }
+            console.timeEnd("write");
+            console.time("match");
             algorithmEntryPoint._update_matches(user_ids);
+            console.timeEnd("match");
         });
     });
 
     describe('', function() {
-       it("check if weights are correct", function() {
-           for (let id in user_data) {
-               for (let id2 in user_data) {
-                   if (id === id2) {
-                       continue;
-                   }
-                   assert.strictEqual(utilsInitializer.userConnectionsUtils().getWeight(id, id2), calculate_weight(user_data[id], user_data[id2]), `${id}---${id2}`);
-               }
-           }
-       });
+        it("check if weights are correct", function() {
+            console.time("match");
+            for (let id in user_data) {
+                for (let id2 in user_data) {
+                    if (id === id2) {
+                        continue;
+                    }
+                    assert.strictEqual(utilsInitializer.userConnectionsUtils().getWeight(id, id2), calculate_weight(user_data[id], user_data[id2]), `${id}---${id2}`);
+                }
+            }
+            console.timeEnd("match");
+        });
     });
 });
