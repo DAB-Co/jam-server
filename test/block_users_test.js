@@ -46,7 +46,7 @@ describe(__filename, function () {
             });
         database = new Database(path.join(__dirname, "..", "sqlite", "database.db"));
         userFriendsUtils = new UserFriendsUtils(database);
-        userFriendsUtils.addFriend(1, 2);
+        userFriendsUtils.addFriend(users[1].user_id, users[2].user_id);
     });
 
     describe("", function () {
