@@ -323,25 +323,33 @@ function create_track(name, uri) {
 function calculate_weight(u1, u2) {
     // {top_artists: {items:[]}, top_tracks:{items:[]}}
     let weight = 0;
-    for (let i=0; i<u1.top_tracks.items.length; i++) {
+    let track_length1 = u1.top_tracks.items.length;
+    let track_length2 = u2.top_tracks.items.length;
+    for (let i=0; i<track_length1; i++) {
         let curr_uri = u1.top_tracks.items[i].uri;
         let curr_type = u1.top_tracks.items[i].type;
-        for (let j=0; j<u2.top_tracks.items.length; j++) {
+        for (let j=0; j<track_length2; j++) {
             if (curr_uri !== undefined && curr_uri === u2.top_tracks.items[j].uri) {
                 let curr_type2 = u2.top_tracks.items[j].type;
-                weight += ((i+1)*algorithmEntryPoint.type_weights[curr_type]) + ((j+1)*algorithmEntryPoint.type_weights[curr_type2]);
+                weight +=
+                    ((track_length1-i)*algorithmEntryPoint.type_weights[curr_type])
+                    + ((track_length2-j)*algorithmEntryPoint.type_weights[curr_type2]);
                 break;
             }
         }
     }
 
-    for (let i=0; i<u1.top_artists.items.length; i++) {
+    let artist_length1 = u1.top_artists.items.length;
+    let artist_length2 = u1.top_artists.items.length;
+    for (let i=0; i<artist_length1; i++) {
         let curr_uri = u1.top_artists.items[i].uri;
         let curr_type = u1.top_artists.items[i].type;
-        for (let j=0; j<u2.top_artists.items.length; j++) {
+        for (let j=0; j<artist_length2; j++) {
             if (curr_uri !== undefined && curr_uri === u2.top_artists.items[j].uri) {
                 let curr_type2 = u2.top_artists.items[j].type;
-                weight += ((i+1)*algorithmEntryPoint.type_weights[curr_type]) + ((j+1)*algorithmEntryPoint.type_weights[curr_type2]);
+                weight +=
+                    ((artist_length1-i)*algorithmEntryPoint.type_weights[curr_type])
+                    + ((artist_length2-j)*algorithmEntryPoint.type_weights[curr_type2]);
                 break;
             }
         }
@@ -394,7 +402,7 @@ describe(__filename, function () {
             let track_indexes = random_list(tracks.length);
 
             for (let i=0; i<3; i++) {
-                //user_data[id].top_artists.items.push(artists[artist_indexes[i]]);
+                user_data[id].top_artists.items.push(artists[artist_indexes[i]]);
             }
 
             for (let i=0; i<5; i++) {
@@ -405,11 +413,14 @@ describe(__filename, function () {
 
     describe('', function () {
         it("write raw_preferences to database", function() {
+            let user_ids = [];
             for (let id in user_data) {
                 //console.log(id);
                 algorithmEntryPoint._add_preference(id, user_data[id].top_tracks);
                 algorithmEntryPoint._add_preference(id, user_data[id].top_artists);
+                user_ids.push(id);
             }
+            algorithmEntryPoint._update_matches(user_ids);
         });
     });
 

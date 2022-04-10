@@ -83,16 +83,14 @@ class AlgorithmEntryPoint {
                 console.log("error:");
                 if (err.response === undefined) {
                     console.log(err);
-                }
-                else {
+                } else {
                     console.log(err.response);
                 }
             });
         if (access_token === '') {
             this.access_tokens[user_id] = '';
             return false;
-        }
-        else {
+        } else {
             this.access_tokens[user_id] = access_token;
             return true;
         }
@@ -104,38 +102,41 @@ class AlgorithmEntryPoint {
      * @param raw_preference
      */
     _add_preference(user_id, raw_preference) {
-        for (let i = 0; i < raw_preference.items.length; i++) {
+        let item_count = raw_preference.items.length;
+        for (let i = 0; i < item_count; i++) {
             const item = raw_preference.items[i];
             const type = item.type;
             const id = item.uri;
             const name = item.name;
             const existing_data = userPreferencesUtils.getPreference(user_id, id);
-            let users_to_update = userPreferencesUtils.getCommonUserIds(id);
-            let weight_to_be_added = (i + 1)*this.type_weights[type];
+            let weight_to_be_added = (item_count - i) * this.type_weights[type];
             if (existing_data === undefined) {
                 userPreferencesUtils.addPreference(user_id, id, weight_to_be_added);
                 spotifyPreferencesUtils.update_preference(id, type, name, item);
-                for (let i = 0; i < users_to_update.length; i++) {
-                    if (users_to_update[i] !== user_id) {
-                        console.log(id, user_id, users_to_update[i], weight_to_be_added);
-                        let old_weight = userConnectionsUtils.getWeight(users_to_update[i], user_id);
-                        if (old_weight === undefined) {
-                            userConnectionsUtils.addConnection(users_to_update[i], user_id, weight_to_be_added);
-                        } else {
-                            userConnectionsUtils.updateConnection(users_to_update[i], user_id, old_weight+weight_to_be_added);
-                        }
-                    }
-                }
-            } else if (existing_data.preference_weight !== i + 1) {
+            } else if (existing_data.preference_weight !== item_count - i) {
                 userPreferencesUtils.updatePreferenceWeight(user_id, id, weight_to_be_added);
-                for (let i = 0; i < users_to_update.length; i++) {
-                    if (users_to_update[i] !== user_id) {
-                        let old_weight = userConnectionsUtils.getWeight(users_to_update[i], user_id);
-                        if (old_weight === undefined) {
-                            userConnectionsUtils.addConnection(users_to_update[i], user_id, weight_to_be_added);
-                        } else {
-                            old_weight -= existing_data.preference_weight;
-                            userConnectionsUtils.updateConnection(users_to_update[i], user_id, old_weight + weight_to_be_added);
+            }
+        }
+    }
+
+    _update_matches(user_ids) {
+        for (let i = 0; i < user_ids.length; i++) {
+            let preferences = userPreferencesUtils.getUserPreferences(user_ids[i]);
+            for (let j = i+1; j < user_ids.length; j++) {
+                let preferences2 = userPreferencesUtils.getUserPreferences(user_ids[j]);
+                for (let k = 0; k < preferences.length; k++) {
+                    for (let l = 0; l < preferences2.length; l++) {
+                        if (preferences[k].preference_identifier === preferences2[l].preference_identifier) {
+                            let current_weight = userConnectionsUtils.getWeight(user_ids[i], user_ids[j]);
+                            if (current_weight === undefined) {
+                                userConnectionsUtils.addConnection(
+                                    user_ids[i], user_ids[j],
+                                    preferences[k].preference_weight + preferences2[l].preference_weight);
+                            } else {
+                                let new_weight = current_weight
+                                    + preferences[k].preference_weight + preferences2[l].preference_weight;
+                                userConnectionsUtils.updateConnection(user_ids[i], user_ids[j], new_weight);
+                            }
                         }
                     }
                 }
@@ -168,8 +169,7 @@ class AlgorithmEntryPoint {
             });
         if (data === undefined) {
             return undefined;
-        }
-        else {
+        } else {
             return data;
         }
     }
@@ -199,8 +199,7 @@ class AlgorithmEntryPoint {
             });
         if (data === undefined) {
             return undefined;
-        }
-        else {
+        } else {
             return data;
         }
     }
@@ -239,13 +238,13 @@ class AlgorithmEntryPoint {
     async run() {
         let users = spotifyUtils.getAllPrimaryKeys();
         this._finalize_matches();
-        for (let i=0; i<users.length; i++) {
+        for (let i = 0; i < users.length; i++) {
             await this.updatePreferences(users[i]);
         }
 
         this.matches = {};
 
-        for (let i=0; i<users.length; i++) {
+        for (let i = 0; i < users.length; i++) {
             if (!(users[i] in this.matches)) {
                 let match = userConnectionsUtils.getNewMatch(users[i]);
                 this.matches[match] = users[i];
@@ -262,7 +261,7 @@ class AlgorithmEntryPoint {
      */
     refresh_match_cache(users) {
         this.matches = {};
-        for (let i=0; i<users.length; i++) {
+        for (let i = 0; i < users.length; i++) {
             if (!(users[i] in this.matches)) {
                 let match = userConnectionsUtils.getMatch(users[i]);
                 this.matches[match] = users[i];
