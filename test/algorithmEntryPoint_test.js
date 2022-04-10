@@ -1,7 +1,7 @@
 const path = require("path");
 const algorithmEntryPoint = require(path.join(__dirname, "..", "utils", "algorithmEntryPoint.js"));
 const utilsInitializer = require(path.join(__dirname, "..", "utils", "initializeUtils.js"));
-require(path.join(__dirname, "..", "overwrite_database.js"));
+//require(path.join(__dirname, "..", "overwrite_database.js"));
 
 const assert = require("assert");
 
@@ -361,7 +361,6 @@ describe(__filename, function () {
     let user_data = {};
     let artists = [];
     let tracks = [];
-    this.timeout(10000);
     before(function() {
         // kullanici yarat
         // tercihler yarat
