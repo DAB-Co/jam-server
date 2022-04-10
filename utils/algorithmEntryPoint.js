@@ -242,6 +242,8 @@ class AlgorithmEntryPoint {
             await this.updatePreferences(users[i]);
         }
 
+        this._update_matches();
+
         this.matches = {};
 
         for (let i = 0; i < users.length; i++) {
