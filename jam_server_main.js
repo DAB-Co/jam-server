@@ -5,12 +5,28 @@ const fs = require("fs");
 require("dotenv").config({ path: path.join(__dirname, ".env.local") });
 const algorithmEntryPoint = require(path.join(__dirname, "utils", "algorithmEntryPoint.js"));
 
-const day_length = 86400000;
-
 function run_algorithm() {
     algorithmEntryPoint.run();
+    setNextMatch();
 }
-setInterval(run_algorithm, day_length);
+
+/**
+ * sets timeout for next next run of algorithm
+ */
+function setNextMatch() {
+    const day_length = 86400000;
+    const match_hour = 0; // midnight at Greenwich
+    let now = new Date();
+    let nextMatch = new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), match_hour);
+    let timeZoneOffsetInMilliSeconds = now.getTimezoneOffset() * 1000 * 60;
+    let milliSecondsUntilNextMatch = nextMatch - now - timeZoneOffsetInMilliSeconds;
+    if (milliSecondsUntilNextMatch < 0) {
+        milliSecondsUntilNextMatch += day_length; // it's after matching time, try tomorrow.
+    }
+    setTimeout(run_algorithm, milliSecondsUntilNextMatch);
+}
+
+setNextMatch();
 
 // read command line arguments
 const argv = require("yargs")(process.argv.slice(1))
