@@ -9,15 +9,13 @@ const client_secret = process.env.client_secret;
 const utilsInitializer = require(path.join(__dirname, "initializeUtils.js"));
 const spotifyUtils = utilsInitializer.spotifyUtils();
 const userPreferencesUtils = utilsInitializer.userPreferencesUtils();
-const userConnectionsUtils = utilsInitializer.userConnectionsUtils();
-const userFriendsUtils = utilsInitializer.userFriendsUtils();
 const spotifyPreferencesUtils = utilsInitializer.spotifyPreferencesUtils();
 
 class AlgorithmEntryPoint {
     constructor() {
         // user_id: access_token
         this.access_tokens = {};
-        this.matches = {};
+        this.graph = new Map();
         this.type_weights = {
             "track": 2,
             "artist": 1
@@ -120,31 +118,58 @@ class AlgorithmEntryPoint {
     }
 
     _update_matches() {
+        this.graph.clear();
         let all_preferences = userPreferencesUtils.getAllCommonPreferences();
-        let c = 0;
-        let len = Object.keys(all_preferences).length;
+        //let c = 0;
+        //let len = Object.keys(all_preferences).length;
         for (let preference_id in all_preferences) {
-            console.log(`update matches progress %${(c/len)*100}`);
+            //console.log(`update matches progress %${(c/len)*100}`);
             let users = all_preferences[preference_id];
             for (let i=0; i<users.length; i++) {
-                let u1 = users[i][0];
-                let u1w = parseInt(users[i][1]);
+                let id1 = users[i][0];
+                let weight1 = users[i][1];
+                if (!this.graph.has(id1)) {
+                    this.graph.set(id1, new Map());
+                    this.graph.get(id1).set("max_weight", [-1, Number.MIN_VALUE]);
+                }
                 for (let j=i+1; j<users.length; j++) {
-                    if (i === j) {
-                        continue;
+                    let id2 = users[j][0];
+                    let weight2 = users[j][1];
+                    if (!this.graph.has(id2)) {
+                        this.graph.set(id2, new Map());
+                        this.graph.get(id2).set("max_weight", [-1, Number.MIN_VALUE]);
                     }
-                    let u2 = users[j][0];
-                    let u2w = parseInt(users[j][1]);
-                    let old_weight = userConnectionsUtils.getWeight(u1, u2);
-                    if (old_weight === undefined) {
-                        userConnectionsUtils.addConnection(u1, u2, u1w+u2w);
+                    let existing_weight1 = 0;
+                    let existing_weight2 = 0;
+
+                    if (!this.graph.get(id2).has(id1)) {
+                        this.graph.get(id2).set(id1, 0);
                     }
                     else {
-                        userConnectionsUtils.updateConnection(u1, u2, old_weight+u1w+u2w);
+                        existing_weight2 = this.graph.get(id2).get(id1);
+                    }
+                    if (!this.graph.get(id1).has(id2)) {
+                        this.graph.get(id1).set(id2, 0);
+                    }
+                    else {
+                        existing_weight1 = this.graph.get(id1).get(id2);
+                    }
+                    let final_weight1 = weight1+weight2+existing_weight1;
+                    let final_weight2 = weight1+weight2+existing_weight2;
+
+                    this.graph.get(id1).set(id2, final_weight1);
+                    this.graph.get(id2).set(id1, final_weight2);
+
+                    if (final_weight1 > this.graph.get(id1).get("max_weight")[1]) {
+                        this.graph.get(id1).set("max_weight", [id2, final_weight1]);
+                    }
+
+                    if (final_weight2 > this.graph.get(id1).get("max_weight")[1]) {
+                        this.graph.get(id1).set("max_weight", [id1, final_weight2]);
                     }
                 }
             }
-            c++;
+            //c++;
         }
     }
 
@@ -241,52 +266,26 @@ class AlgorithmEntryPoint {
      */
     async run() {
         let users = spotifyUtils.getAllPrimaryKeys();
-        this._finalize_matches();
         for (let i = 0; i < users.length; i++) {
             await this.updatePreferences(users[i]);
         }
 
         this._update_matches();
-
-        this.matches = {};
-
-        for (let i = 0; i < users.length; i++) {
-            if (!(users[i] in this.matches)) {
-                let match = userConnectionsUtils.getNewMatch(users[i]);
-                this.matches[match] = users[i];
-                this.matches[users[i]] = match;
-                userFriendsUtils.addFriend(match, users[i]);
-            }
+        for (let [id, matches] of this.graph.entries()) {
+            utilsInitializer.userFriendsUtils().addFriend(id, matches.get("max_weight")[1]);
         }
     }
 
-    /**
-     *
-     * @param users
-     * @private
-     */
-    refresh_match_cache(users) {
-        this.matches = {};
-        for (let i = 0; i < users.length; i++) {
-            if (!(users[i] in this.matches)) {
-                let match = userConnectionsUtils.getMatch(users[i]);
-                this.matches[match] = users[i];
-                this.matches[users[i]] = match;
-            }
+    getWeight(id1, id2) {
+        let edges = this.graph.get(id1);
+        if (edges === undefined) {
+            return 0;
         }
+        return edges.get(id2);
     }
 
     getMatch(user_id) {
-        return this.matches[user_id];
-    }
-
-    _finalize_matches() {
-        let finalized = {};
-        for (let user_id in this.matches) {
-            if (!(user_id in finalized)) {
-                userConnectionsUtils.finalizeMatch(user_id, this.matches[user_id]);
-            }
-        }
+        return this.graph.get(user_id).get("max_weight")[1];
     }
 }
 

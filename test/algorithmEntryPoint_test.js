@@ -434,7 +434,9 @@ describe(__filename, function () {
                    if (id === id2) {
                        continue;
                    }
-                   let weight = utilsInitializer.userConnectionsUtils().getWeight(id, id2);
+                   let weight = algorithmEntryPoint.getWeight(id, id2);
+                   let weight2 = algorithmEntryPoint.getWeight(id2, id);
+                   assert.strictEqual(weight, weight2);
                    if (weight === undefined) {
                        weight = 0;
                    }

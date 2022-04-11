@@ -361,9 +361,9 @@ describe(__filename, function () {
     let user_data = {};
     let artists = [];
     let tracks = [];
-    const user_count = 100;
-    const artist_count = 50;
-    const track_count = 70;
+    const user_count = 100000;
+    const artist_count = 50000;
+    const track_count = 70000;
     this.timeout(Number.MAX_VALUE);
     before(function() {
         // kullanici yarat
@@ -389,7 +389,7 @@ describe(__filename, function () {
 
         // trackler yarat
         for (let i=0; i<track_count; i++) {
-            console.log(`creating artists progress %${(i/track_count)*100}`);
+            console.log(`creating tracks progress %${(i/track_count)*100}`);
             let track = create_track(`track${i}`, `track_uri${i}`);
             tracks.push(track);
         }
@@ -401,15 +401,26 @@ describe(__filename, function () {
         // 3 artist 5 parca
         // bu yorumun altina yaz
         for (let id in user_data) {
-            let artist_indexes = random_list(artists.length);
-            let track_indexes = random_list(tracks.length);
+            console.log(`randomizing preferences progress %${(i/track_count)*100}`);
+            let artist_indexes = new Set();
+            let track_indexes = new Set();
 
             for (let i=0; i<3; i++) {
-                user_data[id].top_artists.items.push(artists[artist_indexes[i]]);
+                let r = undefined;
+                do {
+                    r = random(0, artists.length-1)
+                } while (artist_indexes.has(r));
+                artist_indexes.add(r);
+                user_data[id].top_artists.items.push(artists[artist_indexes[r]]);
             }
 
             for (let i=0; i<5; i++) {
-                user_data[id].top_tracks.items.push(tracks[track_indexes[i]]);
+                let r = undefined;
+                do {
+                    r = random(0, tracks.length-1)
+                } while (track_indexes.has(r));
+                track_indexes.add(r);
+                user_data[id].top_tracks.items.push(tracks[track_indexes[r]]);
             }
         }
     });
@@ -442,7 +453,9 @@ describe(__filename, function () {
                     if (id === id2) {
                         continue;
                     }
-                    let weight = utilsInitializer.userConnectionsUtils().getWeight(id, id2);
+                    let weight = algorithmEntryPoint.getWeight(id, id2);
+                    let weight2 = algorithmEntryPoint.getWeight(id2, id);
+                    assert.strictEqual(weight, weight2);
                     if (weight === undefined) {
                         weight = 0;
                     }
