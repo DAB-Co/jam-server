@@ -14,7 +14,7 @@ const spotifyPreferencesUtils = utilsInitializer.spotifyPreferencesUtils();
 class AlgorithmEntryPoint {
     constructor() {
         // user_id: access_token
-        this.access_tokens = {};
+        this.access_tokens = new Map();
         this.graph = new Map();
         this.type_weights = {
             "track": 2,
