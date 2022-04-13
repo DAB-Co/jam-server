@@ -117,6 +117,11 @@ class AlgorithmEntryPoint {
         }
     }
 
+    /**
+     * calculate weights and draw a graph
+     *
+     * @private
+     */
     _update_matches() {
         this.graph.clear();
         let all_preferences = userPreferencesUtils.getAllCommonPreferences();
@@ -173,6 +178,13 @@ class AlgorithmEntryPoint {
         }
     }
 
+    /**
+     * get top track data from spotify api
+     *
+     * @param user_id
+     * @returns {Promise<undefined> | Promise<JSON>}
+     * @private
+     */
     async _get_tracks(user_id) {
         const token = this.access_tokens[user_id];
         if (token === undefined || token === null || token === '') {
@@ -203,6 +215,13 @@ class AlgorithmEntryPoint {
         }
     }
 
+    /**
+     * get top artist data from spotify api
+     *
+     * @param user_id
+     * @returns {Promise<undefined> | Promise<JSON>}
+     * @private
+     */
     async _get_artists(user_id) {
         const token = this.access_tokens[user_id];
         if (token === undefined || token === null || token === '') {
@@ -234,7 +253,7 @@ class AlgorithmEntryPoint {
     }
 
     /**
-     * get/update preferences and database
+     * get preferences from api and add them to database
      *
      * @param user_id
      * @returns {Promise<void>}
