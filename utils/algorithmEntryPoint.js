@@ -392,7 +392,7 @@ class AlgorithmEntryPoint {
             let max_weight = Number.MIN_VALUE;
             let match_id = -1;
             for (let [id2, weight] of this.graph.get(id).entries()){
-                if (this.matched.has(id) && !this.matched.get(id).has(id2) && weight > max_weight) {
+                if ((!this.matched.has(id) || !this.matched.get(id).has(id2)) && weight > max_weight) {
                     match_id = id2;
                     max_weight = weight;
                 }
