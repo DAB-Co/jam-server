@@ -362,9 +362,9 @@ describe(__filename, function () {
     let user_data = {};
     let artists = [];
     let tracks = [];
-    const user_count = 100;
-    const artist_count = 50;
-    const track_count = 70;
+    const user_count = 1000;
+    const artist_count = 500;
+    const track_count = 700;
     this.timeout(Number.MAX_VALUE);
     before(function() {
         // kullanici yarat
@@ -445,6 +445,7 @@ describe(__filename, function () {
            console.time("match");
            algorithmEntryPoint._apply_changes();
            console.timeEnd("match");
+           this.user_ids = utilsInitializer.accountUtils().getAllPrimaryKeys();
            algorithmEntryPoint._match_users();
        });
     });

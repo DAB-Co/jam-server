@@ -245,12 +245,19 @@ class AlgorithmEntryPoint {
         }
 
         let leftovers_leftovers = [];
+        let leftovers_found = new Set();
 
         for (let i=0; i<leftovers.length; i++) {
             let id1 = leftovers[i];
+            if (leftovers_found.has(id1)) {
+                continue;
+            }
             let found = false;
             for (let j=i+1; j<leftovers.length; j++) {
                 let id2 = leftovers[j];
+                if (leftovers_found.has(id2)) {
+                    continue;
+                }
                 if (this.matched.has(id1) && this.matched.get(id1).has(id2)) {
                     continue;
                 }
@@ -269,6 +276,9 @@ class AlgorithmEntryPoint {
                 }
 
                 this.matched.get(id2).add(id1);
+                leftovers_found.add(id1);
+                leftovers_found.add(id2);
+                break;
             }
 
             if (!found) {
