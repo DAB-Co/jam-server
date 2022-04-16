@@ -410,7 +410,7 @@ class AlgorithmEntryPoint {
         if (edges === undefined) {
             return 0;
         }
-        return edges.get(id2);
+        return edges.get(id2) === undefined ? 0 : edges.get(id2);
     }
 
     getMatch(user_id) {

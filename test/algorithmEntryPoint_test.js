@@ -437,9 +437,6 @@ describe(__filename, function () {
                    let weight = algorithmEntryPoint.getWeight(id, id2);
                    let weight2 = algorithmEntryPoint.getWeight(id2, id);
                    assert.strictEqual(weight, weight2);
-                   if (weight === undefined) {
-                       weight = 0;
-                   }
                    assert.strictEqual(weight, calculate_weight(user_data[id], user_data[id2]), `${id}---${id2}`);
                }
            }
