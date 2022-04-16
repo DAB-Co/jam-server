@@ -11,6 +11,16 @@ const spotifyUtils = utilsInitializer.spotifyUtils();
 const userPreferencesUtils = utilsInitializer.userPreferencesUtils();
 const spotifyPreferencesUtils = utilsInitializer.spotifyPreferencesUtils();
 
+/**
+ * Returns a random number between min (inclusive) and max (inclusive)
+ * https://futurestud.io/tutorials/generate-a-random-number-in-range-with-javascript-node-js
+ */
+function random(min, max) {
+    return Math.floor(
+        Math.random() * (max - min + 1) + min
+    )
+}
+
 class AlgorithmEntryPoint {
     constructor() {
         // user_id: access_token
@@ -18,6 +28,7 @@ class AlgorithmEntryPoint {
         this.graph = new Map();
         this.matched = new Map();
         this.prefs = userPreferencesUtils.getAllCommonPreferences();
+        this.user_ids = utilsInitializer.accountUtils().getAllPrimaryKeys();
         this.changes = [];
         this.type_weights = {
             "track": 2,
@@ -194,11 +205,12 @@ class AlgorithmEntryPoint {
 
     _match_users() {
         let matched_today = new Set();
+        let leftovers = [];
         for (let [id, weights] of this.graph.entries()) {
             if (matched_today.has(id)) {
                 continue;
             }
-            let max_weight = Number.MIN_VALUE;
+            let match_weight = Number.MIN_VALUE;
             let match_id = -1;
             for (let [id2, weight] of weights){
                 if (this.matched.has(id) && this.matched.get(id).has(id2)) {
@@ -207,12 +219,16 @@ class AlgorithmEntryPoint {
                 else if (matched_today.has(id2)) {
                     continue;
                 }
-                else if (weight > max_weight) {
+                else if (weight > match_weight) {
                     match_id = id2;
-                    max_weight = weight;
+                    match_weight = weight;
                 }
             }
-            console.log(id, match_id);
+            matched_today.add(id);
+            if (match_id === -1) {
+                leftovers.push(id);
+                continue;
+            }
             utilsInitializer.userFriendsUtils().addFriend(id, match_id);
             if (!this.matched.has(id)) {
                 this.matched.set(id, new Set());
@@ -225,8 +241,64 @@ class AlgorithmEntryPoint {
             }
 
             this.matched.get(match_id).add(id);
-            matched_today.add(id);
             matched_today.add(match_id);
+        }
+
+        let leftovers_leftovers = [];
+
+        for (let i=0; i<leftovers.length; i++) {
+            let id1 = leftovers[i];
+            let found = false;
+            for (let j=i+1; j<leftovers.length; j++) {
+                let id2 = leftovers[j];
+                if (this.matched.has(id1) && this.matched.get(id1).has(id2)) {
+                    continue;
+                }
+                else {
+                    found = true;
+                }
+                utilsInitializer.userFriendsUtils().addFriend(id1, id2);
+                if (!this.matched.has(id1)) {
+                    this.matched.set(id1, new Set());
+                }
+
+                this.matched.get(id1).add(id2);
+
+                if (!this.matched.has(id2)) {
+                    this.matched.set(id2, new Set());
+                }
+
+                this.matched.get(id2).add(id1);
+            }
+
+            if (!found) {
+                leftovers_leftovers.push(id1);
+            }
+        }
+
+        for (let i=0; i<leftovers_leftovers.length; i++) {
+            let id = leftovers_leftovers[i];
+            if (!this.matched.has(id)) {
+                this.matched.set(id, new Set());
+            }
+            let id2 = undefined;
+            let selected = new Set();
+            do {
+                id2 = random(1, this.user_ids.length);
+                if (!this.matched.has(id2)) {
+                    this.matched.set(id2, new Set());
+                }
+                console.log(id2);
+            } while(this.matched.get(id2).has(id) && selected.size < this.user_ids.length);
+
+            if (selected.size === this.user_ids.length) {
+                continue;
+            }
+
+            utilsInitializer.userFriendsUtils().addFriend(id, id2);
+
+            this.matched.get(id).add(id2);
+            this.matched.get(id2).add(id);
         }
     }
 
@@ -420,9 +492,9 @@ class AlgorithmEntryPoint {
      * @returns {Promise<void>}
      */
     async run() {
-        let users = spotifyUtils.getAllPrimaryKeys();
-        for (let i = 0; i < users.length; i++) {
-            await this.updatePreferences(users[i]);
+        this.user_ids = spotifyUtils.getAllPrimaryKeys();
+        for (let i = 0; i < this.user_ids.length; i++) {
+            await this.updatePreferences(this.user_ids[i]);
         }
 
         this._apply_changes();
