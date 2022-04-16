@@ -389,19 +389,26 @@ class AlgorithmEntryPoint {
 
         this._apply_changes();
         for (let [id, matches] of this.graph.entries()) {
-            let id2 = matches.get("max_weight")[1];
-            utilsInitializer.userFriendsUtils().addFriend(id, id2);
+            let max_weight = Number.MIN_VALUE;
+            let match_id = -1;
+            for (let [id2, weight] of this.graph.get(id).entries()){
+                if (this.matched.has(id) && !this.matched.get(id).has(id2) && weight > max_weight) {
+                    match_id = id2;
+                    max_weight = weight;
+                }
+            }
+            utilsInitializer.userFriendsUtils().addFriend(id, match_id);
             if (!this.matched.has(id)) {
                 this.matched.set(id, new Set());
             }
 
-            this.matched.get(id).add(id2);
+            this.matched.get(id).add(match_id);
 
-            if (!this.matched.has(id2)) {
-                this.matched.set(id2, new Set());
+            if (!this.matched.has(match_id)) {
+                this.matched.set(match_id, new Set());
             }
 
-            this.matched.get(id2).add(id);
+            this.matched.get(match_id).add(id);
         }
     }
 
@@ -411,10 +418,6 @@ class AlgorithmEntryPoint {
             return 0;
         }
         return edges.get(id2) === undefined ? 0 : edges.get(id2);
-    }
-
-    getMatch(user_id) {
-        return this.graph.get(user_id).get("max_weight")[1];
     }
 }
 
