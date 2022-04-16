@@ -442,11 +442,13 @@ describe(__filename, function () {
 
     describe('', function() {
        it("match users", function() {
-           console.time("match");
+           console.time("apply");
            algorithmEntryPoint._apply_changes();
-           console.timeEnd("match");
+           console.timeEnd("apply");
            this.user_ids = utilsInitializer.accountUtils().getAllPrimaryKeys();
+           console.time("match");
            algorithmEntryPoint._match_users();
+           console.timeEnd("match");
        });
     });
 
@@ -479,10 +481,12 @@ describe(__filename, function () {
 
     describe('', function() {
        it("run algorithm again for day2", function() {
-           console.time("match");
+           console.time("apply");
            algorithmEntryPoint._apply_changes();
-           console.timeEnd("match");
+           console.timeEnd("apply");
+           console.time("match");
            algorithmEntryPoint._match_users();
+           console.timeEnd("match");
            console.time("check match");
            for (let id in user_data) {
                for (let id2 in user_data) {
