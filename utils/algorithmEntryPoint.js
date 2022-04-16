@@ -121,7 +121,7 @@ class AlgorithmEntryPoint {
             let weight_to_be_added = (item_count - i) * this.type_weights[type];
             if (!this.prefs.has(id) || !this.prefs.get(id).has(user_id) || weight_to_be_added !== this.prefs.get(id).get(user_id)) {
                 this.changes.push([id, user_id, weight_to_be_added]);
-                //this._write_pref_to_database(user_id, item, weight_to_be_added);
+                this._write_pref_to_database(user_id, item, weight_to_be_added);
             }
         }
     }
@@ -133,7 +133,7 @@ class AlgorithmEntryPoint {
      *
      * @private
      */
-    _create_matches() {
+    _create_graph() {
         this.graph.clear();
         let all_preferences = this.prefs;
         //let c = 0;
@@ -189,6 +189,44 @@ class AlgorithmEntryPoint {
                 }
             }
             //c++;
+        }
+    }
+
+    _match_users() {
+        let matched_today = new Set();
+        for (let [id, weights] of this.graph.entries()) {
+            if (matched_today.has(id)) {
+                continue;
+            }
+            let max_weight = Number.MIN_VALUE;
+            let match_id = -1;
+            for (let [id2, weight] of weights){
+                if (this.matched.has(id) && this.matched.get(id).has(id2)) {
+                    continue;
+                }
+                else if (matched_today.has(id2)) {
+                    continue;
+                }
+                else if (weight > max_weight) {
+                    match_id = id2;
+                    max_weight = weight;
+                }
+            }
+            console.log(id, match_id);
+            utilsInitializer.userFriendsUtils().addFriend(id, match_id);
+            if (!this.matched.has(id)) {
+                this.matched.set(id, new Set());
+            }
+
+            this.matched.get(id).add(match_id);
+
+            if (!this.matched.has(match_id)) {
+                this.matched.set(match_id, new Set());
+            }
+
+            this.matched.get(match_id).add(id);
+            matched_today.add(id);
+            matched_today.add(match_id);
         }
     }
 
@@ -388,28 +426,7 @@ class AlgorithmEntryPoint {
         }
 
         this._apply_changes();
-        for (let [id, matches] of this.graph.entries()) {
-            let max_weight = Number.MIN_VALUE;
-            let match_id = -1;
-            for (let [id2, weight] of this.graph.get(id).entries()){
-                if ((!this.matched.has(id) || !this.matched.get(id).has(id2)) && weight > max_weight) {
-                    match_id = id2;
-                    max_weight = weight;
-                }
-            }
-            utilsInitializer.userFriendsUtils().addFriend(id, match_id);
-            if (!this.matched.has(id)) {
-                this.matched.set(id, new Set());
-            }
-
-            this.matched.get(id).add(match_id);
-
-            if (!this.matched.has(match_id)) {
-                this.matched.set(match_id, new Set());
-            }
-
-            this.matched.get(match_id).add(id);
-        }
+        this._match_users();
     }
 
     getWeight(id1, id2) {

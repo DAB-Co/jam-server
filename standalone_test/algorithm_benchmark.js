@@ -362,9 +362,9 @@ describe(__filename, function () {
     let user_data = {};
     let artists = [];
     let tracks = [];
-    const user_count = 1000;
-    const artist_count = 500;
-    const track_count = 700;
+    const user_count = 100;
+    const artist_count = 50;
+    const track_count = 70;
     this.timeout(Number.MAX_VALUE);
     before(function() {
         // kullanici yarat
@@ -445,6 +445,7 @@ describe(__filename, function () {
            console.time("match");
            algorithmEntryPoint._apply_changes();
            console.timeEnd("match");
+           algorithmEntryPoint._match_users();
        });
     });
 
@@ -467,5 +468,36 @@ describe(__filename, function () {
             }
             console.timeEnd("check match");
         });
+    });
+
+    describe('', function() {
+        it("check if matches are correct", function() {
+
+        });
+    });
+
+    describe('', function() {
+       it("run algorithm again for day2", function() {
+           console.time("match");
+           algorithmEntryPoint._apply_changes();
+           console.timeEnd("match");
+           algorithmEntryPoint._match_users();
+           console.time("check match");
+           for (let id in user_data) {
+               for (let id2 in user_data) {
+                   if (id === id2) {
+                       continue;
+                   }
+                   let weight = algorithmEntryPoint.getWeight(id, id2);
+                   let weight2 = algorithmEntryPoint.getWeight(id2, id);
+                   assert.strictEqual(weight, weight2);
+                   if (weight === undefined) {
+                       weight = 0;
+                   }
+                   assert.strictEqual(weight, calculate_weight(user_data[id], user_data[id2]), `${id}---${id2}`);
+               }
+           }
+           console.timeEnd("check match");
+       });
     });
 });
