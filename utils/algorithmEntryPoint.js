@@ -16,6 +16,9 @@ class AlgorithmEntryPoint {
         // user_id: access_token
         this.access_tokens = new Map();
         this.graph = new Map();
+        this.matched = new Map();
+        this.prefs = userPreferencesUtils.getAllCommonPreferences();
+        this.changes = [];
         this.type_weights = {
             "track": 2,
             "artist": 1
@@ -94,52 +97,63 @@ class AlgorithmEntryPoint {
         }
     }
 
+    async _write_pref_to_database(user_id, item, weight_to_be_added) {
+        const existing_data = userPreferencesUtils.getPreference(user_id, item.uri);
+        if (existing_data === undefined) {
+            userPreferencesUtils.addPreference(user_id, item.uri, weight_to_be_added);
+            spotifyPreferencesUtils.update_preference(item.uri, item.type, item.name, item);
+        } else if (existing_data.preference_weight !== weight_to_be_added) {
+            userPreferencesUtils.updatePreferenceWeight(user_id, item.uri, weight_to_be_added);
+        }
+    }
+
     /**
      *
      * @param user_id
      * @param raw_preference
      */
-    _add_preference(user_id, raw_preference) {
+    async _add_preference(user_id, raw_preference) {
         let item_count = raw_preference.items.length;
         for (let i = 0; i < item_count; i++) {
             const item = raw_preference.items[i];
             const type = item.type;
             const id = item.uri;
-            const name = item.name;
-            const existing_data = userPreferencesUtils.getPreference(user_id, id);
             let weight_to_be_added = (item_count - i) * this.type_weights[type];
-            if (existing_data === undefined) {
-                userPreferencesUtils.addPreference(user_id, id, weight_to_be_added);
-                spotifyPreferencesUtils.update_preference(id, type, name, item);
-            } else if (existing_data.preference_weight !== item_count - i) {
-                userPreferencesUtils.updatePreferenceWeight(user_id, id, weight_to_be_added);
+            if (!this.prefs.has(id) || !this.prefs.get(id).has(user_id) || weight_to_be_added !== this.prefs.get(id).get(user_id)) {
+                this.changes.push([id, user_id, weight_to_be_added]);
+                //this._write_pref_to_database(user_id, item, weight_to_be_added);
             }
         }
     }
 
     /**
      * calculate weights and draw a graph
+     * overwrites the existing graph, creating it from scratch
+     * this is deprecated
      *
      * @private
      */
-    _update_matches() {
+    _create_matches() {
         this.graph.clear();
-        let all_preferences = userPreferencesUtils.getAllCommonPreferences();
+        let all_preferences = this.prefs;
         //let c = 0;
         //let len = Object.keys(all_preferences).length;
         for (let preference_id in all_preferences) {
             //console.log(`update matches progress %${(c/len)*100}`);
-            let users = all_preferences[preference_id];
+            let users = Object.keys(all_preferences[preference_id]);
             for (let i=0; i<users.length; i++) {
-                let id1 = users[i][0];
-                let weight1 = users[i][1];
+                let id1 = users[i];
+                let weight1 = all_preferences[preference_id][id1];
                 if (!this.graph.has(id1)) {
                     this.graph.set(id1, new Map());
                     this.graph.get(id1).set("max_weight", [-1, Number.MIN_VALUE]);
                 }
                 for (let j=i+1; j<users.length; j++) {
-                    let id2 = users[j][0];
-                    let weight2 = users[j][1];
+                    let id2 = users[j];
+                    let weight2 = all_preferences[id2][preference_id];
+                    if (this.matched.has(id1) && this.matched.get(id1).has(id2)) {
+                        continue;
+                    }
                     if (!this.graph.has(id2)) {
                         this.graph.set(id2, new Map());
                         this.graph.get(id2).set("max_weight", [-1, Number.MIN_VALUE]);
@@ -175,6 +189,90 @@ class AlgorithmEntryPoint {
                 }
             }
             //c++;
+        }
+    }
+
+    /**
+     * updates the graph accordingly to the changes made
+     *
+     * @private
+     */
+    _apply_changes() {
+        for (let i=0; i<this.changes.length; i++) {
+            let item_id = this.changes[i][0];
+            let user_id = this.changes[i][1];
+            let weight = this.changes[i][2];
+
+            if (!this.prefs.has(item_id)) {
+                this.prefs.set(item_id, new Map());
+                this.prefs.get(item_id).set(user_id, weight);
+                continue;
+            }
+
+            let current_pref = this.prefs.get(item_id);
+
+            if (current_pref.has(user_id)) {
+                for (let [user_id2, weight2] of current_pref) {
+                    if (!this.graph.has(user_id2)) {
+                        this.graph.set(user_id2, new Map());
+                        this.graph.get(user_id2).set(user_id, 0);
+                    }
+                    else if (!this.graph.get(user_id2).has(user_id)) {
+                        this.graph.get(user_id2).set(user_id, 0);
+                    }
+
+                    if (!this.graph.has(user_id)) {
+                        this.graph.set(user_id, new Map());
+                        this.graph.get(user_id).set(user_id2, 0);
+                    }
+                    else if (!this.graph.get(user_id).has(user_id2)) {
+                        this.graph.get(user_id).set(user_id2, 0);
+                    }
+
+                    let old_weight2 = this.graph.get(user_id2).get(user_id);
+                    this.graph.get(user_id2).set(user_id, old_weight2);
+                    this.graph.get(user_id).set(user_id2, old_weight2);
+                }
+            }
+            current_pref.set(user_id, weight);
+        }
+        while (this.changes.length > 0) {
+            let item_id = this.changes[0][0];
+            let user_id = this.changes[0][1];
+            let weight = this.changes[0][2];
+
+            let current_pref = this.prefs.get(item_id);
+
+
+            for (let [user_id2, weight2] of current_pref) {
+                if (user_id === user_id2) {
+                    current_pref.set(user_id2, weight);
+                }
+                else {
+                    if (!this.graph.has(user_id2)) {
+                        this.graph.set(user_id2, new Map());
+                        this.graph.get(user_id2).set(user_id, 0);
+                    }
+                    else if (!this.graph.get(user_id2).has(user_id)) {
+                        this.graph.get(user_id2).set(user_id, 0);
+                    }
+
+                    if (!this.graph.has(user_id)) {
+                        this.graph.set(user_id, new Map());
+                        this.graph.get(user_id).set(user_id2, 0);
+                    }
+                    else if (!this.graph.get(user_id).has(user_id2)) {
+                        this.graph.get(user_id).set(user_id2, 0);
+                    }
+
+                    let old_weight2 = this.graph.get(user_id2).get(user_id);
+                    old_weight2 += weight;
+                    this.graph.get(user_id2).set(user_id, old_weight2);
+                    this.graph.get(user_id).set(user_id2, old_weight2);
+                }
+            }
+
+            this.changes.shift();
         }
     }
 
@@ -275,8 +373,8 @@ class AlgorithmEntryPoint {
             }
             raw_tracks = await this._get_tracks(user_id);
         }
-        this._add_preference(user_id, raw_artists);
-        this._add_preference(user_id, raw_tracks);
+        await this._add_preference(user_id, raw_artists);
+        await this._add_preference(user_id, raw_tracks);
     }
 
     /**
@@ -289,9 +387,21 @@ class AlgorithmEntryPoint {
             await this.updatePreferences(users[i]);
         }
 
-        this._update_matches();
+        this._apply_changes();
         for (let [id, matches] of this.graph.entries()) {
-            utilsInitializer.userFriendsUtils().addFriend(id, matches.get("max_weight")[1]);
+            let id2 = matches.get("max_weight")[1];
+            utilsInitializer.userFriendsUtils().addFriend(id, id2);
+            if (!this.matched.has(id)) {
+                this.matched.set(id, new Set());
+            }
+
+            this.matched.get(id).add(id2);
+
+            if (!this.matched.has(id2)) {
+                this.matched.set(id2, new Set());
+            }
+
+            this.matched.get(id2).add(id);
         }
     }
 

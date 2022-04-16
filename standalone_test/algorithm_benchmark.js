@@ -1,7 +1,8 @@
 const path = require("path");
+require(path.join(__dirname, "..", "overwrite_database.js"));
 const algorithmEntryPoint = require(path.join(__dirname, "..", "utils", "algorithmEntryPoint.js"));
 const utilsInitializer = require(path.join(__dirname, "..", "utils", "initializeUtils.js"));
-require(path.join(__dirname, "..", "overwrite_database.js"));
+
 
 const assert = require("assert");
 
@@ -428,12 +429,12 @@ describe(__filename, function () {
     });
 
     describe('', function () {
-        it("write raw_preferences to database", function() {
+        it("write raw_preferences to database", async function() {
             console.time("write");
             for (let id in user_data) {
                 console.log(`writing prefs progress %${(id/user_count)*100}`);
-                algorithmEntryPoint._add_preference(id, user_data[id].top_tracks);
-                algorithmEntryPoint._add_preference(id, user_data[id].top_artists);
+                await algorithmEntryPoint._add_preference(id, user_data[id].top_tracks);
+                await algorithmEntryPoint._add_preference(id, user_data[id].top_artists);
             }
             console.timeEnd("write");
         });
@@ -442,7 +443,7 @@ describe(__filename, function () {
     describe('', function() {
        it("match users", function() {
            console.time("match");
-           algorithmEntryPoint._update_matches();
+           algorithmEntryPoint._apply_changes();
            console.timeEnd("match");
        });
     });
