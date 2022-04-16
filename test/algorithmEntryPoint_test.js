@@ -423,7 +423,7 @@ describe(__filename, function () {
 
     describe('', function() {
        it("match users", function() {
-           algorithmEntryPoint._update_matches();
+           algorithmEntryPoint._apply_changes();
        });
     });
 
