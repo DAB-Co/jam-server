@@ -502,7 +502,7 @@ class AlgorithmEntryPoint {
      * @returns {Promise<void>}
      */
     async run() {
-        this.user_ids = spotifyUtils.getAllPrimaryKeys();
+        this.user_ids = utilsInitializer.accountUtils().getAllPrimaryKeys();
         for (let i = 0; i < this.user_ids.length; i++) {
             await this.updatePreferences(this.user_ids[i]);
         }
