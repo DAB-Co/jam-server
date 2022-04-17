@@ -271,7 +271,7 @@ class AlgorithmEntryPoint {
                 else {
                     found = true;
                 }
-                //utilsInitializer.userFriendsUtils().addFriend(id1, id2);
+                utilsInitializer.userFriendsUtils().addFriend(id1, id2);
                 if (!this.matched.has(id1)) {
                     this.matched.set(id1, new Set());
                 }
@@ -312,7 +312,7 @@ class AlgorithmEntryPoint {
                 continue;
             }
 
-            //utilsInitializer.userFriendsUtils().addFriend(id, id2);
+            utilsInitializer.userFriendsUtils().addFriend(id, id2);
 
             this.matched.get(id).add(id2);
             this.matched.get(id2).add(id);
