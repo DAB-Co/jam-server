@@ -26,7 +26,8 @@ class AlgorithmEntryPoint {
         // user_id: access_token
         this.graph = new Map();
         this.matched = new Map();
-        this.prefs = new Map();
+        //this.prefs = new Map();
+        this.prefs = utilsInitializer.userPreferencesUtils().getAllCommonPreferences();
         let snapshot = utilsInitializer.matchesSnapshotUtils().getLastSnapshot();
         if (snapshot !== undefined) {
             this.graph = snapshot.graph;
@@ -406,7 +407,7 @@ class AlgorithmEntryPoint {
         let dump_object = {
             graph: this.graph,
             matched: this.matched,
-            prefs: this.prefs,
+            //prefs: this.prefs,
         }
 
         utilsInitializer.matchesSnapshotUtils().insertSnapshot(dump_object);
