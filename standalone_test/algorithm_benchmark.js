@@ -474,9 +474,9 @@ describe(__filename, function () {
     });
 
     describe('', function () {
-       it("dump data", function() {
+       it("dump data", async function() {
            console.time("dump");
-           algorithmEntryPoint._dump_data();
+           await algorithmEntryPoint._dump_data();
            console.timeEnd("dump");
        })
     });
@@ -498,7 +498,7 @@ describe(__filename, function () {
     });
 
     describe('', function() {
-       it("run algorithm again for day2", function() {
+       it("run algorithm again for day2", async function() {
            console.time("apply");
            algorithmEntryPoint._apply_changes();
            console.timeEnd("apply");
@@ -506,7 +506,7 @@ describe(__filename, function () {
            algorithmEntryPoint._match_users();
            console.timeEnd("match");
            console.time("dump");
-           algorithmEntryPoint._dump_data();
+           await algorithmEntryPoint._dump_data();
            console.timeEnd("dump");
            console.time("check match");
            for (let id in user_data) {

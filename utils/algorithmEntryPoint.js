@@ -31,7 +31,7 @@ class AlgorithmEntryPoint {
         if (snapshot !== undefined) {
             this.graph = snapshot.graph;
             this.matched = snapshot.matched;
-            this.prefs = snapshot.prefs;
+            //this.prefs = snapshot.prefs;
         }
         this.access_tokens = new Map();
         this.user_ids = utilsInitializer.accountUtils().getAllPrimaryKeys();
@@ -138,6 +138,7 @@ class AlgorithmEntryPoint {
             let weight_to_be_added = (item_count - i) * this.type_weights[type];
             if (!this.prefs.has(id) || !this.prefs.get(id).has(user_id) || weight_to_be_added !== this.prefs.get(id).get(user_id)) {
                 this.changes.push([id, user_id, weight_to_be_added]);
+                this._write_pref_to_database(user_id, item, weight_to_be_added);
             }
         }
     }
@@ -401,7 +402,7 @@ class AlgorithmEntryPoint {
         }
     }
 
-    _dump_data() {
+    async _dump_data() {
         let dump_object = {
             graph: this.graph,
             matched: this.matched,
