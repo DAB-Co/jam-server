@@ -24,10 +24,16 @@ function random(min, max) {
 class AlgorithmEntryPoint {
     constructor() {
         // user_id: access_token
-        this.access_tokens = new Map();
         this.graph = new Map();
         this.matched = new Map();
-        this.prefs = userPreferencesUtils.getAllCommonPreferences();
+        this.prefs = new Map();
+        let snapshot = utilsInitializer.matchesSnapshotUtils().getLastSnapshot();
+        if (snapshot !== undefined) {
+            this.graph = snapshot.graph;
+            this.matched = snapshot.matched;
+            this.prefs = snapshot.prefs;
+        }
+        this.access_tokens = new Map();
         this.user_ids = utilsInitializer.accountUtils().getAllPrimaryKeys();
         this.changes = [];
         this.type_weights = {
@@ -132,7 +138,6 @@ class AlgorithmEntryPoint {
             let weight_to_be_added = (item_count - i) * this.type_weights[type];
             if (!this.prefs.has(id) || !this.prefs.get(id).has(user_id) || weight_to_be_added !== this.prefs.get(id).get(user_id)) {
                 this.changes.push([id, user_id, weight_to_be_added]);
-                this._write_pref_to_database(user_id, item, weight_to_be_added);
             }
         }
     }
@@ -229,7 +234,7 @@ class AlgorithmEntryPoint {
                 leftovers.push(id);
                 continue;
             }
-            utilsInitializer.userFriendsUtils().addFriend(id, match_id);
+            //utilsInitializer.userFriendsUtils().addFriend(id, match_id);
             if (!this.matched.has(id)) {
                 this.matched.set(id, new Set());
             }
@@ -264,7 +269,7 @@ class AlgorithmEntryPoint {
                 else {
                     found = true;
                 }
-                utilsInitializer.userFriendsUtils().addFriend(id1, id2);
+                //utilsInitializer.userFriendsUtils().addFriend(id1, id2);
                 if (!this.matched.has(id1)) {
                     this.matched.set(id1, new Set());
                 }
@@ -305,7 +310,7 @@ class AlgorithmEntryPoint {
                 continue;
             }
 
-            utilsInitializer.userFriendsUtils().addFriend(id, id2);
+            //utilsInitializer.userFriendsUtils().addFriend(id, id2);
 
             this.matched.get(id).add(id2);
             this.matched.get(id2).add(id);
@@ -394,6 +399,16 @@ class AlgorithmEntryPoint {
 
             this.changes.shift();
         }
+    }
+
+    _dump_data() {
+        let dump_object = {
+            graph: this.graph,
+            matched: this.matched,
+            prefs: this.prefs,
+        }
+
+        utilsInitializer.matchesSnapshotUtils().insertSnapshot(dump_object);
     }
 
     /**
@@ -509,6 +524,7 @@ class AlgorithmEntryPoint {
 
         this._apply_changes();
         this._match_users();
+        this._dump_data();
     }
 
     getWeight(id1, id2) {

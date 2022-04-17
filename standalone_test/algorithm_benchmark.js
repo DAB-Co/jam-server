@@ -473,9 +473,27 @@ describe(__filename, function () {
         });
     });
 
-    describe('', function() {
-        it("check if matches are correct", function() {
+    describe('', function () {
+       it("dump data", function() {
+           console.time("dump");
+           algorithmEntryPoint._dump_data();
+           console.timeEnd("dump");
+       })
+    });
 
+    describe('', function() {
+        it("check if match count is correct", function() {
+            let matches = algorithmEntryPoint.matched;
+            let leftover_count = 0;
+            for (let [id, match] of matches) {
+                if (match.size === 2) {
+                    leftover_count++;
+                }
+                else if (match.size !== 1) {
+                    assert.fail("wrong match count");
+                }
+            }
+            assert.ok(leftover_count < 2);
         });
     });
 
@@ -487,6 +505,9 @@ describe(__filename, function () {
            console.time("match");
            algorithmEntryPoint._match_users();
            console.timeEnd("match");
+           console.time("dump");
+           algorithmEntryPoint._dump_data();
+           console.timeEnd("dump");
            console.time("check match");
            for (let id in user_data) {
                for (let id2 in user_data) {
