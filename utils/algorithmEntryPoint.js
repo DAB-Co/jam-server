@@ -30,9 +30,16 @@ class AlgorithmEntryPoint {
         this.prefs = utilsInitializer.userPreferencesUtils().getAllCommonPreferences();
         let snapshot = utilsInitializer.matchesSnapshotUtils().getLastSnapshot();
         if (snapshot !== undefined) {
-            this.graph = snapshot.graph;
-            this.matched = snapshot.matched;
-            //this.prefs = snapshot.prefs;
+            let parsed_snapshot = JSON.parse(snapshot);
+            let array_graph = JSON.parse(parsed_snapshot.raw_graph);
+            let array_matched = JSON.parse(parsed_snapshot.raw_matched);
+            for (let i=0; i<array_graph.length; i++) {
+                this.graph.set(array_graph[i][0], new Map(array_graph[i][1]));
+            }
+
+            for (let i=0; i<array_matched.length; i++) {
+                this.matched.set(array_matched[i][0], new Set(array_matched[i][1]));
+            }
         }
         this.access_tokens = new Map();
         this.user_ids = utilsInitializer.accountUtils().getAllPrimaryKeys();
@@ -236,7 +243,7 @@ class AlgorithmEntryPoint {
                 leftovers.push(id);
                 continue;
             }
-            //utilsInitializer.userFriendsUtils().addFriend(id, match_id);
+            utilsInitializer.userFriendsUtils().addFriend(id, match_id);
             if (!this.matched.has(id)) {
                 this.matched.set(id, new Set());
             }
@@ -405,12 +412,11 @@ class AlgorithmEntryPoint {
 
     async _dump_data() {
         let dump_object = {
-            graph: this.graph,
-            matched: this.matched,
-            //prefs: this.prefs,
+            raw_graph: JSON.stringify(this.graph, (key, value) => (value instanceof Map || value instanceof Set ? [...value] : value)),
+            raw_matched: JSON.stringify(this.matched, (key, value) => (value instanceof Map || value instanceof Set ? [...value] : value)),
         }
 
-        utilsInitializer.matchesSnapshotUtils().insertSnapshot(dump_object);
+        utilsInitializer.matchesSnapshotUtils().insertRawSnapshot(JSON.stringify(dump_object));
     }
 
     /**
