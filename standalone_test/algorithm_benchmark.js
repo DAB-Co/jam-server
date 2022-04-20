@@ -362,9 +362,9 @@ describe(__filename, function () {
     let user_data = {};
     let artists = [];
     let tracks = [];
-    const user_count = 1000;
-    const artist_count = 500;
-    const track_count = 700;
+    const user_count = 11;
+    const artist_count = 5;
+    const track_count = 7;
     this.timeout(Number.MAX_VALUE);
     before(function() {
         // kullanici yarat
@@ -379,6 +379,7 @@ describe(__filename, function () {
                 "top_artists": {"items":[]},
                 "top_tracks": {"items":[]}
             };
+            utilsInitializer.userLanguagesUtils().addLanguages(id, ["ooga booga"]);
         }
 
         // artistler yarat
@@ -433,8 +434,8 @@ describe(__filename, function () {
             console.time("write");
             for (let id in user_data) {
                 console.log(`writing prefs progress %${(id/user_count)*100}`);
-                await algorithmEntryPoint._add_preference(id, user_data[id].top_tracks);
-                await algorithmEntryPoint._add_preference(id, user_data[id].top_artists);
+                await algorithmEntryPoint._add_preference(parseInt(id), user_data[id].top_tracks);
+                await algorithmEntryPoint._add_preference(parseInt(id), user_data[id].top_artists);
             }
             console.timeEnd("write");
         });
@@ -460,8 +461,8 @@ describe(__filename, function () {
                     if (id === id2) {
                         continue;
                     }
-                    let weight = algorithmEntryPoint.getWeight(id, id2);
-                    let weight2 = algorithmEntryPoint.getWeight(id2, id);
+                    let weight = algorithmEntryPoint.getWeight(parseInt(id), parseInt(id2));
+                    let weight2 = algorithmEntryPoint.getWeight(parseInt(id2), parseInt(id));
                     assert.strictEqual(weight, weight2);
                     if (weight === undefined) {
                         weight = 0;
@@ -487,6 +488,7 @@ describe(__filename, function () {
             let leftover_count = 0;
             for (let [id, match] of matches) {
                 if (match.size === 2) {
+                    console.log(id);
                     leftover_count++;
                 }
                 else if (match.size !== 1) {
@@ -514,8 +516,8 @@ describe(__filename, function () {
                    if (id === id2) {
                        continue;
                    }
-                   let weight = algorithmEntryPoint.getWeight(id, id2);
-                   let weight2 = algorithmEntryPoint.getWeight(id2, id);
+                   let weight = algorithmEntryPoint.getWeight(parseInt(id), parseInt(id2));
+                   let weight2 = algorithmEntryPoint.getWeight(parseInt(id2), parseInt(id));
                    assert.strictEqual(weight, weight2);
                    if (weight === undefined) {
                        weight = 0;
