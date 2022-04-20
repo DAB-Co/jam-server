@@ -151,86 +151,32 @@ class AlgorithmEntryPoint {
         }
     }
 
-    /**
-     * calculate weights and draw a graph
-     * overwrites the existing graph, creating it from scratch
-     * this is deprecated
-     *
-     * @private
-     */
-    _create_graph() {
-        this.graph.clear();
-        let all_preferences = this.prefs;
-        //let c = 0;
-        //let len = Object.keys(all_preferences).length;
-        for (let preference_id in all_preferences) {
-            //console.log(`update matches progress %${(c/len)*100}`);
-            let users = Object.keys(all_preferences[preference_id]);
-            for (let i=0; i<users.length; i++) {
-                let id1 = users[i];
-                let weight1 = all_preferences[preference_id][id1];
-                if (!this.graph.has(id1)) {
-                    this.graph.set(id1, new Map());
-                    this.graph.get(id1).set("max_weight", [-1, Number.MIN_VALUE]);
-                }
-                for (let j=i+1; j<users.length; j++) {
-                    let id2 = users[j];
-                    let weight2 = all_preferences[id2][preference_id];
-                    if (this.matched.has(id1) && this.matched.get(id1).has(id2)) {
-                        continue;
-                    }
-                    if (!this.graph.has(id2)) {
-                        this.graph.set(id2, new Map());
-                        this.graph.get(id2).set("max_weight", [-1, Number.MIN_VALUE]);
-                    }
-                    let existing_weight1 = 0;
-                    let existing_weight2 = 0;
-
-                    if (!this.graph.get(id2).has(id1)) {
-                        this.graph.get(id2).set(id1, 0);
-                    }
-                    else {
-                        existing_weight2 = this.graph.get(id2).get(id1);
-                    }
-                    if (!this.graph.get(id1).has(id2)) {
-                        this.graph.get(id1).set(id2, 0);
-                    }
-                    else {
-                        existing_weight1 = this.graph.get(id1).get(id2);
-                    }
-                    let final_weight1 = weight1+weight2+existing_weight1;
-                    let final_weight2 = weight1+weight2+existing_weight2;
-
-                    this.graph.get(id1).set(id2, final_weight1);
-                    this.graph.get(id2).set(id1, final_weight2);
-
-                    if (final_weight1 > this.graph.get(id1).get("max_weight")[1]) {
-                        this.graph.get(id1).set("max_weight", [id2, final_weight1]);
-                    }
-
-                    if (final_weight2 > this.graph.get(id1).get("max_weight")[1]) {
-                        this.graph.get(id1).set("max_weight", [id1, final_weight2]);
-                    }
-                }
-            }
-            //c++;
-        }
-    }
-
     _match_users() {
         let matched_today = new Set();
         let leftovers = [];
+        let speak_with_cache = new Map();
         for (let [id, weights] of this.graph.entries()) {
             if (matched_today.has(id)) {
                 continue;
             }
             let match_weight = Number.MIN_VALUE;
             let match_id = -1;
+            let can_speak_with = undefined;
+            if (speak_with_cache.has(id)) {
+                can_speak_with = speak_with_cache.get(id);
+            }
+            else {
+                can_speak_with = new Set(utilsInitializer.userLanguagesUtils().getUserCanSpeakWith(id));
+                speak_with_cache.set(id, can_speak_with);
+            }
             for (let [id2, weight] of weights){
                 if (this.matched.has(id) && this.matched.get(id).has(id2)) {
                     continue;
                 }
                 else if (matched_today.has(id2)) {
+                    continue;
+                }
+                else if (!can_speak_with.has(id2)) {
                     continue;
                 }
                 else if (weight > match_weight) {
@@ -266,10 +212,14 @@ class AlgorithmEntryPoint {
             if (leftovers_found.has(id1)) {
                 continue;
             }
+            let can_speak_with = speak_with_cache.get(id1);
             let found = false;
             for (let j=i+1; j<leftovers.length; j++) {
                 let id2 = leftovers[j];
                 if (leftovers_found.has(id2)) {
+                    continue;
+                }
+                if (!can_speak_with.has(id2)) {
                     continue;
                 }
                 if (this.matched.has(id1) && this.matched.get(id1).has(id2)) {
@@ -305,17 +255,18 @@ class AlgorithmEntryPoint {
             if (!this.matched.has(id)) {
                 this.matched.set(id, new Set());
             }
+            let can_speak_with = speak_with_cache.get(id);
             let id2 = undefined;
             let selected = new Set();
+            let can_select = Array.from(can_speak_with);
             do {
-                id2 = random(1, this.user_ids.length);
-                if (!this.matched.has(id2)) {
+                id2 = can_select[random(1, can_select.length)];
+                if (!this.matched.has(id2) && can_speak_with.has(id2)) {
                     this.matched.set(id2, new Set());
                 }
-                console.log(id2);
-            } while(this.matched.get(id2).has(id) && selected.size < this.user_ids.length);
+            } while((this.matched.get(id2).has(id) || !can_speak_with.has(id2)) && selected.size < can_select.length);
 
-            if (selected.size === this.user_ids.length) {
+            if (selected.size === can_select.size) {
                 continue;
             }
 
