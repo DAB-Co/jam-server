@@ -174,7 +174,7 @@ router.post("/api/wake", function (req, res, next) {
     }
     console.log(response);
     for (let key of Object.keys(response.friends)) {
-        response.friends.key["profile_picture_small"] = userAvatarUtils.getSmallProfilePic(key);
+        response.friends[key]["profile_picture_small"] = userAvatarUtils.getSmallProfilePic(key);
     }
     res.status(200);
     res.send(JSON.stringify(response));
@@ -362,7 +362,7 @@ router.post("/api/top_preferences", function (req, res) {
         response.req_user_data = utilsInitializer.spotifyPreferencesUtils().get_raw_preferences(req_user_pref_ids);
     }
 
-    let avatar = userAvatarUtils.getOriginalProfilePic(user_id);
+    let avatar = userAvatarUtils.getOriginalProfilePic(req_user);
     response["profile_picture"] = avatar;
 
     res.status(200);
