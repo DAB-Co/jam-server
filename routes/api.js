@@ -10,6 +10,7 @@ const Validators = require(path.join(__dirname, "..", "utils", "validators.js"))
 
 const accountUtils = utilsInitializer.accountUtils();
 const userFriendsUtils = utilsInitializer.userFriendsUtils();
+const userAvatarUtils = utilsInitializer.userAvatarsUtils();
 const validators = new Validators();
 
 const isCorrectToken = require(path.join(__dirname, "..", "utils", "isCorrectToken.js"));
@@ -172,6 +173,9 @@ router.post("/api/wake", function (req, res, next) {
         refresh_token_expired: algorithmEntryPoint.refreshTokenExpired(user_id),
     }
     console.log(response);
+    for (let key of Object.keys(response.friends)) {
+        response.friends[key]["profile_picture_small"] = userAvatarUtils.getSmallProfilePic(key);
+    }
     res.status(200);
     res.send(JSON.stringify(response));
 });
@@ -358,8 +362,42 @@ router.post("/api/top_preferences", function (req, res) {
         response.req_user_data = utilsInitializer.spotifyPreferencesUtils().get_raw_preferences(req_user_pref_ids);
     }
 
+    let avatar = userAvatarUtils.getOriginalProfilePic(req_user);
+    response["profile_picture"] = avatar;
+
     res.status(200);
     return res.send(JSON.stringify(response));
+});
+
+router.post("/api/update_profile_picture", function (req, res) {
+    console.log("------/api/update_profile_picture------");
+    const user_id = req.body.user_id;
+    const api_token  = req.body.api_token;
+    const original_picture = req.body.original_picture;
+    const small_picture = req.body.small_picture;
+    console.log(original_picture, small_picture);
+
+    if (user_id === undefined || api_token === undefined || original_picture === undefined || small_picture === undefined) {
+        res.status(400);
+        console.log("Bad Request", req.body);
+        res.send("Bad Request");
+        return;
+    }
+
+    if (!isCorrectToken(api_token, user_id)) {
+        console.log("Wrong api token");
+        res.status(403);
+        return res.send("Wrong api token");
+    }
+
+    if (original_picture === null || small_picture === null) {
+        // delete avatar
+        userAvatarUtils.removeProfilePic(user_id);
+        res.send("OK");
+    } else {
+        userAvatarUtils.updateProfilePic(user_id, JSON.stringify(original_picture), JSON.stringify(small_picture));
+        res.send("OK");
+    }
 });
 
 module.exports = router;
