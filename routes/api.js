@@ -395,7 +395,7 @@ router.post("/api/update_profile_picture", function (req, res) {
         userAvatarUtils.removeProfilePic(user_id);
         res.send("OK");
     } else {
-        userAvatarUtils.updateProfilePic(user_id, original_picture, small_picture);
+        userAvatarUtils.updateProfilePic(user_id, JSON.stringify(original_picture), JSON.stringify(small_picture));
         res.send("OK");
     }
 });
