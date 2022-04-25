@@ -301,9 +301,10 @@ router.post("/api/update_languages", function (req, res, next) {
 router.post("/api/get_languages", function (req, res) {
     console.log("------/api/get_languages------")
     let user_id = req.body.user_id;
+    let req_user = req.body.req_user;
     let api_token = req.body.api_token;
 
-    if (user_id === undefined || api_token === undefined) {
+    if (user_id === undefined || api_token === undefined || req_user === undefined) {
         res.status(400);
         console.log("Bad Request", req.body);
         res.send("Bad Request");
@@ -316,7 +317,18 @@ router.post("/api/get_languages", function (req, res) {
         return res.send("Wrong api token");
     }
 
-    let languages = utilsInitializer.userLanguagesUtils().getUserLanguages(user_id);
+    let languages;
+
+    if (user_id === req_user) {
+        languages = utilsInitializer.userLanguagesUtils().getUserLanguages(user_id);
+    } else {
+        let friends = utilsInitializer.userFriendsUtils().getFriends(user_id);
+        if (!(req_user in friends)) {
+            res.status(403);
+            return res.send("req_user not in friends");
+        }
+        languages = utilsInitializer.userLanguagesUtils().getUserLanguages(req_user);
+    }
 
     console.log(user_id, ":", languages);
 
