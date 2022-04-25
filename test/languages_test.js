@@ -55,7 +55,7 @@ describe(__filename, function () {
                     assert.fail(err.response.data);
                 });
 
-            await axios.post(domain+"/api/get_languages", {user_id: parseInt(b_id), api_token: "inout"})
+            await axios.post(domain+"/api/get_languages", {user_id: parseInt(b_id), api_token: "inout", req_user: parseInt(b_id)})
                 .then(function (res) {
                     assert.strictEqual(res.status, 200);
                     assert.ok(res.data.length === 1 && res.data[0] === "DE");
@@ -88,7 +88,7 @@ describe(__filename, function () {
                    assert.fail(err.response.data);
                });
 
-           await axios.post(domain+"/api/get_languages", {user_id: parseInt(b_id), api_token: "inout"})
+           await axios.post(domain+"/api/get_languages", {user_id: parseInt(b_id), api_token: "inout", req_user: parseInt(b_id)})
                .then(function (res) {
                    assert.strictEqual(res.status, 200);
                    assert.ok(res.data.length === 4);
@@ -162,7 +162,7 @@ describe(__filename, function () {
                    assert.fail(err.response.data);
                });
 
-           await axios.post(domain+"/api/get_languages", {user_id: parseInt(b_id), api_token: "inout"})
+           await axios.post(domain+"/api/get_languages", {user_id: parseInt(b_id), api_token: "inout", req_user: parseInt(b_id)})
                .then(function (res) {
                    assert.strictEqual(res.status, 200);
                    assert.ok(res.data.length === 4);
@@ -198,7 +198,7 @@ describe(__filename, function () {
                    assert.fail(err.response.data);
                });
 
-           await axios.post(domain+"/api/get_languages", {user_id: parseInt(b_id), api_token: "inout"})
+           await axios.post(domain+"/api/get_languages", {user_id: parseInt(b_id), api_token: "inout", req_user: parseInt(b_id)})
                .then(function (res) {
                    assert.strictEqual(res.status, 200);
                    assert.ok(res.data.length === 3);
@@ -234,7 +234,7 @@ describe(__filename, function () {
                     assert.fail(err.response.data);
                 });
 
-            await axios.post(domain+"/api/get_languages", {user_id: parseInt(b_id), api_token: "inout"})
+            await axios.post(domain+"/api/get_languages", {user_id: parseInt(b_id), api_token: "inout", req_user: parseInt(b_id)})
                 .then(function (res) {
                     assert.strictEqual(res.status, 200);
                     assert.ok(res.data.length === 1);
