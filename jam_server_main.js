@@ -43,6 +43,7 @@ const app = express();
 
 // parse data, useful for post or put requests
 app.use(express.urlencoded({
+    limit: "50mb",
     extended: true,
 }));
 app.use(body_parser.json());
