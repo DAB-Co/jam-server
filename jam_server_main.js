@@ -46,6 +46,7 @@ app.use(express.urlencoded({
     extended: true,
 }));
 app.use(body_parser.json());
+app.set("view engine", "ejs");
 
 if (argv.no_https) {
     const http_server = app.listen(process.env.http_port, () => {

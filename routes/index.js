@@ -4,9 +4,14 @@ const path = require("path");
 const router = express.Router();
 
 // Render home page here
-router.get("/", async (req, res) => {
-    res.send("homepage");
+router.get("/", function (req, res) {
+    res.render("index");
 });
+
+router.get("/data_collected", function (req, res) {
+   res.render("data_collected");
+});
+
 
 // Handle api requests
 const api = require(path.join(__dirname, "api.js"));
@@ -27,5 +32,11 @@ router.get("/spotify", spotify);
 router.post("/spotify", spotify);
 router.get("/spotify/*", spotify);
 router.post("/spotify/*", spotify);
+
+const downloads = require(path.join(__dirname, "downloads.js"));
+router.get("/downloads", downloads);
+router.post("/downloads", downloads);
+router.get("/downloads/*", downloads);
+router.post("/downloads/*", downloads);
 
 module.exports = router;
