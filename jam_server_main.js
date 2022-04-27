@@ -46,7 +46,7 @@ app.use(express.urlencoded({
     limit: "50mb",
     extended: true,
 }));
-app.use(body_parser.json());
+app.use(body_parser.json({limit: "50mb"}));
 app.set("view engine", "ejs");
 
 if (argv.no_https) {
