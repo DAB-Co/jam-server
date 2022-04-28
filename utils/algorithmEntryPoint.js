@@ -207,12 +207,27 @@ class AlgorithmEntryPoint {
         let leftovers_leftovers = [];
         let leftovers_found = new Set();
 
+        for (let i=0; i<this.user_ids.length; i++) {
+            let id = this.user_ids[i];
+            if (!this.graph.has(id)) {
+                leftovers.push(id);
+            }
+        }
+
+
         for (let i=0; i<leftovers.length; i++) {
             let id1 = leftovers[i];
             if (leftovers_found.has(id1)) {
                 continue;
             }
-            let can_speak_with = speak_with_cache.get(id1);
+            let can_speak_with = undefined;
+            if (speak_with_cache.has(id1)) {
+                can_speak_with = speak_with_cache.get(id1);
+            }
+            else {
+                can_speak_with = new Set(utilsInitializer.userLanguagesUtils().getUserCanSpeakWith(id1));
+                speak_with_cache.set(id1, can_speak_with);
+            }
             let found = false;
             for (let j=i+1; j<leftovers.length; j++) {
                 let id2 = leftovers[j];
@@ -250,8 +265,13 @@ class AlgorithmEntryPoint {
             }
         }
 
+        let leftovers_matched = new Set();
+
         for (let i=0; i<leftovers_leftovers.length; i++) {
             let id = leftovers_leftovers[i];
+            if (leftovers_matched.has(id)) {
+                continue;
+            }
             if (!this.matched.has(id)) {
                 this.matched.set(id, new Set());
             }
@@ -261,10 +281,14 @@ class AlgorithmEntryPoint {
             let can_select = Array.from(can_speak_with);
             do {
                 id2 = can_select[random(1, can_select.length)];
-                if (!this.matched.has(id2) && can_speak_with.has(id2)) {
+                if (id === id2) {
+                    continue;
+                }
+                selected.add(id2);
+                if (!this.matched.has(id2)) {
                     this.matched.set(id2, new Set());
                 }
-            } while((this.matched.get(id2).has(id) || !can_speak_with.has(id2)) && selected.size < can_select.length);
+            } while(this.matched.get(id2).has(id) && selected.size < can_select.length);
 
             if (selected.size === can_select.size) {
                 continue;
@@ -274,6 +298,8 @@ class AlgorithmEntryPoint {
 
             this.matched.get(id).add(id2);
             this.matched.get(id2).add(id);
+            leftovers_matched.add(id);
+            leftovers_matched.add(id2);
         }
     }
 
