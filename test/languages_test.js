@@ -146,11 +146,11 @@ describe(__filename, function () {
     });
 
     describe("", function() {
-       it("beethoven adds arabic and persian and removes french and english", async function () {
+       it("beethoven adds japanese and persian and removes french and english", async function () {
            let data = {
                user_id: parseInt(b_id),
                api_token: "inout",
-               add_languages: ["ar", "fa"],
+               add_languages: ["ja", "fa"],
                remove_languages: ["en", "fr"],
            }
            await axios.post(domain+"/api/update_languages", data)
@@ -165,9 +165,9 @@ describe(__filename, function () {
            await axios.post(domain+"/api/get_languages", {user_id: parseInt(b_id), api_token: "inout", req_user: parseInt(b_id)})
                .then(function (res) {
                    assert.strictEqual(res.status, 200);
-                   assert.ok(res.data.length === 4);
+                   assert.ok(res.data.length === 6);
                    for (let i=0; i<res.data; i++) {
-                       assert.ok(["DE", "AR", "FA", "PL"].indexOf(res.data[i]) !== -1);
+                       assert.ok(["DE", "AR", "FA", "PL", "JA", "TR"].indexOf(res.data[i]) !== -1);
                    }
                })
                .catch(function (err) {
@@ -201,9 +201,9 @@ describe(__filename, function () {
            await axios.post(domain+"/api/get_languages", {user_id: parseInt(b_id), api_token: "inout", req_user: parseInt(b_id)})
                .then(function (res) {
                    assert.strictEqual(res.status, 200);
-                   assert.ok(res.data.length === 3);
+                   assert.ok(res.data.length === 5);
                    for (let i=0; i<res.data; i++) {
-                       assert.ok(["DE", "FR", "EN"].indexOf(res.data[i]) !== -1);
+                       assert.ok(["DE", "AR", "FA", "PL", "JA", "TR"].indexOf(res.data[i]) !== -1);
                    }
                })
                .catch(function (err) {
@@ -237,9 +237,9 @@ describe(__filename, function () {
             await axios.post(domain+"/api/get_languages", {user_id: parseInt(b_id), api_token: "inout", req_user: parseInt(b_id)})
                 .then(function (res) {
                     assert.strictEqual(res.status, 200);
-                    assert.ok(res.data.length === 1);
+                    assert.ok(res.data.length === 3);
                     for (let i=0; i<res.data; i++) {
-                        assert.ok(["DE"].indexOf(res.data[i]) !== -1);
+                        assert.ok(["DE", "PL", "JA", "TR"].indexOf(res.data[i]) !== -1);
                     }
                 })
                 .catch(function (err) {
