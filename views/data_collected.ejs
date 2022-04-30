@@ -21,6 +21,7 @@
         <dl>
             <dt>Username and password given by the user upon registration</dt>
             <dd>Used for login purposes and public profile.</dd>
+            <dd>Password is hashed before storage, so the contents of the password can't be seen.</dd>
         </dl>
     </li>
 
@@ -80,15 +81,15 @@
 <ol>
     <li>
         <dl>
-            <dt>data that is public in every web connection: ip, useragent etc.</dt>
+            <dt>data that is public in every web connection: ip etc.</dt>
             <dd></dd>
         </dl>
     </li>
 
     <li>
         <dl>
-            <dt>message data and metadata</dt>
-            <dd></dd>
+            <dt>message metadata</dt>
+            <dd>From, to and what time a message was sent</dd>
         </dl>
     </li>
 </ol>
