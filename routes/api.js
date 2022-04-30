@@ -282,6 +282,7 @@ router.post("/api/update_languages", function (req, res, next) {
         }
     }
 
+    utilsInitializer.userLanguagesUtils().removeLanguages(user_id, remove_languages);
     try {
         utilsInitializer.userLanguagesUtils().addLanguages(user_id, add_languages);
     } catch (e) {
@@ -293,7 +294,6 @@ router.post("/api/update_languages", function (req, res, next) {
             return next(e);
         }
     }
-    utilsInitializer.userLanguagesUtils().removeLanguages(user_id, remove_languages);
     res.status(200);
     res.send("OK");
 });
@@ -374,8 +374,7 @@ router.post("/api/top_preferences", function (req, res) {
         response.req_user_data = utilsInitializer.spotifyPreferencesUtils().get_raw_preferences(req_user_pref_ids);
     }
 
-    let avatar = userAvatarUtils.getOriginalProfilePic(req_user);
-    response["profile_picture"] = avatar;
+    response["profile_picture"] = userAvatarUtils.getOriginalProfilePic(req_user);
 
     res.status(200);
     return res.send(JSON.stringify(response));
