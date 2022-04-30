@@ -26,21 +26,7 @@ class AlgorithmEntryPoint {
         // user_id: access_token
         this.graph = new Map();
         this.matched = new Map();
-        //this.prefs = new Map();
         this.prefs = utilsInitializer.userPreferencesUtils().getAllCommonPreferences();
-        let snapshot = utilsInitializer.matchesSnapshotUtils().getLastSnapshot();
-        if (snapshot !== undefined) {
-            let parsed_snapshot = JSON.parse(snapshot);
-            let array_graph = JSON.parse(parsed_snapshot.raw_graph);
-            let array_matched = JSON.parse(parsed_snapshot.raw_matched);
-            for (let i=0; i<array_graph.length; i++) {
-                this.graph.set(array_graph[i][0], new Map(array_graph[i][1]));
-            }
-
-            for (let i=0; i<array_matched.length; i++) {
-                this.matched.set(array_matched[i][0], new Set(array_matched[i][1]));
-            }
-        }
         this.access_tokens = new Map();
         this.user_ids = utilsInitializer.accountUtils().getAllPrimaryKeys();
         this.changes = [];
@@ -309,6 +295,10 @@ class AlgorithmEntryPoint {
      * @private
      */
     _apply_changes() {
+        let {graph, matched} = utilsInitializer.userConnectionsUtils().load();
+        this.graph = graph;
+        this.matched = matched;
+
         for (let i=0; i<this.changes.length; i++) {
             let item_id = this.changes[i][0];
             let user_id = this.changes[i][1];
@@ -388,12 +378,7 @@ class AlgorithmEntryPoint {
     }
 
     async _dump_data() {
-        let dump_object = {
-            raw_graph: JSON.stringify(this.graph, (key, value) => (value instanceof Map || value instanceof Set ? [...value] : value)),
-            raw_matched: JSON.stringify(this.matched, (key, value) => (value instanceof Map || value instanceof Set ? [...value] : value)),
-        }
-
-        utilsInitializer.matchesSnapshotUtils().insertRawSnapshot(JSON.stringify(dump_object));
+        utilsInitializer.userConnectionsUtils().dump(this.graph, this.matched);
     }
 
     /**
