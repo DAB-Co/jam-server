@@ -373,7 +373,7 @@ describe(__filename, function () {
         // kullanici yarat
         for (let i=0; i<user_count; i++) {
             //console.log(`creating users progress %${(i/user_count)*100}`);
-            let id = utilsInitializer.accountUtils().addUser(`user${i}@email.com`, `user${i}`, "password", "api_token").lastInsertRowid;
+            let id = utilsInitializer.accountUtils().addUser(`different_user${i}@email.com`, `different_user${i}`, "password", "api_token").lastInsertRowid;
             user_data[id] = {
                 "top_artists": {"items":[]},
                 "top_tracks": {"items":[]}
