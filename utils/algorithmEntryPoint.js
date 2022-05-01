@@ -193,6 +193,7 @@ class AlgorithmEntryPoint {
         let leftovers_leftovers = [];
         let leftovers_found = new Set();
 
+        this.user_ids = utilsInitializer.accountUtils().getAllPrimaryKeys();
         for (let i=0; i<this.user_ids.length; i++) {
             let id = this.user_ids[i];
             if (!this.graph.has(id)) {
@@ -200,6 +201,7 @@ class AlgorithmEntryPoint {
             }
         }
 
+        //console.log(leftovers);
 
         for (let i=0; i<leftovers.length; i++) {
             let id1 = leftovers[i];
@@ -251,6 +253,8 @@ class AlgorithmEntryPoint {
             }
         }
 
+        //console.log(leftovers_leftovers);
+
         let leftovers_matched = new Set();
 
         for (let i=0; i<leftovers_leftovers.length; i++) {
@@ -266,7 +270,7 @@ class AlgorithmEntryPoint {
             let selected = new Set();
             let can_select = Array.from(can_speak_with);
             do {
-                id2 = can_select[random(1, can_select.length)];
+                id2 = can_select[random(1, can_select.length-1)];
                 if (id === id2) {
                     continue;
                 }
@@ -274,7 +278,7 @@ class AlgorithmEntryPoint {
                 if (!this.matched.has(id2)) {
                     this.matched.set(id2, new Set());
                 }
-            } while(this.matched.get(id2).has(id) && selected.size < can_select.length);
+            } while (this.matched.get(id2).has(id) && selected.size < can_select.length);
 
             if (selected.size === can_select.size) {
                 continue;
@@ -287,6 +291,7 @@ class AlgorithmEntryPoint {
             leftovers_matched.add(id);
             leftovers_matched.add(id2);
         }
+        this._dump_data();
     }
 
     /**
@@ -494,7 +499,6 @@ class AlgorithmEntryPoint {
 
         this._apply_changes();
         this._match_users();
-        this._dump_data();
     }
 
     getWeight(id1, id2) {

@@ -526,4 +526,23 @@ describe(__filename, function () {
             //console.timeEnd("check match");
         });
     });
+
+    describe('', function() {
+        it("check if match count is correct for day 2", function() {
+            let matches = algorithmEntryPoint.matched;
+            let leftover_count = 0;
+            for (let [id, match] of matches) {
+                if (match.size === 4) {
+                    leftover_count += 2;
+                }
+                else if (match.size === 3) {
+                    leftover_count++;
+                }
+                else if (match.size !== 2) {
+                    assert.fail("wrong match count");
+                }
+            }
+            assert.ok(leftover_count < 3);
+        });
+    });
 });

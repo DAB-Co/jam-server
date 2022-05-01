@@ -1,5 +1,4 @@
 const path = require("path");
-require(path.join(__dirname, "..", "overwrite_database.js"));
 const algorithmEntryPoint = require(path.join(__dirname, "..", "utils", "algorithmEntryPoint.js"));
 const utilsInitializer = require(path.join(__dirname, "..", "utils", "initializeUtils.js"));
 
@@ -373,7 +372,7 @@ describe(__filename, function () {
 
         // kullanici yarat
         for (let i=0; i<user_count; i++) {
-            console.log(`creating users progress %${(i/user_count)*100}`);
+            //console.log(`creating users progress %${(i/user_count)*100}`);
             let id = utilsInitializer.accountUtils().addUser(`user${i}@email.com`, `user${i}`, "password", "api_token").lastInsertRowid;
             user_data[id] = {
                 "top_artists": {"items":[]},
@@ -384,21 +383,27 @@ describe(__filename, function () {
 
         // artistler yarat
         for (let i=0; i<artist_count; i++) {
-            console.log(`creating artists progress %${(i/artist_count)*100}`);
+            //console.log(`creating artists progress %${(i/artist_count)*100}`);
             let artist = create_artist(`artist${i}`, `artist_uri${i}`);
             artists.push(artist);
         }
 
         // trackler yarat
         for (let i=0; i<track_count; i++) {
-            console.log(`creating tracks progress %${(i/track_count)*100}`);
+            //console.log(`creating tracks progress %${(i/track_count)*100}`);
             let track = create_track(`track${i}`, `track_uri${i}`);
             tracks.push(track);
         }
 
+        // user data bir sozluk
+        // int -> {satir 309}
+        // artist ve track listelerinde olan degerlerden rastgele secilmis degerler olsun
+        // ayni degereden iki tane olmasin
+        // 3 artist 5 parca
+        // bu yorumun altina yaz
         let c = 0;
         for (let id in user_data) {
-            console.log(`randomizing preferences progress %${(c/user_count)*100}`);
+            //console.log(`randomizing preferences progress %${(c/user_count)*100}`);
             let artist_indexes = new Set();
             let track_indexes = new Set();
 
@@ -425,31 +430,31 @@ describe(__filename, function () {
 
     describe('', function () {
         it("write raw_preferences to database", async function() {
-            console.time("write");
+            //console.time("write");
             for (let id in user_data) {
-                console.log(`writing prefs progress %${(id/user_count)*100}`);
+                //console.log(`writing prefs progress %${(id/user_count)*100}`);
                 await algorithmEntryPoint._add_preference(parseInt(id), user_data[id].top_tracks);
                 await algorithmEntryPoint._add_preference(parseInt(id), user_data[id].top_artists);
             }
-            console.timeEnd("write");
+            //console.timeEnd("write");
         });
     });
 
     describe('', function() {
-       it("match users", function() {
-           console.time("apply");
-           algorithmEntryPoint._apply_changes();
-           console.timeEnd("apply");
-           this.user_ids = utilsInitializer.accountUtils().getAllPrimaryKeys();
-           console.time("match");
-           algorithmEntryPoint._match_users();
-           console.timeEnd("match");
-       });
+        it("match users", function() {
+            //console.time("apply");
+            algorithmEntryPoint._apply_changes();
+            //console.timeEnd("apply");
+            this.user_ids = utilsInitializer.accountUtils().getAllPrimaryKeys();
+            //console.time("match");
+            algorithmEntryPoint._match_users();
+            //console.timeEnd("match");
+        });
     });
 
     describe('', function() {
         it("check if weights are correct", function() {
-            console.time("check match");
+            //console.time("check match");
             for (let id in user_data) {
                 for (let id2 in user_data) {
                     if (id === id2) {
@@ -464,16 +469,16 @@ describe(__filename, function () {
                     assert.strictEqual(weight, calculate_weight(user_data[id], user_data[id2]), `${id}---${id2}`);
                 }
             }
-            console.timeEnd("check match");
+            //console.timeEnd("check match");
         });
     });
 
     describe('', function () {
-       it("dump data", async function() {
-           console.time("dump");
-           await algorithmEntryPoint._dump_data();
-           console.timeEnd("dump");
-       })
+        it("dump data", async function() {
+            //console.time("dump");
+            await algorithmEntryPoint._dump_data();
+            //console.timeEnd("dump");
+        })
     });
 
     describe('', function() {
@@ -493,33 +498,33 @@ describe(__filename, function () {
     });
 
     describe('', function() {
-       it("run algorithm again for day2", async function() {
-           console.time("apply");
-           algorithmEntryPoint._apply_changes();
-           console.timeEnd("apply");
-           console.time("match");
-           algorithmEntryPoint._match_users();
-           console.timeEnd("match");
-           console.time("dump");
-           await algorithmEntryPoint._dump_data();
-           console.timeEnd("dump");
-           console.time("check match");
-           for (let id in user_data) {
-               for (let id2 in user_data) {
-                   if (id === id2) {
-                       continue;
-                   }
-                   let weight = algorithmEntryPoint.getWeight(parseInt(id), parseInt(id2));
-                   let weight2 = algorithmEntryPoint.getWeight(parseInt(id2), parseInt(id));
-                   assert.strictEqual(weight, weight2);
-                   if (weight === undefined) {
-                       weight = 0;
-                   }
-                   assert.strictEqual(weight, calculate_weight(user_data[id], user_data[id2]), `${id}---${id2}`);
-               }
-           }
-           console.timeEnd("check match");
-       });
+        it("run algorithm again for day2", async function() {
+            //console.time("apply");
+            algorithmEntryPoint._apply_changes();
+            //console.timeEnd("apply");
+            //console.time("match");
+            algorithmEntryPoint._match_users();
+            //console.timeEnd("match");
+            //console.time("dump");
+            await algorithmEntryPoint._dump_data();
+            //console.timeEnd("dump");
+            //console.time("check match");
+            for (let id in user_data) {
+                for (let id2 in user_data) {
+                    if (id === id2) {
+                        continue;
+                    }
+                    let weight = algorithmEntryPoint.getWeight(parseInt(id), parseInt(id2));
+                    let weight2 = algorithmEntryPoint.getWeight(parseInt(id2), parseInt(id));
+                    assert.strictEqual(weight, weight2);
+                    if (weight === undefined) {
+                        weight = 0;
+                    }
+                    assert.strictEqual(weight, calculate_weight(user_data[id], user_data[id2]), `${id}---${id2}`);
+                }
+            }
+            //console.timeEnd("check match");
+        });
     });
 
     describe('', function() {
