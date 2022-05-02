@@ -1,5 +1,5 @@
 const path = require("path");
-const utilsInitializer = require(path.join(__dirname, "initializeUtils.js"));
+const utilsInitializer = require(path.join(__dirname, "..", "utils", "initializeUtils.js"));
 
 let snapshot = utilsInitializer.matchesSnapshotUtils().getLastSnapshot();
 let graph = new Map();
