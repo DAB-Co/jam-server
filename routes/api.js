@@ -286,7 +286,7 @@ router.post("/api/update_languages", function (req, res, next) {
     try {
         utilsInitializer.userLanguagesUtils().addLanguages(user_id, add_languages);
     } catch (e) {
-        if (e.message === "this language for this user exists") {
+        if (e.message === "UNIQUE constraint failed: user_languages.user_id, user_languages.language") {
             res.status(422);
             return res.send("Language already exists");
         }
