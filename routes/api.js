@@ -386,7 +386,6 @@ router.post("/api/update_profile_picture", function (req, res) {
     const api_token  = req.body.api_token;
     const original_picture = req.body.original_picture;
     const small_picture = req.body.small_picture;
-    console.log(original_picture, small_picture);
 
     if (user_id === undefined || api_token === undefined || original_picture === undefined || small_picture === undefined) {
         res.status(400);
@@ -409,6 +408,42 @@ router.post("/api/update_profile_picture", function (req, res) {
         userAvatarUtils.updateProfilePic(user_id, JSON.stringify(original_picture), JSON.stringify(small_picture));
         res.send("OK");
     }
+});
+
+router.post("/api/delete_account", function (req, res, next) {
+    console.log("------/api/delete_account------");
+    const user_id = req.body.user_id;
+    let password  = req.body.password;
+
+    if (user_id === undefined || password === undefined) {
+        res.status(400);
+        console.log("Bad Request", req.body);
+        res.send("Bad Request");
+        return;
+    }
+
+    password = password.toString();
+    let pass_hash = accountUtils.getPasswordHash(user_id);
+
+    bcrypt.compare(password, pass_hash, function (err, result) {
+        // async functions require next() to be called explicitly in case of error
+        try {
+            if (err) {
+                next(err);
+            } else if (result) {
+                accountUtils.deleteUser(user_id);
+                console.log(`account deleted: ${user_id}`);
+                res.status(200);
+                res.send("OK");
+            } else {
+                console.log("Wrong Password");
+                res.status(403);
+                res.send("Wrong Password");
+            }
+        } catch (e) {
+            next(e);
+        }
+    });
 });
 
 module.exports = router;
