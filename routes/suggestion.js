@@ -1,15 +1,10 @@
 const path = require("path");
 const express = require("express"); // import express
 const router = express.Router();
-const nodemailer = require("nodemailer");
+
+const fs = require("fs");
 
 require("dotenv").config({path: path.join(__dirname, "..", ".env.local")});
-
-const host = process.env.email_host;
-const emailAddress = process.env.email_address;
-const clientId = process.env.email_client_id;
-const clientSecret = process.env.email_client_secret;
-const refreshToken = process.env.email_refresh_token;
 
 const isCorrectToken = require(path.join(__dirname, "..", "utils", "isCorrectToken.js"));
 
@@ -17,17 +12,17 @@ const utilsInitializer = require(path.join(__dirname, "..", "utils", "initialize
 
 const accountUtils = utilsInitializer.accountUtils();
 
-const nodemailer_transporter = nodemailer.createTransport({
-    host: host,
-    secure: true,
-    auth: {
-        type: 'OAuth2',
-        user: emailAddress,
-        clientId: clientId,
-        clientSecret: clientSecret,
-        refreshToken: refreshToken,
-    }
-});
+function return_time() {
+    let date_ob = new Date();
+    let date = ("0" + date_ob.getDate()).slice(-2);
+    let month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
+    let year = date_ob.getFullYear();
+    let hours = date_ob.getHours();
+    let minutes = date_ob.getMinutes();
+    let seconds = date_ob.getSeconds();
+    let dateDisplay = `${date}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+    return dateDisplay;
+}
 
 router.post("/suggestion", function (req, res, next) {
     console.log("------/suggestion------");
@@ -39,25 +34,14 @@ router.post("/suggestion", function (req, res, next) {
     } else {
         const user_id = content.user_id;
         const api_token = content.api_token;
-        const suggestion = content.suggestion;
+        const suggestion = "("+return_time()+") "+user_id.toString()+":"+content.suggestion+'\n';
+
+        console.log(suggestion);
 
         if (isCorrectToken(api_token, user_id, accountUtils)) {
-            let sender_email = accountUtils.getRowByPrimaryKey(user_id).user_email;
-            let email = {
-                to: emailAddress,
-                subject: "Jam Suggestion",
-                text: suggestion + '\n\nFrom,\n' + sender_email,
-            };
+            fs.appendFileSync(path.join(__dirname, "..", "suggestions.txt"), suggestion);
 
-            nodemailer_transporter.sendMail(email, function(error, info) {
-                if (error) {
-                    console.log(error);
-                } else {
-                    console.log('Email sent:', info.response);
-                }
-            });
-
-            console.log("OK");
+            res.status(200);
             res.send("OK");
         } else {
             console.log("Wrong api token");

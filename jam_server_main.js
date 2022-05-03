@@ -11,7 +11,7 @@ function run_algorithm() {
 }
 
 /**
- * sets timeout for next next run of algorithm
+ * sets timeout for next run of algorithm
  */
 function setNextMatch() {
     const day_length = 86400000;
