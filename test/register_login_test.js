@@ -141,4 +141,21 @@ describe(__filename, function () {
                 });
         });
     });
+
+    describe("", function () {
+        it("delete test account", async function () {
+            let data = {
+                user_id: users.test_user.user_id,
+                password: users.test_user.password,
+            };
+            await axios.post(domain + "/api/delete_account", data)
+                .then(function (res) {
+                    assert.strictEqual(res.status, 200);
+                    assert.strictEqual(res.data, "OK");
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+        });
+    });
 });
