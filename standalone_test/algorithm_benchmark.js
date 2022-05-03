@@ -540,4 +540,34 @@ describe(__filename, function () {
             assert.ok(leftover_count < 3);
         });
     });
+
+    describe('', function() {
+        it("queue changes twice", function() {
+            let id = random(0, user_count-1);
+            let random_user = user_data[id.toString()];
+            let temp = random_user.top_tracks[0];
+            random_user.top_tracks[0] = random_user.top_tracks[1];
+            random_user.top_tracks[1] = temp;
+            algorithmEntryPoint._add_preference(id, random_user.top_tracks);
+            temp = random_user.top_tracks[2];
+            random_user.top_tracks[2] = random_user.top_tracks[0];
+            random_user.top_tracks[0] = temp;
+            algorithmEntryPoint._add_preference(id, random_user.top_tracks);
+            algorithmEntryPoint._apply_changes();
+            for (let id in user_data) {
+                for (let id2 in user_data) {
+                    if (id === id2) {
+                        continue;
+                    }
+                    let weight = algorithmEntryPoint.getWeight(parseInt(id), parseInt(id2));
+                    let weight2 = algorithmEntryPoint.getWeight(parseInt(id2), parseInt(id));
+                    assert.strictEqual(weight, weight2);
+                    if (weight === undefined) {
+                        weight = 0;
+                    }
+                    assert.strictEqual(weight, calculate_weight(user_data[id], user_data[id2]), `${id}---${id2}`);
+                }
+            }
+        });
+    });
 });
