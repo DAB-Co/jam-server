@@ -176,6 +176,7 @@ router.post("/api/wake", function (req, res, next) {
     for (let key of Object.keys(response.friends)) {
         response.friends[key]["profile_picture_small"] = userAvatarUtils.getSmallProfilePic(key);
     }
+    response.small_profile_picture = userAvatarUtils.getSmallProfilePic(user_id);
     res.status(200);
     res.send(JSON.stringify(response));
 });

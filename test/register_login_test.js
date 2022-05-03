@@ -95,6 +95,7 @@ describe(__filename, function () {
                 .then(function (res) {
                     assert.strictEqual(res.status, 200);
                     assert.strictEqual(JSON.stringify(res.data.friends), '{}');
+                    assert.strictEqual(res.data.small_profile_picture, null);
                     assert.ok(res.data.refresh_token_expired);
                 })
                 .catch(function (error) {
