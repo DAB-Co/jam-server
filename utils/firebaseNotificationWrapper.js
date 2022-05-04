@@ -19,7 +19,7 @@ class FirebaseNotificationWrapper{
 
     /**
      * Sends notifications to everyone in the database
-     * @param {String} title title of notification
+     * @param {string} title title of notification
      */
     async sendNotificationsToAll(title) {
         if (this.firebaseAdmin !== undefined) {
