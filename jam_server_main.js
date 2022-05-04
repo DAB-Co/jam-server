@@ -56,7 +56,7 @@ app.use(body_parser.json({limit: "50mb"}));
 app.set("view engine", "ejs");
 
 if (argv.notification) {
-    const service_account_key = JSON.parse(fs.readFileSync(path.join(__dirname, "..", process.env.firebase_account_key_path), "utf8"));
+    const service_account_key = JSON.parse(fs.readFileSync(path.join(process.env.firebase_account_key_path), "utf8"));
     firebaseNotificationWrapper.initialize(service_account_key);
 }
 
