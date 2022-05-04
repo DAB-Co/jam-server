@@ -11,7 +11,7 @@ const spotifyUtils = utilsInitializer.spotifyUtils();
 const userPreferencesUtils = utilsInitializer.userPreferencesUtils();
 const spotifyPreferencesUtils = utilsInitializer.spotifyPreferencesUtils();
 
-const notificationUtils = require("../utils/notificationUtils");
+const firebaseNotificationWrapper = require(path.join(__dirname, "firebaseNotificationWrapper.js"));
 
 /**
  * Returns a random number between min (inclusive) and max (inclusive)
@@ -501,9 +501,8 @@ class AlgorithmEntryPoint {
 
         this._apply_changes();
         this._match_users();
-        let tokens = utilsInitializer.accountUtils().getAllNotificationTokens();
         let title = "You have a new match!";
-        notificationUtils.sendNotifications(tokens, title);
+        firebaseNotificationWrapper.sendNotificationsToAll(title);
     }
 
     getWeight(id1, id2) {
