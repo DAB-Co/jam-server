@@ -11,6 +11,8 @@ const spotifyUtils = utilsInitializer.spotifyUtils();
 const userPreferencesUtils = utilsInitializer.userPreferencesUtils();
 const spotifyPreferencesUtils = utilsInitializer.spotifyPreferencesUtils();
 
+const notificationUtils = require("../utils/notificationUtils");
+
 /**
  * Returns a random number between min (inclusive) and max (inclusive)
  * https://futurestud.io/tutorials/generate-a-random-number-in-range-with-javascript-node-js
@@ -499,6 +501,9 @@ class AlgorithmEntryPoint {
 
         this._apply_changes();
         this._match_users();
+        let tokens = utilsInitializer.accountUtils().getAllNotificationTokens();
+        let title = "You have a new match!";
+        notificationUtils.sendNotifications(tokens, title);
     }
 
     getWeight(id1, id2) {
