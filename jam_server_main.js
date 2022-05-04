@@ -4,6 +4,7 @@ const body_parser = require("body-parser");
 const fs = require("fs");
 require("dotenv").config({ path: path.join(__dirname, ".env.local") });
 const algorithmEntryPoint = require(path.join(__dirname, "utils", "algorithmEntryPoint.js"));
+const firebaseNotificationWrapper = require(path.join(__dirname, "utils", "firebaseNotificationWrapper.js"));
 
 function run_algorithm() {
     algorithmEntryPoint.run();
@@ -36,6 +37,11 @@ const argv = require("yargs")(process.argv.slice(1))
         type: "boolean",
         default: false,
     })
+    .option("notification", {
+        description: "send notification when algorithm completes",
+        type: "boolean",
+        default: false,
+    })
     .help().alias("help", "h")
     .parse();
 
@@ -48,6 +54,11 @@ app.use(express.urlencoded({
 }));
 app.use(body_parser.json({limit: "50mb"}));
 app.set("view engine", "ejs");
+
+if (argv.notification) {
+    const service_account_key = JSON.parse(fs.readFileSync(path.join(__dirname, "..", process.env.firebase_account_key_path), "utf8"));
+    firebaseNotificationWrapper.initialize(service_account_key);
+}
 
 if (argv.no_https) {
     const http_server = app.listen(process.env.http_port, () => {
