@@ -7,14 +7,14 @@ const domain = "http://localhost:" + process.env.http_port;
 describe(__filename, function () {
     let users = {
         "test_user": {
-            email: "test_user@email.com", password: "12345678"
+            email: "test_user@email.com", password: "12345678", device_id: "device_id"
         }
     };
 
     describe("", function () {
         it("register test_user", async function () {
             let data = {
-                username: "test_user", email: users.test_user.email, password: users.test_user.password
+                username: "test_user", email: users.test_user.email, password: users.test_user.password, device_id: "device_id"
             };
             await axios.post(domain + "/api/signup", data)
                 .then(function (res) {
@@ -31,7 +31,7 @@ describe(__filename, function () {
     describe("", function () {
         it("register test_user again", async function () {
             let data = {
-                username: "test_user", email: users.test_user.email, password: users.test_user.password
+                username: "test_user", email: users.test_user.email, password: users.test_user.password, device_id: "device_id"
             };
             await axios.post(domain + "/api/signup", data)
                 .then(function (res) {
@@ -89,7 +89,7 @@ describe(__filename, function () {
     describe("", function () {
         it("login test_user with api token", async function () {
             let data = {
-                user_id: users.test_user.user_id, api_token: users.test_user.api_token,
+                user_id: users.test_user.user_id, api_token: users.test_user.api_token, device_id: "device_id"
             }
             await axios.post(domain + "/api/wake", data)
                 .then(function (res) {
@@ -112,7 +112,7 @@ describe(__filename, function () {
     describe("", function () {
         it("login test_user with wrong api token", async function () {
             let data = {
-                user_id: users.test_user.user_id, api_token: "wrong api token",
+                user_id: users.test_user.user_id, api_token: "wrong api token", device_id: "device_id"
             }
             await axios.post(domain + "/api/wake", data)
                 .then(function (res) {
@@ -129,7 +129,7 @@ describe(__filename, function () {
     describe("", function () {
         it("login test_user with empty api token", async function () {
             let data = {
-                user_id: users.test_user.user_id, api_token: ""
+                user_id: users.test_user.user_id, api_token: "", device_id: "device_id"
             };
             await axios.post(domain + "/api/wake", data)
                 .then(function (res) {

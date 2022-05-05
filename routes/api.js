@@ -26,7 +26,7 @@ router.get("/api", async (req, res) => {
 router.post("/api/signup", async (req, res, next) => {
     let user = req.body;
     console.log("------/api/signup------");
-    if (user.username !== undefined && user.email !== undefined && user.password !== undefined) {
+    if (user.username !== undefined && user.email !== undefined && user.password !== undefined && user.device_id !== undefined) {
         let username = user.username;
         let email = user.email;
         let password = user.password.toString();
@@ -83,6 +83,7 @@ router.post("/api/signup", async (req, res, next) => {
                         "user_id": user_id,
                         "api_token": api_token
                     }
+                    utilsInitializer.userDevicesUtils().updateDeviceId(user_id, user.device_id);
                     console.log("response:", JSON.stringify(response));
                     res.status(200);
                     res.send(JSON.stringify(response));
