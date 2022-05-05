@@ -103,10 +103,11 @@ router.post("/api/signup", async (req, res, next) => {
 router.post("/api/auth", async (req, res, next) => {
     let user = req.body;
     console.log("------/api/auth------");
-    if (user.email !== undefined && user.password !== undefined) {
+    if (user.email !== undefined && user.password !== undefined && user.device_id !== undefined) {
         let email = user.email;
         let password = user.password.toString();
         let notification_token = user.notification_token;
+        let device_id = user.device_id;
         console.log(`login: ${email}`);
         let user_data = accountUtils.getRowByEmail(email);
         if (user_data === undefined) {
@@ -131,6 +132,7 @@ router.post("/api/auth", async (req, res, next) => {
                         "api_token": api_token,
                         "languages": utilsInitializer.userLanguagesUtils().getUserLanguages(user_data.user_id)
                     }
+                    utilsInitializer.userDevicesUtils().updateDeviceId(user_data.user_id, device_id);
                     console.log("response:", info);
                     res.status(200);
                     res.send(JSON.stringify(info));

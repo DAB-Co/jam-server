@@ -48,7 +48,7 @@ describe(__filename, function () {
     describe("", function () {
         it("login test_user", async function () {
             let data = {
-                email: users.test_user.email, password: users.test_user.password
+                email: users.test_user.email, password: users.test_user.password, device_id: "device_id"
             }
             await axios.post(domain + "/api/auth", data)
                 .then(function (res) {
@@ -72,7 +72,7 @@ describe(__filename, function () {
     describe("", function () {
         it("login test_user with wrong password", async function () {
             let data = {
-                email: users.test_user.email, password: "wrong password"
+                email: users.test_user.email, password: "wrong password", device_id: "device_id"
             }
             await axios.post(domain + "/api/auth", data)
                 .then(function (res) {
