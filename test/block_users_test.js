@@ -85,7 +85,7 @@ describe(__filename, function () {
     });
 
     describe("", function () {
-        it("2 gets friends and 1 is not blocked", async function () {
+        it("2 gets friends and 1 is not there", async function () {
             let data = {
                 user_id: users[2].user_id,
                 api_token: users[2].api_token
@@ -93,7 +93,7 @@ describe(__filename, function () {
 
             await axios.post(domain + "/api/friends", data)
                 .then(function (response) {
-                    assert.ok(!response.data[users[1].user_id].blocked);
+                    assert.ok(!(users[1].user_id in response.data));
                 })
                 .catch(function (error) {
                     assert.fail(error.response.data);
