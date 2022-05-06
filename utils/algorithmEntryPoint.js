@@ -273,9 +273,6 @@ class AlgorithmEntryPoint {
             let can_select = Array.from(can_speak_with);
             do {
                 id2 = can_select[random(0, can_select.length-1)];
-                if (id === id2) {
-                    continue;
-                }
                 selected.add(id2);
                 if (!this.matched.has(id2)) {
                     this.matched.set(id2, new Set());
