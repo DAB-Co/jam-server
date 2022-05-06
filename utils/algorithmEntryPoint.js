@@ -272,7 +272,7 @@ class AlgorithmEntryPoint {
             let selected = new Set();
             let can_select = Array.from(can_speak_with);
             do {
-                id2 = can_select[random(1, can_select.length-1)];
+                id2 = can_select[random(0, can_select.length-1)];
                 if (id === id2) {
                     continue;
                 }
@@ -282,7 +282,7 @@ class AlgorithmEntryPoint {
                 }
             } while (this.matched.get(id2).has(id) && selected.size < can_select.length);
 
-            if (selected.size === can_select.size) {
+            if (selected.size === can_select.length) {
                 continue;
             }
 
