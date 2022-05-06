@@ -12,12 +12,14 @@ describe(__filename, function () {
         1: {
             username: "test_user1",
             email: "test_user1@email.com",
-            password: "12345678"
+            password: "12345678",
+            device_id: "device_id"
         },
         2: {
             username: "test_user2",
             email: "test_user2@email.dom",
-            password: "12345678"
+            password: "12345678",
+            device_id: "device_id"
         }
     };
 
