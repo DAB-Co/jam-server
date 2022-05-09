@@ -1,6 +1,4 @@
 const path = require("path");
-const firebase_admin = require("firebase-admin");
-
 const utilsInitializer = require(path.join(__dirname, "initializeUtils.js"));
 
 class FirebaseNotificationWrapper{
@@ -9,10 +7,10 @@ class FirebaseNotificationWrapper{
     }
 
     initialize(service_account_key) {
-        this.firebaseAdmin = firebase_admin;
+        this.firebaseAdmin = require("firebase-admin");
 
         this.firebaseAdmin.initializeApp({
-            credential: firebase_admin.credential.cert(service_account_key),
+            credential: this.firebaseAdmin.credential.cert(service_account_key),
         });
     }
 
@@ -29,7 +27,7 @@ class FirebaseNotificationWrapper{
                 "tokens": utilsInitializer.accountUtils().getAllNotificationTokens(),
             };
 
-            firebase_admin.messaging().sendMulticast(message)
+            this.firebaseAdmin.messaging().sendMulticast(message)
                 .then(response => {
                     console.log(response);
                 })
