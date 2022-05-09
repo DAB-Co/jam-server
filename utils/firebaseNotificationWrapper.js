@@ -1,6 +1,5 @@
 const path = require("path");
 const firebase_admin = require("firebase-admin");
-require("dotenv").config({ path: path.join(__dirname, "..", ".env.local") });
 
 const utilsInitializer = require(path.join(__dirname, "initializeUtils.js"));
 
