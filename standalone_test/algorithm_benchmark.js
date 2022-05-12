@@ -544,7 +544,7 @@ describe(__filename, function () {
     describe('', function() {
         it("queue changes twice", function() {
             let id = random(0, user_count-1);
-            let random_user = user_data[id.toString()];
+            let random_user = user_data[id];
             let temp = random_user.top_tracks[0];
             random_user.top_tracks[0] = random_user.top_tracks[1];
             random_user.top_tracks[1] = temp;

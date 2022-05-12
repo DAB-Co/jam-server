@@ -318,6 +318,10 @@ class AlgorithmEntryPoint {
 
             if (current_pref.has(user_id)) {
                 for (let [user_id2, weight2] of current_pref) {
+                    if (user_id === user_id2) {
+                        continue;
+                    }
+
                     if (!this.graph.has(user_id2)) {
                         this.graph.set(user_id2, new Map());
                         this.graph.get(user_id2).set(user_id, 0);
