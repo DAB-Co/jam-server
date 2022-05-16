@@ -179,7 +179,7 @@ class AlgorithmEntryPoint {
             }
             utilsInitializer.userFriendsUtils().addFriend(id, match_id);
             firebaseNotificationWrapper.sendNotification("You have a new match!", id);
-            firebaseNotificationWrapper.sendNotification("You have a new match!", id2);
+            firebaseNotificationWrapper.sendNotification("You have a new match!", match_id);
             if (!this.matched.has(id)) {
                 this.matched.set(id, new Set());
             }
