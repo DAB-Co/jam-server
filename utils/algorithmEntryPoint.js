@@ -178,6 +178,8 @@ class AlgorithmEntryPoint {
                 continue;
             }
             utilsInitializer.userFriendsUtils().addFriend(id, match_id);
+            firebaseNotificationWrapper.sendNotification("You have a new match!", id);
+            firebaseNotificationWrapper.sendNotification("You have a new match!", id2);
             if (!this.matched.has(id)) {
                 this.matched.set(id, new Set());
             }
@@ -234,6 +236,8 @@ class AlgorithmEntryPoint {
                     found = true;
                 }
                 utilsInitializer.userFriendsUtils().addFriend(id1, id2);
+                firebaseNotificationWrapper.sendNotification("You have a new match!", id1);
+                firebaseNotificationWrapper.sendNotification("You have a new match!", id2);
                 if (!this.matched.has(id1)) {
                     this.matched.set(id1, new Set());
                 }
@@ -284,6 +288,8 @@ class AlgorithmEntryPoint {
             }
 
             utilsInitializer.userFriendsUtils().addFriend(id, id2);
+            firebaseNotificationWrapper.sendNotification("You have a new match!", id);
+            firebaseNotificationWrapper.sendNotification("You have a new match!", id2);
 
             this.matched.get(id).add(id2);
             this.matched.get(id2).add(id);
@@ -502,8 +508,6 @@ class AlgorithmEntryPoint {
 
         this._apply_changes();
         this._match_users();
-        let title = "You have a new match!";
-        firebaseNotificationWrapper.sendNotificationsToAll(title);
     }
 
     getWeight(id1, id2) {
