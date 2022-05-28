@@ -195,7 +195,7 @@ class AlgorithmEntryPoint {
         }
 
         let leftovers_leftovers = [];
-        let leftovers_found = new Set();
+        let leftovers_matched = new Set();
 
         this.user_ids = utilsInitializer.accountUtils().getAllPrimaryKeys();
         for (let i=0; i<this.user_ids.length; i++) {
@@ -209,7 +209,7 @@ class AlgorithmEntryPoint {
 
         for (let i=0; i<leftovers.length; i++) {
             let id1 = leftovers[i];
-            if (leftovers_found.has(id1)) {
+            if (leftovers_matched.has(id1)) {
                 continue;
             }
             let can_speak_with = undefined;
@@ -223,7 +223,7 @@ class AlgorithmEntryPoint {
             let found = false;
             for (let j=i+1; j<leftovers.length; j++) {
                 let id2 = leftovers[j];
-                if (leftovers_found.has(id2)) {
+                if (leftovers_matched.has(id2)) {
                     continue;
                 }
                 if (!can_speak_with.has(id2)) {
@@ -249,8 +249,8 @@ class AlgorithmEntryPoint {
                 }
 
                 this.matched.get(id2).add(id1);
-                leftovers_found.add(id1);
-                leftovers_found.add(id2);
+                leftovers_matched.add(id1);
+                leftovers_matched.add(id2);
                 break;
             }
 
@@ -261,11 +261,11 @@ class AlgorithmEntryPoint {
 
         //console.log(leftovers_leftovers);
 
-        let leftovers_matched = new Set();
+        let leftovers_leftovers_matched = new Set();
 
         for (let i=0; i<leftovers_leftovers.length; i++) {
             let id = leftovers_leftovers[i];
-            if (leftovers_matched.has(id)) {
+            if (leftovers_leftovers_matched.has(id)) {
                 continue;
             }
             if (!this.matched.has(id)) {
@@ -275,26 +275,28 @@ class AlgorithmEntryPoint {
             let id2 = undefined;
             let selected = new Set();
             let can_select = Array.from(can_speak_with);
+            if (can_select === undefined || can_select === null || can_select.length === 0) {
+                continue;
+            }
             do {
                 id2 = can_select[random(0, can_select.length-1)];
                 selected.add(id2);
                 if (!this.matched.has(id2)) {
                     this.matched.set(id2, new Set());
                 }
-            } while (this.matched.get(id2).has(id) && selected.size < can_select.length);
+            } while (this.matched.get(id2).has(id) && (matched_today.has(id2) + leftovers_matched.has(id2) + leftovers_leftovers_matched.has(id2) > 2) && selected.size < can_select.length);
 
-            if (selected.size === can_select.length) {
+            if (selected.size === can_select.length || (matched_today.has(id2) + leftovers_matched.has(id2) + leftovers_leftovers_matched.has(id2) > 2)) {
                 continue;
             }
-
             utilsInitializer.userFriendsUtils().addFriend(id, id2);
             firebaseNotificationWrapper.sendNotification("You have a new match!", id);
             firebaseNotificationWrapper.sendNotification("You have a new match!", id2);
 
             this.matched.get(id).add(id2);
             this.matched.get(id2).add(id);
-            leftovers_matched.add(id);
-            leftovers_matched.add(id2);
+            leftovers_leftovers_matched.add(id);
+            leftovers_leftovers_matched.add(id2);
         }
         this._dump_data();
     }

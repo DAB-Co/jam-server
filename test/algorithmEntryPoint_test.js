@@ -545,4 +545,14 @@ describe(__filename, function () {
             assert.ok(leftover_count < 3);
         });
     });
+
+    describe('', function() {
+        it("check if new user doesn't match with everyone when added", function() {
+            let id = utilsInitializer.accountUtils().addUser("last@email.com", "last", "pass", "api_token").lastInsertRowid;
+            utilsInitializer.userLanguagesUtils().addLanguages(id, ["ooga booga"]);
+            algorithmEntryPoint._apply_changes();
+            algorithmEntryPoint._match_users();
+            assert.strictEqual(Object.keys(utilsInitializer.userFriendsUtils().getFriends(id)).length, 1);
+        });
+    });
 });

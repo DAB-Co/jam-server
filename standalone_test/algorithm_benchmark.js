@@ -488,6 +488,7 @@ describe(__filename, function () {
                     assert.fail("wrong match count");
                 }
             }
+            //process.exit(0);
             assert.ok(leftover_count < 2);
         });
     });
@@ -568,6 +569,16 @@ describe(__filename, function () {
                     assert.strictEqual(weight, calculate_weight(user_data[id], user_data[id2]), `${id}---${id2}`);
                 }
             }
+        });
+    });
+
+    describe('', function() {
+        it("check if new user doesn't match with everyone when added", function() {
+            let id = utilsInitializer.accountUtils().addUser("last@email.com", "last", "pass", "api_token").lastInsertRowid;
+            utilsInitializer.userLanguagesUtils().addLanguages(id, ["ooga booga"]);
+            algorithmEntryPoint._apply_changes();
+            algorithmEntryPoint._match_users();
+            assert.strictEqual(Object.keys(utilsInitializer.userFriendsUtils().getFriends(id)).length, 1);
         });
     });
 });
