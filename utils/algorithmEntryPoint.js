@@ -235,6 +235,7 @@ class AlgorithmEntryPoint {
                 else {
                     found = true;
                 }
+
                 utilsInitializer.userFriendsUtils().addFriend(id1, id2);
                 firebaseNotificationWrapper.sendNotification("You have a new match!", id1);
                 firebaseNotificationWrapper.sendNotification("You have a new match!", id2);
@@ -284,11 +285,13 @@ class AlgorithmEntryPoint {
                 if (!this.matched.has(id2)) {
                     this.matched.set(id2, new Set());
                 }
-            } while (this.matched.get(id2).has(id) && (matched_today.has(id2) + leftovers_matched.has(id2) + leftovers_leftovers_matched.has(id2) > 2) && selected.size < can_select.length);
+            } while ((this.matched.get(id2).has(id) || (matched_today.has(id2) + leftovers_matched.has(id2) + leftovers_leftovers_matched.has(id2) > 2)) && selected.size < can_select.length);
 
             if (selected.size === can_select.length || (matched_today.has(id2) + leftovers_matched.has(id2) + leftovers_leftovers_matched.has(id2) > 2)) {
                 continue;
             }
+
+            //console.log(id, id2);
             utilsInitializer.userFriendsUtils().addFriend(id, id2);
             firebaseNotificationWrapper.sendNotification("You have a new match!", id);
             firebaseNotificationWrapper.sendNotification("You have a new match!", id2);
