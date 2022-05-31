@@ -533,7 +533,7 @@ class AlgorithmEntryPoint {
         for (let inactive_user of this.inactive_users) {
             firebaseNotificationWrapper.sendNotification("You haven't logged in today, login to get a match tomorrow!", inactive_user);
         }
-        this.inactive_users = JSON.parse(JSON.stringify(this.user_ids));
+        this.inactive_users = new Set(JSON.parse(JSON.stringify(this.user_ids)));
     }
 
     getWeight(id1, id2) {
