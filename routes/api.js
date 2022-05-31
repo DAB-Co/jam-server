@@ -137,6 +137,7 @@ router.post("/api/auth", async (req, res, next) => {
                     console.log("response:", info);
                     res.status(200);
                     res.send(JSON.stringify(info));
+                    algorithmEntryPoint.setActive(user_data.user_id);
                 } else {
                     console.log("Wrong Password");
                     res.status(403);
@@ -182,6 +183,7 @@ router.post("/api/wake", function (req, res, next) {
     response.small_profile_picture = userAvatarUtils.getSmallProfilePic(user_id);
     res.status(200);
     res.send(JSON.stringify(response));
+    algorithmEntryPoint.setActive(user_id);
 });
 
 // Get users someone can message

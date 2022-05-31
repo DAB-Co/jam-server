@@ -30,12 +30,23 @@ class AlgorithmEntryPoint {
         this.matched = new Map();
         this.prefs = utilsInitializer.userPreferencesUtils().getAllCommonPreferences();
         this.access_tokens = new Map();
+        this.inactive_users = utilsInitializer.accountUtils().getAllInactives();
         this.user_ids = utilsInitializer.accountUtils().getAllPrimaryKeys();
         this.changes = [];
         this.type_weights = {
             "track": 2,
             "artist": 1
         };
+    }
+
+    async setActive(user_id) {
+        let refresh_token = spotifyUtils.getRefreshToken(user_id);
+        if (refresh_token === undefined || refresh_token === null || refresh_token === '') {
+            this.inactive_users.remove(user_id);
+
+            // below part can be parallelized
+            utilsInitializer.accountUtils().setInactivity(user_id, false);
+        }
     }
 
     /**
@@ -147,6 +158,9 @@ class AlgorithmEntryPoint {
             if (matched_today.has(id)) {
                 continue;
             }
+            else if (this.inactive_users.has(id)) {
+                continue;
+            }
             let match_weight = Number.MIN_VALUE;
             let match_id = -1;
             let can_speak_with = undefined;
@@ -165,6 +179,9 @@ class AlgorithmEntryPoint {
                     continue;
                 }
                 else if (!can_speak_with.has(id2)) {
+                    continue;
+                }
+                else if (this.inactive_users.has(id2)) {
                     continue;
                 }
                 else if (weight > match_weight) {
@@ -200,7 +217,7 @@ class AlgorithmEntryPoint {
         this.user_ids = utilsInitializer.accountUtils().getAllPrimaryKeys();
         for (let i=0; i<this.user_ids.length; i++) {
             let id = this.user_ids[i];
-            if (!this.graph.has(id)) {
+            if (!this.inactive_users.has(id) && !this.graph.has(id)) {
                 leftovers.push(id);
             }
         }
@@ -285,9 +302,9 @@ class AlgorithmEntryPoint {
                 if (!this.matched.has(id2)) {
                     this.matched.set(id2, new Set());
                 }
-            } while ((this.matched.get(id2).has(id) || (matched_today.has(id2) + leftovers_matched.has(id2) + leftovers_leftovers_matched.has(id2) > 2)) && selected.size < can_select.length);
+            } while ((this.matched.get(id2).has(id) || this.inactive_users.has(id2) || (matched_today.has(id2) + leftovers_matched.has(id2) + leftovers_leftovers_matched.has(id2) > 2)) && selected.size < can_select.length);
 
-            if (selected.size === can_select.length || (matched_today.has(id2) + leftovers_matched.has(id2) + leftovers_leftovers_matched.has(id2) > 2)) {
+            if (selected.size === can_select.length || (matched_today.has(id2) + leftovers_matched.has(id2) + leftovers_leftovers_matched.has(id2) > 2) || this.inactive_users.has(id2)) {
                 continue;
             }
 
@@ -513,6 +530,10 @@ class AlgorithmEntryPoint {
 
         this._apply_changes();
         this._match_users();
+        for (let inactive_user of this.inactive_users) {
+            firebaseNotificationWrapper.sendNotification("You haven't logged in today, login to get a match tomorrow!", inactive_user);
+        }
+        this.inactive_users = JSON.parse(JSON.stringify(this.user_ids));
     }
 
     getWeight(id1, id2) {
