@@ -555,4 +555,56 @@ describe(__filename, function () {
             assert.strictEqual(Object.keys(utilsInitializer.userFriendsUtils().getFriends(id)).length, 1);
         });
     });
+
+    describe('', function() {
+        it("set new user to inactive", function() {
+            algorithmEntryPoint.inactive_users.add(user_count+1);
+        });
+    });
+
+    describe('', function() {
+        it("run algorithm again for day3", async function() {
+            console.time("apply");
+            algorithmEntryPoint._apply_changes();
+            console.timeEnd("apply");
+            console.time("match");
+            algorithmEntryPoint._match_users();
+            console.timeEnd("match");
+            console.time("dump");
+            await algorithmEntryPoint._dump_data();
+            console.timeEnd("dump");
+            console.time("check match");
+            for (let id in user_data) {
+                for (let id2 in user_data) {
+                    if (id === id2) {
+                        continue;
+                    }
+                    let weight = algorithmEntryPoint.getWeight(parseInt(id), parseInt(id2));
+                    let weight2 = algorithmEntryPoint.getWeight(parseInt(id2), parseInt(id));
+                    assert.strictEqual(weight, weight2);
+                    if (weight === undefined) {
+                        weight = 0;
+                    }
+                    assert.strictEqual(weight, calculate_weight(user_data[id], user_data[id2]), `${id}---${id2}`);
+                }
+            }
+            console.timeEnd("check match");
+        });
+    });
+
+    describe('', function() {
+        it("check if match count is correct for day 3", function() {
+            let matches = algorithmEntryPoint.matched;
+            for (let [id, match] of matches) {
+                if ((match.size > 6 || match.size < 3) && id !== user_count+1) {
+                    console.log(id);
+                    assert.fail("wrong match count");
+                }
+                else if (id === user_count+1 && match.size !== 1) {
+                    console.log(id);
+                    assert.fail("wrong match count");
+                }
+            }
+        });
+    });
 });

@@ -131,12 +131,14 @@ router.post("/api/auth", async (req, res, next) => {
                         "username": username,
                         "user_id": user_data.user_id,
                         "api_token": api_token,
-                        "languages": utilsInitializer.userLanguagesUtils().getUserLanguages(user_data.user_id)
+                        "languages": utilsInitializer.userLanguagesUtils().getUserLanguages(user_data.user_id),
+                        "was_inactive": user_data.inactive === 1
                     }
                     utilsInitializer.userDevicesUtils().updateDeviceId(user_data.user_id, device_id);
                     console.log("response:", info);
                     res.status(200);
                     res.send(JSON.stringify(info));
+                    algorithmEntryPoint.setActive(user_data.user_id);
                 } else {
                     console.log("Wrong Password");
                     res.status(403);
@@ -174,6 +176,7 @@ router.post("/api/wake", function (req, res, next) {
         friends: userFriendsUtils.getFriends(user_id),
         //languages: utilsInitializer.userLanguagesUtils().getUserLanguages(user_id),
         refresh_token_expired: algorithmEntryPoint.refreshTokenExpired(user_id),
+        was_inactive: utilsInitializer.accountUtils().getColumnByPrimaryKey(user_id, "inactive") === 1,
     }
     console.log(response);
     for (let key of Object.keys(response.friends)) {
@@ -182,6 +185,7 @@ router.post("/api/wake", function (req, res, next) {
     response.small_profile_picture = userAvatarUtils.getSmallProfilePic(user_id);
     res.status(200);
     res.send(JSON.stringify(response));
+    algorithmEntryPoint.setActive(user_id);
 });
 
 // Get users someone can message

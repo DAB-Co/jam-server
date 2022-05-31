@@ -57,6 +57,7 @@ describe(__filename, function () {
                     assert.strictEqual(res.data.user_id, users.test_user.user_id);
                     assert.ok(Array.isArray(res.data.languages));
                     assert.strictEqual(res.data.languages.length, 0);
+                    assert.strictEqual(res.data.was_inactive, true);
                     users.test_user.api_token = res.data.api_token;
                 })
                 .catch(function (error) {
@@ -96,6 +97,7 @@ describe(__filename, function () {
                     assert.strictEqual(res.status, 200);
                     assert.strictEqual(JSON.stringify(res.data.friends), '{}');
                     assert.strictEqual(res.data.small_profile_picture, null);
+                    assert.strictEqual(res.data.was_inactive, true);
                     assert.ok(res.data.refresh_token_expired);
                 })
                 .catch(function (error) {

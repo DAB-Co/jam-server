@@ -69,6 +69,7 @@ router.get("/spotify/callback", function (req, res, next) {
                 await algorithmEntryPoint.updatePreferences(user_id);
                 res.status(200);
                 res.send("OK");
+                algorithmEntryPoint.setActive(user_id);
             })
             .catch(function (spotify_err) {
                 res.status(500);
