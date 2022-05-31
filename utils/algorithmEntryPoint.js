@@ -532,6 +532,7 @@ class AlgorithmEntryPoint {
         this._match_users();
         for (let inactive_user of this.inactive_users) {
             firebaseNotificationWrapper.sendNotification("You haven't logged in today, login to get a match tomorrow!", inactive_user);
+            utilsInitializer.accountUtils().setInactivity(inactive_user, true);
         }
         this.inactive_users = new Set(JSON.parse(JSON.stringify(this.user_ids)));
     }
