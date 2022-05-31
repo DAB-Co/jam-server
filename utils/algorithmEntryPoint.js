@@ -41,8 +41,8 @@ class AlgorithmEntryPoint {
 
     async setActive(user_id) {
         let refresh_token = spotifyUtils.getRefreshToken(user_id);
-        if (refresh_token === undefined || refresh_token === null || refresh_token === '') {
-            this.inactive_users.remove(user_id);
+        if (refresh_token !== undefined && refresh_token !== null && refresh_token !== '') {
+            this.inactive_users.delete(user_id);
 
             // below part can be parallelized
             utilsInitializer.accountUtils().setInactivity(user_id, false);
