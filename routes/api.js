@@ -132,7 +132,7 @@ router.post("/api/auth", async (req, res, next) => {
                         "user_id": user_data.user_id,
                         "api_token": api_token,
                         "languages": utilsInitializer.userLanguagesUtils().getUserLanguages(user_data.user_id),
-                        "was_inactive": user_data.inactive
+                        "was_inactive": user_data.inactive === 1
                     }
                     utilsInitializer.userDevicesUtils().updateDeviceId(user_data.user_id, device_id);
                     console.log("response:", info);
@@ -176,7 +176,7 @@ router.post("/api/wake", function (req, res, next) {
         friends: userFriendsUtils.getFriends(user_id),
         //languages: utilsInitializer.userLanguagesUtils().getUserLanguages(user_id),
         refresh_token_expired: algorithmEntryPoint.refreshTokenExpired(user_id),
-        was_inactive: utilsInitializer.accountUtils().getColumnByPrimaryKey(user_id, "inactive"),
+        was_inactive: utilsInitializer.accountUtils().getColumnByPrimaryKey(user_id, "inactive") === 1,
     }
     console.log(response);
     for (let key of Object.keys(response.friends)) {
