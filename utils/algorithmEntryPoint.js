@@ -151,11 +151,12 @@ class AlgorithmEntryPoint {
     }
 
     _match_users() {
+        let match_calculated = new Set();
         let matched_today = new Set();
         let leftovers = [];
         let speak_with_cache = new Map();
         for (let [id, weights] of this.graph.entries()) {
-            if (matched_today.has(id)) {
+            if (match_calculated.has(id)) {
                 continue;
             }
             else if (this.inactive_users.has(id)) {
@@ -175,7 +176,7 @@ class AlgorithmEntryPoint {
                 if (this.matched.has(id) && this.matched.get(id).has(id2)) {
                     continue;
                 }
-                else if (matched_today.has(id2)) {
+                else if (match_calculated.has(id2)) {
                     continue;
                 }
                 else if (!can_speak_with.has(id2)) {
@@ -189,7 +190,7 @@ class AlgorithmEntryPoint {
                     match_weight = weight;
                 }
             }
-            matched_today.add(id);
+            match_calculated.add(id);
             if (match_id === -1) {
                 leftovers.push(id);
                 continue;
@@ -208,6 +209,8 @@ class AlgorithmEntryPoint {
             }
 
             this.matched.get(match_id).add(id);
+            match_calculated.add(match_id);
+            matched_today.add(id);
             matched_today.add(match_id);
         }
 
