@@ -360,6 +360,11 @@ class AlgorithmEntryPoint {
                     else if (!this.graph.get(user_id2).has(user_id)) {
                         this.graph.get(user_id2).set(user_id, 0);
                     }
+                    else {
+                        let old_weight = this.graph.get(user_id2).get(user_id);
+                        old_weight -= current_pref.get(user_id);
+                        this.graph.get(user_id2).set(user_id, old_weight);
+                    }
 
                     if (!this.graph.has(user_id)) {
                         this.graph.set(user_id, new Map());
@@ -368,14 +373,16 @@ class AlgorithmEntryPoint {
                     else if (!this.graph.get(user_id).has(user_id2)) {
                         this.graph.get(user_id).set(user_id2, 0);
                     }
-
-                    let old_weight2 = this.graph.get(user_id2).get(user_id);
-                    this.graph.get(user_id2).set(user_id, old_weight2);
-                    this.graph.get(user_id).set(user_id2, old_weight2);
+                    else {
+                        let old_weight = this.graph.get(user_id).get(user_id2);
+                        old_weight -= current_pref.get(user_id);
+                        this.graph.get(user_id).set(user_id2, old_weight);
+                    }
                 }
             }
             current_pref.set(user_id, weight);
         }
+
         while (this.changes.length > 0) {
             let item_id = this.changes[0][0];
             let user_id = this.changes[0][1];
@@ -383,10 +390,9 @@ class AlgorithmEntryPoint {
 
             let current_pref = this.prefs.get(item_id);
 
-
             for (let [user_id2, weight2] of current_pref) {
                 if (user_id === user_id2) {
-                    current_pref.set(user_id2, weight);
+                    continue;
                 }
                 else {
                     if (!this.graph.has(user_id2)) {
