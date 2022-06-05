@@ -340,7 +340,7 @@ function calculate_weight(u1, u2) {
     }
 
     let artist_length1 = u1.top_artists.items.length;
-    let artist_length2 = u1.top_artists.items.length;
+    let artist_length2 = u2.top_artists.items.length;
     for (let i=0; i<artist_length1; i++) {
         let curr_uri = u1.top_artists.items[i].uri;
         let curr_type = u1.top_artists.items[i].type;

@@ -34,7 +34,7 @@ class AlgorithmEntryPoint {
         this.user_ids = utilsInitializer.accountUtils().getAllPrimaryKeys();
         this.changes = [];
         this.type_weights = {
-            "track": 2,
+            "track": 1,
             "artist": 1
         };
     }
@@ -138,6 +138,7 @@ class AlgorithmEntryPoint {
      */
     async _add_preference(user_id, raw_preference) {
         let item_count = raw_preference.items.length;
+        let genre_changes = new Map();
         for (let i = 0; i < item_count; i++) {
             const item = raw_preference.items[i];
             const type = item.type;
@@ -145,8 +146,28 @@ class AlgorithmEntryPoint {
             let weight_to_be_added = (item_count - i) * this.type_weights[type];
             if (!this.prefs.has(id) || !this.prefs.get(id).has(user_id) || weight_to_be_added !== this.prefs.get(id).get(user_id)) {
                 this.changes.push([id, user_id, weight_to_be_added]);
+                if ("genres" in item) {
+                    for (let j=0; j<item.genres.length; j++) {
+                        let genre = {
+                            uri: item.genres[j],
+                            type:"genre",
+                            name: item.genres[j]
+                        };
+                        this._write_pref_to_database(user_id, genre, weight_to_be_added);
+                        if (!genre_changes.has(genre.uri)) {
+                            genre_changes.set(genre.uri, weight_to_be_added);
+                        } else {
+                            let w = genre_changes.get(genre.uri);
+                            genre_changes.set(genre.uri, w+weight_to_be_added);
+                        }
+                    }
+                }
                 this._write_pref_to_database(user_id, item, weight_to_be_added);
             }
+        }
+
+        for (let [genre, weight] of genre_changes) {
+            this.changes.push([genre, user_id, weight]);
         }
     }
 
@@ -420,6 +441,8 @@ class AlgorithmEntryPoint {
 
             this.changes.shift();
         }
+        console.log(this.prefs);
+        console.log(this.graph);
     }
 
     async _dump_data() {
