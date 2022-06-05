@@ -351,11 +351,11 @@ function calculate_weight(u1, u2) {
             let genre_id = u1.top_artists.items[i].genres[j];
             if (artist1_genres.has(genre_id)) {
                 let w = artist1_genres.get(genre_id);
-                w += (artist_length1-j)*algorithmEntryPoint.type_weights[curr_type];
+                w += (artist_length1-i)*algorithmEntryPoint.type_weights[curr_type];
                 artist1_genres.set(genre_id, w);
             }
             else {
-                artist1_genres.set(genre_id, (artist_length1-j)*algorithmEntryPoint.type_weights[curr_type]);
+                artist1_genres.set(genre_id, (artist_length1-i)*algorithmEntryPoint.type_weights[curr_type]);
             }
         }
 
@@ -370,15 +370,28 @@ function calculate_weight(u1, u2) {
         }
     }
 
+    let artist2_genres = new Map();
     for (let i=0; i<artist_length2; i++) {
         let curr_type = u2.top_artists.items[i].type;
         for (let j=0; j<u2.top_artists.items[i].genres.length; j++) {
             let genre_id = u2.top_artists.items[i].genres[j];
-            if (artist1_genres.has(genre_id)) {
-                weight += (artist_length2-j)*algorithmEntryPoint.type_weights[curr_type] + artist1_genres.get(genre_id);
+            if (artist2_genres.has(genre_id)) {
+                let w = artist2_genres.get(genre_id);
+                w += (artist_length2-i)*algorithmEntryPoint.type_weights[curr_type];
+                artist2_genres.set(genre_id, w);
+            }
+            else {
+                artist2_genres.set(genre_id, (artist_length2-i)*algorithmEntryPoint.type_weights[curr_type]);
             }
         }
     }
+
+    for (let [genre, genre_weight] of artist1_genres) {
+        if (artist2_genres.has(genre)) {
+            weight += genre_weight + artist2_genres.get(genre);
+        }
+    }
+
     return weight;
 }
 
@@ -389,9 +402,11 @@ describe(__filename, function () {
     let genres = [];
     const user_count = 11;
     const artist_count = 5;
+    const artist_count_for_each_user = 3;
     const track_count = 7;
+    const track_count_for_each_user = 5;
     const genre_count = 6;
-    const genre_count_for_each_artist = 2;
+    const genre_count_for_each_artist = 3;
     this.timeout(Number.MAX_VALUE);
     before(function() {
         // kullanici yarat
@@ -442,7 +457,7 @@ describe(__filename, function () {
             let artist_indexes = new Set();
             let track_indexes = new Set();
 
-            for (let i=0; i<3; i++) {
+            for (let i=0; i<artist_count_for_each_user; i++) {
                 let r = undefined;
                 do {
                     r = random(0, artists.length-1)
@@ -451,7 +466,7 @@ describe(__filename, function () {
                 user_data[id].top_artists.items.push(artists[r]);
             }
 
-            for (let i=0; i<5; i++) {
+            for (let i=0; i<track_count_for_each_user; i++) {
                 let r = undefined;
                 do {
                     r = random(0, tracks.length-1)

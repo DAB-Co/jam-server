@@ -1,4 +1,5 @@
 const path = require("path");
+//require(path.join(__dirname, "..", "overwrite_database.js"));
 const algorithmEntryPoint = require(path.join(__dirname, "..", "utils", "algorithmEntryPoint.js"));
 const utilsInitializer = require(path.join(__dirname, "..", "utils", "initializeUtils.js"));
 
@@ -306,10 +307,11 @@ function random_list(n) {
 }
 
 
-function create_artist(name, uri) {
+function create_artist(name, uri, genres) {
     let t = JSON.parse(JSON.stringify(raw_artist_template));
     t.name = name;
     t.uri = uri;
+    t.genres = genres;
     return t;
 }
 
@@ -341,9 +343,22 @@ function calculate_weight(u1, u2) {
 
     let artist_length1 = u1.top_artists.items.length;
     let artist_length2 = u2.top_artists.items.length;
+    let artist1_genres = new Map();
     for (let i=0; i<artist_length1; i++) {
         let curr_uri = u1.top_artists.items[i].uri;
         let curr_type = u1.top_artists.items[i].type;
+        for (let j=0; j<u1.top_artists.items[i].genres.length; j++) {
+            let genre_id = u1.top_artists.items[i].genres[j];
+            if (artist1_genres.has(genre_id)) {
+                let w = artist1_genres.get(genre_id);
+                w += (artist_length1-i)*algorithmEntryPoint.type_weights[curr_type];
+                artist1_genres.set(genre_id, w);
+            }
+            else {
+                artist1_genres.set(genre_id, (artist_length1-i)*algorithmEntryPoint.type_weights[curr_type]);
+            }
+        }
+
         for (let j=0; j<artist_length2; j++) {
             if (curr_uri !== undefined && curr_uri === u2.top_artists.items[j].uri) {
                 let curr_type2 = u2.top_artists.items[j].type;
@@ -354,6 +369,29 @@ function calculate_weight(u1, u2) {
             }
         }
     }
+
+    let artist2_genres = new Map();
+    for (let i=0; i<artist_length2; i++) {
+        let curr_type = u2.top_artists.items[i].type;
+        for (let j=0; j<u2.top_artists.items[i].genres.length; j++) {
+            let genre_id = u2.top_artists.items[i].genres[j];
+            if (artist2_genres.has(genre_id)) {
+                let w = artist2_genres.get(genre_id);
+                w += (artist_length2-i)*algorithmEntryPoint.type_weights[curr_type];
+                artist2_genres.set(genre_id, w);
+            }
+            else {
+                artist2_genres.set(genre_id, (artist_length2-i)*algorithmEntryPoint.type_weights[curr_type]);
+            }
+        }
+    }
+
+    for (let [genre, genre_weight] of artist1_genres) {
+        if (artist2_genres.has(genre)) {
+            weight += genre_weight + artist2_genres.get(genre);
+        }
+    }
+
     return weight;
 }
 
@@ -361,18 +399,29 @@ describe(__filename, function () {
     let user_data = {};
     let artists = [];
     let tracks = [];
-    const user_count = 10;
+    let genres = [];
+    const user_count = 11;
     const artist_count = 5;
+    const artist_count_for_each_user = 3;
     const track_count = 7;
+    const track_count_for_each_user = 5;
+    const genre_count = 6;
+    const genre_count_for_each_artist = 3;
     this.timeout(Number.MAX_VALUE);
     before(function() {
         // kullanici yarat
         // tercihler yarat
         // kullanicilara rastgele tercihler ekle
 
+        for (let i=0; i<genre_count; i++) {
+            console.log(`creating genres progress %${(i/genre_count)*100}`);
+            genres.push(`genre${i}`);
+        }
+
+
         // kullanici yarat
         for (let i=0; i<user_count; i++) {
-            //console.log(`creating users progress %${(i/user_count)*100}`);
+            console.log(`creating users progress %${(i/user_count)*100}`);
             let id = utilsInitializer.accountUtils().addUser(`user${i}@email.com`, `user${i}`, "password", "api_token").lastInsertRowid;
             user_data[id] = {
                 "top_artists": {"items":[]},
@@ -383,31 +432,32 @@ describe(__filename, function () {
 
         // artistler yarat
         for (let i=0; i<artist_count; i++) {
-            //console.log(`creating artists progress %${(i/artist_count)*100}`);
-            let artist = create_artist(`artist${i}`, `artist_uri${i}`);
+            console.log(`creating artists progress %${(i/artist_count)*100}`);
+
+            let curr_genres = new Set();
+
+            for (let j=0; j<genre_count_for_each_artist; j++) {
+                curr_genres.add(genres[random(0, genre_count-1)]);
+            }
+
+            let artist = create_artist(`artist${i}`, `artist_uri${i}`, Array.from(curr_genres));
             artists.push(artist);
         }
 
         // trackler yarat
         for (let i=0; i<track_count; i++) {
-            //console.log(`creating tracks progress %${(i/track_count)*100}`);
+            console.log(`creating tracks progress %${(i/track_count)*100}`);
             let track = create_track(`track${i}`, `track_uri${i}`);
             tracks.push(track);
         }
 
-        // user data bir sozluk
-        // int -> {satir 309}
-        // artist ve track listelerinde olan degerlerden rastgele secilmis degerler olsun
-        // ayni degereden iki tane olmasin
-        // 3 artist 5 parca
-        // bu yorumun altina yaz
         let c = 0;
         for (let id in user_data) {
-            //console.log(`randomizing preferences progress %${(c/user_count)*100}`);
+            console.log(`randomizing preferences progress %${(c/user_count)*100}`);
             let artist_indexes = new Set();
             let track_indexes = new Set();
 
-            for (let i=0; i<3; i++) {
+            for (let i=0; i<artist_count_for_each_user; i++) {
                 let r = undefined;
                 do {
                     r = random(0, artists.length-1)
@@ -416,7 +466,7 @@ describe(__filename, function () {
                 user_data[id].top_artists.items.push(artists[r]);
             }
 
-            for (let i=0; i<5; i++) {
+            for (let i=0; i<track_count_for_each_user; i++) {
                 let r = undefined;
                 do {
                     r = random(0, tracks.length-1)
@@ -430,31 +480,31 @@ describe(__filename, function () {
 
     describe('', function () {
         it("write raw_preferences to database", async function() {
-            //console.time("write");
+            console.time("write");
             for (let id in user_data) {
-                //console.log(`writing prefs progress %${(id/user_count)*100}`);
+                console.log(`writing prefs progress %${(id/user_count)*100}`);
                 await algorithmEntryPoint._add_preference(parseInt(id), user_data[id].top_tracks);
                 await algorithmEntryPoint._add_preference(parseInt(id), user_data[id].top_artists);
             }
-            //console.timeEnd("write");
+            console.timeEnd("write");
         });
     });
 
     describe('', function() {
         it("match users", function() {
-            //console.time("apply");
+            console.time("apply");
             algorithmEntryPoint._apply_changes();
-            //console.timeEnd("apply");
+            console.timeEnd("apply");
             this.user_ids = utilsInitializer.accountUtils().getAllPrimaryKeys();
-            //console.time("match");
+            console.time("match");
             algorithmEntryPoint._match_users();
-            //console.timeEnd("match");
+            console.timeEnd("match");
         });
     });
 
     describe('', function() {
         it("check if weights are correct", function() {
-            //console.time("check match");
+            console.time("check match");
             for (let id in user_data) {
                 for (let id2 in user_data) {
                     if (id === id2) {
@@ -469,15 +519,15 @@ describe(__filename, function () {
                     assert.strictEqual(weight, calculate_weight(user_data[id], user_data[id2]), `${id}---${id2}`);
                 }
             }
-            //console.timeEnd("check match");
+            console.timeEnd("check match");
         });
     });
 
     describe('', function () {
         it("dump data", async function() {
-            //console.time("dump");
+            console.time("dump");
             await algorithmEntryPoint._dump_data();
-            //console.timeEnd("dump");
+            console.timeEnd("dump");
         })
     });
 
@@ -493,22 +543,23 @@ describe(__filename, function () {
                     assert.fail("wrong match count");
                 }
             }
+            //process.exit(0);
             assert.ok(leftover_count < 2);
         });
     });
 
     describe('', function() {
         it("run algorithm again for day2", async function() {
-            //console.time("apply");
+            console.time("apply");
             algorithmEntryPoint._apply_changes();
-            //console.timeEnd("apply");
-            //console.time("match");
+            console.timeEnd("apply");
+            console.time("match");
             algorithmEntryPoint._match_users();
-            //console.timeEnd("match");
-            //console.time("dump");
+            console.timeEnd("match");
+            console.time("dump");
             await algorithmEntryPoint._dump_data();
-            //console.timeEnd("dump");
-            //console.time("check match");
+            console.timeEnd("dump");
+            console.time("check match");
             for (let id in user_data) {
                 for (let id2 in user_data) {
                     if (id === id2) {
@@ -523,7 +574,7 @@ describe(__filename, function () {
                     assert.strictEqual(weight, calculate_weight(user_data[id], user_data[id2]), `${id}---${id2}`);
                 }
             }
-            //console.timeEnd("check match");
+            console.timeEnd("check match");
         });
     });
 
@@ -543,6 +594,36 @@ describe(__filename, function () {
                 }
             }
             assert.ok(leftover_count < 3);
+        });
+    });
+
+    describe('', function() {
+        it("queue changes twice", function() {
+            let id = random(1, user_count);
+            let random_user = user_data[id];
+            let temp = random_user.top_tracks[0];
+            random_user.top_tracks[0] = random_user.top_tracks[1];
+            random_user.top_tracks[1] = temp;
+            algorithmEntryPoint._add_preference(id, random_user.top_tracks);
+            temp = random_user.top_tracks[2];
+            random_user.top_tracks[2] = random_user.top_tracks[0];
+            random_user.top_tracks[0] = temp;
+            algorithmEntryPoint._add_preference(id, random_user.top_tracks);
+            algorithmEntryPoint._apply_changes();
+            for (let id in user_data) {
+                for (let id2 in user_data) {
+                    if (id === id2) {
+                        continue;
+                    }
+                    let weight = algorithmEntryPoint.getWeight(parseInt(id), parseInt(id2));
+                    let weight2 = algorithmEntryPoint.getWeight(parseInt(id2), parseInt(id));
+                    assert.strictEqual(weight, weight2);
+                    if (weight === undefined) {
+                        weight = 0;
+                    }
+                    assert.strictEqual(weight, calculate_weight(user_data[id], user_data[id2]), `${id}---${id2}`);
+                }
+            }
         });
     });
 
