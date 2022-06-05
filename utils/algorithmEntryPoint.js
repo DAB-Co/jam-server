@@ -34,7 +34,7 @@ class AlgorithmEntryPoint {
         this.user_ids = utilsInitializer.accountUtils().getAllPrimaryKeys();
         this.changes = [];
         this.type_weights = {
-            "track": 1,
+            "track": 2,
             "artist": 1
         };
     }
