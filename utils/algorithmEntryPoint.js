@@ -138,14 +138,37 @@ class AlgorithmEntryPoint {
      */
     async _add_preference(user_id, raw_preference) {
         let item_count = raw_preference.items.length;
+        let genre_weights = new Map();
         for (let i = 0; i < item_count; i++) {
             const item = raw_preference.items[i];
             const type = item.type;
             const id = item.uri;
             let weight_to_be_added = (item_count - i) * this.type_weights[type];
+            if ("genres" in item) {
+                for (let j=0; j<item.genres.length; j++) {
+                    if (!genre_weights.has(item.genres[j])) {
+                        genre_weights.set(item.genres[j], weight_to_be_added);
+                    } else {
+                        let w = genre_weights.get(item.genres[j]);
+                        genre_weights.set(item.genres[j], w+weight_to_be_added);
+                    }
+                }
+            }
             if (!this.prefs.has(id) || !this.prefs.get(id).has(user_id) || weight_to_be_added !== this.prefs.get(id).get(user_id)) {
                 this.changes.push([id, user_id, weight_to_be_added]);
                 this._write_pref_to_database(user_id, item, weight_to_be_added);
+            }
+        }
+
+        for (let [genre, weight] of genre_weights) {
+            if (!this.prefs.has(genre) || !this.prefs.get(genre).has(user_id) || weight !== this.prefs.get(genre).get(user_id)) {
+                this.changes.push([genre, user_id, weight]);
+                let genre_ob = {
+                    uri: genre,
+                    type:"genre",
+                    name: genre
+                };
+                this._write_pref_to_database(user_id, genre_ob, weight);
             }
         }
     }
@@ -334,6 +357,8 @@ class AlgorithmEntryPoint {
         this.graph = graph;
         this.matched = matched;
 
+        //console.log(this.changes);
+
         for (let i=0; i<this.changes.length; i++) {
             let item_id = this.changes[i][0];
             let user_id = this.changes[i][1];
@@ -420,6 +445,8 @@ class AlgorithmEntryPoint {
 
             this.changes.shift();
         }
+        //console.log(this.prefs);
+        //console.log(this.graph);
     }
 
     async _dump_data() {
