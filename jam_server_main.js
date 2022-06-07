@@ -6,8 +6,8 @@ require("dotenv").config({ path: path.join(__dirname, ".env.local") });
 const algorithmEntryPoint = require(path.join(__dirname, "utils", "algorithmEntryPoint.js"));
 const firebaseNotificationWrapper = require(path.join(__dirname, "utils", "firebaseNotificationWrapper.js"));
 
-async function run_algorithm() {
-    await algorithmEntryPoint.run();
+function run_algorithm() {
+    algorithmEntryPoint.run();
     setNextMatch();
 }
 
@@ -21,7 +21,7 @@ function setNextMatch() {
     let nextMatch = new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), match_hour);
     let timeZoneOffsetInMilliSeconds = now.getTimezoneOffset() * 1000 * 60;
     let milliSecondsUntilNextMatch = nextMatch - now - timeZoneOffsetInMilliSeconds;
-    if (milliSecondsUntilNextMatch < 0) {
+    while (milliSecondsUntilNextMatch < 0) {
         milliSecondsUntilNextMatch += day_length; // it's after matching time, try tomorrow.
     }
     setTimeout(run_algorithm, milliSecondsUntilNextMatch);
