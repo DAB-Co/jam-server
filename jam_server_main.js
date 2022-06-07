@@ -18,9 +18,9 @@ function setNextMatch() {
     const day_length = 86400000;
     const match_hour = 0; // midnight at Greenwich
     let now = new Date();
+    console.log(now);
     let nextMatch = new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), match_hour);
-    let timeZoneOffsetInMilliSeconds = now.getTimezoneOffset() * 1000 * 60;
-    let milliSecondsUntilNextMatch = nextMatch - now - timeZoneOffsetInMilliSeconds;
+    let milliSecondsUntilNextMatch = nextMatch - now;
     if (milliSecondsUntilNextMatch < 0) {
         milliSecondsUntilNextMatch += day_length; // it's after matching time, try tomorrow.
     }
