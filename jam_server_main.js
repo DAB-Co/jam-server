@@ -6,8 +6,8 @@ require("dotenv").config({ path: path.join(__dirname, ".env.local") });
 const algorithmEntryPoint = require(path.join(__dirname, "utils", "algorithmEntryPoint.js"));
 const firebaseNotificationWrapper = require(path.join(__dirname, "utils", "firebaseNotificationWrapper.js"));
 
-function run_algorithm() {
-    algorithmEntryPoint.run();
+async function run_algorithm() {
+    await algorithmEntryPoint.run();
     setNextMatch();
 }
 
