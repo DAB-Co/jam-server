@@ -6,6 +6,22 @@ require("dotenv").config({ path: path.join(__dirname, ".env.local") });
 const algorithmEntryPoint = require(path.join(__dirname, "utils", "algorithmEntryPoint.js"));
 const firebaseNotificationWrapper = require(path.join(__dirname, "utils", "firebaseNotificationWrapper.js"));
 
+let log = console.log;
+
+console.log = function(){
+
+    // 1. Convert args to a normal array
+    let args = Array.from(arguments);
+    // OR you can use: Array.prototype.slice.call( arguments );
+
+    // 2. Prepend log prefix log string
+    let LOG_PREFIX = new Date().getDate() + '.' + new Date().getMonth() + '.' + new Date().getFullYear() + ' / ' + new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds() + ':' + new Date().getMilliseconds();
+    args.unshift(LOG_PREFIX + ": ");
+
+    // 3. Pass along arguments to console.log
+    log.apply(console, args);
+}
+
 function run_algorithm() {
     algorithmEntryPoint.run();
     setNextMatch();
