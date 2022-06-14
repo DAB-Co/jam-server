@@ -6,20 +6,42 @@ require("dotenv").config({ path: path.join(__dirname, ".env.local") });
 const algorithmEntryPoint = require(path.join(__dirname, "utils", "algorithmEntryPoint.js"));
 const firebaseNotificationWrapper = require(path.join(__dirname, "utils", "firebaseNotificationWrapper.js"));
 
+let log = console.log;
+
+console.log = function(){
+
+    // 1. Convert args to a normal array
+    let args = Array.from(arguments);
+    // OR you can use: Array.prototype.slice.call( arguments );
+
+    // 2. Prepend log prefix log string
+    let LOG_PREFIX = new Date().getDate() + '.' + new Date().getMonth() + '.' + new Date().getFullYear() + ' / ' + new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds() + ':' + new Date().getMilliseconds();
+    args.unshift(LOG_PREFIX + ": ");
+
+    // 3. Pass along arguments to console.log
+    log.apply(console, args);
+}
+
+let firstAlgorithmRun = true;
+const day_length = 86400000;
+
 function run_algorithm() {
     algorithmEntryPoint.run();
-    setNextMatch();
+    if (firstAlgorithmRun) {
+        firstAlgorithmRun = false;
+        setInterval(run_algorithm, day_length);
+    }
 }
 
 /**
  * sets timeout for next run of algorithm
  */
 function setNextMatch() {
-    const day_length = 86400000;
     const match_hour = 0; // midnight at Greenwich
     let now = new Date();
     let nextMatch = new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), match_hour);
-    let milliSecondsUntilNextMatch = nextMatch - now;
+    let timeZoneOffsetInMilliSeconds = now.getTimezoneOffset() * 1000 * 60;
+    let milliSecondsUntilNextMatch = nextMatch - now - timeZoneOffsetInMilliSeconds;
     if (milliSecondsUntilNextMatch < 0) {
         milliSecondsUntilNextMatch += day_length; // it's after matching time, try tomorrow.
     }
