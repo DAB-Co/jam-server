@@ -22,23 +22,30 @@ console.log = function(){
     log.apply(console, args);
 }
 
+let firstAlgorithmRun = true;
+const day_length = 86400000;
+
 function run_algorithm() {
     algorithmEntryPoint.run();
-    setNextMatch();
+    if (firstAlgorithmRun) {
+        firstAlgorithmRun = false;
+        setInterval(run_algorithm, day_length);
+    }
 }
 
 /**
  * sets timeout for next run of algorithm
  */
 function setNextMatch() {
-    const day_length = 86400000;
     const match_hour = 0; // midnight at Greenwich
     let now = new Date();
     let nextMatch = new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), match_hour);
-    let milliSecondsUntilNextMatch = nextMatch - now;
+    let timeZoneOffsetInMilliSeconds = now.getTimezoneOffset() * 1000 * 60;
+    let milliSecondsUntilNextMatch = nextMatch - now - timeZoneOffsetInMilliSeconds;
     if (milliSecondsUntilNextMatch < 0) {
         milliSecondsUntilNextMatch += day_length; // it's after matching time, try tomorrow.
     }
+    console.log(milliSecondsUntilNextMatch);
     setTimeout(run_algorithm, milliSecondsUntilNextMatch);
 }
 
