@@ -45,7 +45,6 @@ function setNextMatch() {
     if (milliSecondsUntilNextMatch < 0) {
         milliSecondsUntilNextMatch += day_length; // it's after matching time, try tomorrow.
     }
-    console.log(milliSecondsUntilNextMatch);
     setTimeout(run_algorithm, milliSecondsUntilNextMatch);
 }
 
