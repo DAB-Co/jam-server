@@ -72,7 +72,9 @@ router.post("/api/signup", async (req, res, next) => {
                 } else {
                     let api_token = crypto.randomBytes(17).toString('hex');
                     let user_id = undefined;
-                    if (notification_token) {
+                    if (user.public_key) {
+                        accountUtils.addUserWithTokensAndKey(email, username, hash, api_token, notification_token, user.public_key);
+                    } else if (notification_token) {
                         console.log("has notification token");
                         user_id = accountUtils.addUserWithNotificationToken(email, username, hash, api_token, notification_token).lastInsertRowid;
                     } else {
@@ -126,7 +128,7 @@ router.post("/api/auth", async (req, res, next) => {
                     next(err);
                 } else if (result) {
                     let api_token = crypto.randomBytes(17).toString('hex');
-                    accountUtils.updateTokens(user_data.user_id, api_token, notification_token);
+                    accountUtils.updateTokensAndKey(user_data.user_id, api_token, notification_token, user.public_key);
                     let info = {
                         "username": username,
                         "user_id": user_data.user_id,
