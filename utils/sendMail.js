@@ -19,7 +19,7 @@ async function sendForgotPasswordToken(otherAddress, token) {
     <body>
         <p>You can reset your Jam password via clicking the button below <b>in smart phones with Jam installed</b>.</p>
         <br>
-        <form action='jam://overlap.company/?token=${token}'>
+        <form action='jam://overlap.company/${token}'>
             <input type="submit" value="Reset Password" />
         </form>
         <br>
