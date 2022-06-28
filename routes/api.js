@@ -11,9 +11,11 @@ const Validators = require(path.join(__dirname, "..", "utils", "validators.js"))
 const accountUtils = utilsInitializer.accountUtils();
 const userFriendsUtils = utilsInitializer.userFriendsUtils();
 const userAvatarUtils = utilsInitializer.userAvatarsUtils();
+const forgotTokenUtils = utilsInitializer.forgotTokensUtils();
 const validators = new Validators();
 
 const isCorrectToken = require(path.join(__dirname, "..", "utils", "isCorrectToken.js"));
+const sendForgotPasswordToken = require(path.join(__dirname, "..", "utils", "sendMail.js"));
 const algorithmEntryPoint = require(path.join(__dirname, "..", "utils", "algorithmEntryPoint.js"));
 
 const iso_dict = require(path.join(__dirname, "..", "utils", "languages.js"));
@@ -454,6 +456,30 @@ router.post("/api/delete_account", function (req, res, next) {
             next(e);
         }
     });
+});
+
+router.post("/api/forgot_password", async function (req, res, next) {
+    console.log("------/api/forgot_password------");
+    const user_email = req.body.user_email;
+
+    if (user_email === undefined) {
+        res.status(400);
+        console.log("Bad Request", req.body);
+        return res.send("Bad Request");
+    }
+
+    if (!accountUtils.emailExists(user_email)) {
+        res.status(403);
+        console.log("There is no user with this email.", user_email);
+        return res.send("There is no user with this email.");
+    }
+
+    let token = await crypto.randomBytes(48).toString('hex');
+    forgotTokenUtils.addToken(user_email, token);
+    sendForgotPasswordToken(user_email, token);
+
+    res.status(200);
+    res.send("OK");
 });
 
 module.exports = router;
