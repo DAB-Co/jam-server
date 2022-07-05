@@ -85,20 +85,21 @@ class AlgorithmEntryPoint {
             console.log("no refresh token");
             return false;
         }
-
         const data = {
-            url: 'https://accounts.spotify.com/api/token',
-            headers: { 'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64')) },
-            form: {
-                grant_type: 'refresh_token',
-                refresh_token: refresh_token
-            },
-            json: true
+            refresh_token: refresh_token,
+            grant_type: 'refresh_token'
+        };
+
+        const config = {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Authorization': 'Basic ' + (Buffer.from(client_id + ':' + client_secret).toString('base64'))
+            }
         };
 
         let access_token = '';
 
-        await axios.post('https://accounts.spotify.com/api/token', data)
+        await axios.post('https://accounts.spotify.com/api/token', querystring.stringify(data), config)
             .then(function (response) {
                 console.log(response.data);
                 access_token = response.data.access_token;

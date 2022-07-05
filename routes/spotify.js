@@ -51,19 +51,19 @@ router.get("/spotify/callback", function (req, res, next) {
         delete login_states[state];
 
         const data = {
-            url: 'https://accounts.spotify.com/api/token',
-            form: {
-                code: req.query.code,
-                redirect_uri: redirect_uri,
-                grant_type: 'authorization_code',
-            },
-            headers: {
-                'Authorization': 'Basic ' + (Buffer.from(client_id + ':' + client_secret).toString('base64'))
-            },
-            json: true,
+            code: code,
+            redirect_uri: redirect_uri,
+            grant_type: 'client_credentials'
         };
 
-        axios.post('https://accounts.spotify.com/api/token', data)
+        const config = {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Authorization': 'Basic ' + (Buffer.from(client_id + ':' + client_secret).toString('base64'))
+            }
+        };
+
+        axios.post('https://accounts.spotify.com/api/token', querystring.stringify(data), config)
             .then(async function (spotify_response) {
                 algorithmEntryPoint.updateTokens(user_id, spotify_response.data.access_token, spotify_response.data.refresh_token);
                 await algorithmEntryPoint.updatePreferences(user_id);
