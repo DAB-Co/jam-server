@@ -53,7 +53,7 @@ router.get("/spotify/callback", function (req, res, next) {
         const data = {
             code: code,
             redirect_uri: redirect_uri,
-            grant_type: 'client_credentials'
+            grant_type: 'authorization_code'
         };
 
         const config = {
