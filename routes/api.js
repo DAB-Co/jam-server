@@ -11,9 +11,11 @@ const Validators = require(path.join(__dirname, "..", "utils", "validators.js"))
 const accountUtils = utilsInitializer.accountUtils();
 const userFriendsUtils = utilsInitializer.userFriendsUtils();
 const userAvatarUtils = utilsInitializer.userAvatarsUtils();
+const forgotTokenUtils = utilsInitializer.forgotTokensUtils();
 const validators = new Validators();
 
 const isCorrectToken = require(path.join(__dirname, "..", "utils", "isCorrectToken.js"));
+const sendForgotPasswordToken = require(path.join(__dirname, "..", "utils", "sendMail.js"));
 const algorithmEntryPoint = require(path.join(__dirname, "..", "utils", "algorithmEntryPoint.js"));
 
 const iso_dict = require(path.join(__dirname, "..", "utils", "languages.js"));
@@ -237,17 +239,17 @@ router.post("/api/block", function (req, res, next) {
 });
 
 router.post("/api/unblock", function (req, res) {
-   console.log("------/api/unblock------");
-   let user_id = req.body.user_id;
-   let token = req.body.api_token;
-   let unblocked = req.body.unblocked;
-   if (user_id === undefined || token === undefined || unblocked === undefined) {
-       res.status(400);
-       console.log("Bad Request", req.body);
-       res.send("Bad Request");
-       return;
-   }
-   console.log(`${user_id} wants to unblock ${unblocked}`);
+    console.log("------/api/unblock------");
+    let user_id = req.body.user_id;
+    let token = req.body.api_token;
+    let unblocked = req.body.unblocked;
+    if (user_id === undefined || token === undefined || unblocked === undefined) {
+        res.status(400);
+        console.log("Bad Request", req.body);
+        res.send("Bad Request");
+        return;
+    }
+    console.log(`${user_id} wants to unblock ${unblocked}`);
     if (!isCorrectToken(token, user_id)) {
         console.log("Wrong api token");
         res.status(403);
@@ -276,7 +278,7 @@ router.post("/api/update_languages", function (req, res, next) {
         return res.send("Wrong api token");
     }
 
-    for (let i=0; i<add_languages.length; i++) {
+    for (let i = 0; i < add_languages.length; i++) {
         if (!(add_languages[i] in iso_dict)) {
             res.status(422);
             res.send("Unrecognized iso code");
@@ -284,7 +286,7 @@ router.post("/api/update_languages", function (req, res, next) {
         }
     }
 
-    for (let i=0; i<remove_languages.length; i++) {
+    for (let i = 0; i < remove_languages.length; i++) {
         if (!(remove_languages[i] in iso_dict)) {
             res.status(422);
             res.send("Unrecognized iso code");
@@ -349,7 +351,7 @@ router.post("/api/get_languages", function (req, res) {
 router.post("/api/top_preferences", function (req, res) {
     console.log("------/api/top_preferences------");
     const user_id = req.body.user_id;
-    const api_token  = req.body.api_token;
+    const api_token = req.body.api_token;
     const req_user = req.body.req_user;
 
     if (user_id === undefined || api_token === undefined || req_user === undefined) {
@@ -393,7 +395,7 @@ router.post("/api/top_preferences", function (req, res) {
 router.post("/api/update_profile_picture", function (req, res) {
     console.log("------/api/update_profile_picture------");
     const user_id = req.body.user_id;
-    const api_token  = req.body.api_token;
+    const api_token = req.body.api_token;
     const original_picture = req.body.original_picture;
     const small_picture = req.body.small_picture;
 
@@ -423,7 +425,7 @@ router.post("/api/update_profile_picture", function (req, res) {
 router.post("/api/delete_account", function (req, res, next) {
     console.log("------/api/delete_account------");
     const user_id = req.body.user_id;
-    let password  = req.body.password;
+    let password = req.body.password;
 
     if (user_id === undefined || password === undefined) {
         res.status(400);
@@ -449,6 +451,71 @@ router.post("/api/delete_account", function (req, res, next) {
                 console.log("Wrong Password");
                 res.status(403);
                 res.send("Wrong Password");
+            }
+        } catch (e) {
+            next(e);
+        }
+    });
+});
+
+router.post("/api/forgot_password", async function (req, res, next) {
+    console.log("------/api/forgot_password------");
+    const user_email = req.body.user_email;
+
+    if (user_email === undefined) {
+        res.status(400);
+        console.log("Bad Request", req.body);
+        return res.send("Bad Request");
+    }
+
+    if (!accountUtils.emailExists(user_email)) {
+        res.status(403);
+        console.log("There is no user with this email.", user_email);
+        return res.send("There is no user with this email.");
+    }
+
+    // create random token
+    let token = crypto.randomBytes(48).toString('hex');
+
+    // send email
+    sendForgotPasswordToken(user_email, token);
+
+    // hash and store in db
+    // I didn't use salt because we need to find the same token in db later - Atilla
+    let hashedToken = crypto.createHash('sha256').update(token).digest("base64");
+    forgotTokenUtils.addToken(user_email, hashedToken);
+
+    res.status(200);
+    res.send("OK");
+});
+
+router.post("/api/change_password", async function (req, res, next) {
+    console.log("------/api/change_password------");
+    const new_password = req.body.new_password;
+    const forgot_token = req.body.forgot_token;
+
+    if (new_password === undefined || forgot_token === undefined) {
+        res.status(400);
+        console.log("Bad Request", req.body);
+        return res.send("Bad Request");
+    }
+
+    let hashedToken = crypto.createHash('sha256').update(forgot_token).digest("base64");
+
+    if (!forgotTokenUtils.tokenExists(hashedToken)) {
+        res.status(400);
+        console.log("Invalid token");
+        return res.send("Invalid token");
+    }
+
+    bcrypt.hash(new_password, await bcrypt.genSalt(), function (err, hashedPassword) {
+        try {
+            if (err) {
+                next(err);
+            } else {
+                forgotTokenUtils.changePasswordFromToken(hashedToken, hashedPassword);
+                res.status(200);
+                res.send("OK");
             }
         } catch (e) {
             next(e);
