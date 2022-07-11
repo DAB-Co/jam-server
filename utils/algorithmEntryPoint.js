@@ -480,14 +480,9 @@ class AlgorithmEntryPoint {
                 data = response.data;
             })
             .catch(function (error) {
-                //console.log(error.response.status, error.response.statusText);
-                //console.log(error.response.headers);
+                console.log(error.response.data);
             });
-        if (data === undefined) {
-            return undefined;
-        } else {
-            return data;
-        }
+        return data;
     }
 
     /**
@@ -517,14 +512,9 @@ class AlgorithmEntryPoint {
                 data = response.data;
             })
             .catch(function (error) {
-                //console.log(error.response.status, error.response.statusText);
-                //console.log(error.response.headers);
+                console.log(error.response.data);
             });
-        if (data === undefined) {
-            return undefined;
-        } else {
-            return data;
-        }
+        return data;
     }
 
     /**
@@ -550,8 +540,10 @@ class AlgorithmEntryPoint {
             }
             raw_tracks = await this._get_tracks(user_id);
         }
-        await this._add_preference(user_id, raw_artists);
-        await this._add_preference(user_id, raw_tracks);
+        if (raw_artists !== undefined)
+            await this._add_preference(user_id, raw_artists);
+        if (raw_tracks !== undefined)
+            await this._add_preference(user_id, raw_tracks);
     }
 
     /**
