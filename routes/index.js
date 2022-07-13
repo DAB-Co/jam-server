@@ -39,4 +39,10 @@ router.post("/downloads", downloads);
 router.get("/downloads/*", downloads);
 router.post("/downloads/*", downloads);
 
+const youtube = require(path.join(__dirname, "youtube.js"));
+router.get("/youtube", youtube);
+router.post("/youtube", youtube);
+router.get("/youtube/*", youtube);
+router.post("/youtube/*", youtube);
+
 module.exports = router;
