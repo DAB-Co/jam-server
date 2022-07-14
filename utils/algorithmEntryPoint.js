@@ -8,6 +8,7 @@ const client_secret = process.env.client_secret;
 
 const utilsInitializer = require(path.join(__dirname, "initializeUtils.js"));
 const spotifyUtils = utilsInitializer.spotifyUtils();
+const youtubeUtils = utilsInitializer.youtubeUtils();
 const userPreferencesUtils = utilsInitializer.userPreferencesUtils();
 const spotifyPreferencesUtils = utilsInitializer.spotifyPreferencesUtils();
 
@@ -29,7 +30,8 @@ class AlgorithmEntryPoint {
         this.graph = new Map();
         this.matched = new Map();
         this.prefs = utilsInitializer.userPreferencesUtils().getAllCommonPreferences();
-        this.access_tokens = new Map();
+        this.spotify_access_tokens = new Map();
+        this.youtube_access_tokens = new Map();
         this.inactive_users = utilsInitializer.accountUtils().getAllInactives();
         this.user_ids = utilsInitializer.accountUtils().getAllPrimaryKeys();
         this.changes = [];
@@ -55,9 +57,20 @@ class AlgorithmEntryPoint {
      * @param access_token
      * @param refresh_token
      */
-    updateTokens(user_id, access_token, refresh_token) {
+    updateSpotifyTokens(user_id, access_token, refresh_token) {
         spotifyUtils.updateRefreshToken(user_id, refresh_token);
-        this.access_tokens[user_id] = access_token;
+        this.spotify_access_tokens[user_id] = access_token;
+    }
+
+    /**
+     *
+     * @param user_id
+     * @param access_token
+     * @param refresh_token
+     */
+     updateYoutubeTokens(user_id, access_token, refresh_token) {
+        youtubeUtils.updateRefreshToken(user_id, refresh_token);
+        this.youtube_access_tokens[user_id] = access_token;
     }
 
     /**
@@ -113,10 +126,10 @@ class AlgorithmEntryPoint {
                 }
             });
         if (access_token === '') {
-            this.access_tokens[user_id] = '';
+            this.spotify_access_tokens[user_id] = '';
             return false;
         } else {
-            this.access_tokens[user_id] = access_token;
+            this.spotify_access_tokens[user_id] = access_token;
             return true;
         }
     }
@@ -461,7 +474,7 @@ class AlgorithmEntryPoint {
      * @private
      */
     async _get_tracks(user_id) {
-        const token = this.access_tokens[user_id];
+        const token = this.spotify_access_tokens[user_id];
         if (token === undefined || token === null || token === '') {
             return undefined;
         }
@@ -493,7 +506,7 @@ class AlgorithmEntryPoint {
      * @private
      */
     async _get_artists(user_id) {
-        const token = this.access_tokens[user_id];
+        const token = this.spotify_access_tokens[user_id];
         if (token === undefined || token === null || token === '') {
             return undefined;
         }
@@ -518,12 +531,12 @@ class AlgorithmEntryPoint {
     }
 
     /**
-     * get preferences from api and add them to database
+     * get spotify preferences from api and add them to database
      *
      * @param user_id
      * @returns {Promise<void>}
      */
-    async updatePreferences(user_id) {
+    async updateSpotifyPreferences(user_id) {
         let raw_artists = await this._get_artists(user_id);
         if (raw_artists === undefined) {
             if (!(await this.update_access_token(user_id))) {
@@ -544,6 +557,16 @@ class AlgorithmEntryPoint {
             await this._add_preference(user_id, raw_artists);
         if (raw_tracks !== undefined)
             await this._add_preference(user_id, raw_tracks);
+    }
+
+    /**
+     * get youtube preferences from api and add them to database
+     *
+     * @param user_id
+     * @returns {Promise<void>}
+     */
+     async updateYoutubePreferences(user_id) {
+        // TODO
     }
 
     /**

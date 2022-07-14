@@ -8,18 +8,38 @@ const oauth2Client = new google.auth.OAuth2(
     process.env.youtube_redirect_uri,
 );
 
-const scopes = [
-    'https://www.googleapis.com/auth/youtube.readonly'
-];
+async function convertAuthToken(authToken) {
+    let tokens;
+    try {
+        tokens = await oauth2Client.getToken(authToken);
+        // oauth2Client.setCredentials(tokens.tokens);
+    } catch (e) {
+        console.log(e);
+    }
+    return tokens;
+}
 
-const authorizationUrl = oauth2Client.generateAuthUrl({
-    // 'online' (default) or 'offline' (gets refresh_token)
-    access_type: 'offline',
-    /** Pass in the scopes array defined above.
-      * Alternatively, if only one scope is needed, you can pass a scope URL as a string */
-    scope: scopes,
-    // Enable incremental authorization. Recommended as a best practice.
-    include_granted_scopes: true
-});
+/**
+ * Returns subscribers of a user from access token
+ * 
+ * @param {*} accessToken 
+ */
+function getSubs(accessToken) {
 
-module.exports = authorizationUrl;
+}
+
+/**
+ * Returns access token from refresh token
+ * 
+ * @param {*} refreshToken 
+ */
+function updateAccessToken(refreshToken) {
+
+}
+
+module.exports = {
+    oauth2Client: oauth2Client,
+    convertAuthToken: convertAuthToken,
+    getSubs: getSubs,
+    updateAccessToken: updateAccessToken,
+};
