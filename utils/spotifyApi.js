@@ -29,6 +29,12 @@ class SpotifyApi extends OAuth2 {
         this.access_tokens[user_id] = access_token;
     }
 
+    refreshTokenExpired(user_id) {
+        const token = spotifyUtils.getRefreshToken(user_id);
+        return token === null || token === ''; // if token is undefined, it technically is not expired?
+        // undefined means nonexistent user id is sent
+    }
+
     async updateAccessToken(user_id) {
         console.log("update access token called for", user_id);
         const refresh_token = spotifyUtils.getRefreshToken(user_id);
