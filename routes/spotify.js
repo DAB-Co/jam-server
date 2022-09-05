@@ -14,6 +14,7 @@ const redirect_uri =  process.env.redirect_uri;
 const isCorrectToken = require(path.join(__dirname, "..", "utils", "isCorrectToken.js"));
 
 const algorithmEntryPoint = require(path.join(__dirname, "..", "utils", "algorithmEntryPoint.js"));
+const spotifyApi = require(path.join(__dirname, "..", "utils", "spotifyApi.js"));
 
 let login_states = {};
 
@@ -65,8 +66,8 @@ router.get("/spotify/callback", function (req, res, next) {
 
         axios.post('https://accounts.spotify.com/api/token', querystring.stringify(data), config)
             .then(async function (spotify_response) {
-                algorithmEntryPoint.updateSpotifyTokens(user_id, spotify_response.data.access_token, spotify_response.data.refresh_token);
-                await algorithmEntryPoint.updateSpotifyPreferences(user_id);
+                spotifyApi.updateTokens(user_id, spotify_response.data.access_token, spotify_response.data.refresh_token);
+                await spotifyApi.updateSpotifyPreferences(user_id, algorithmEntryPoint._add_preference);
                 res.status(200);
                 res.send("OK");
                 algorithmEntryPoint.setActive(user_id);

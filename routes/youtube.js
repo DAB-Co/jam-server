@@ -44,6 +44,8 @@ router.get("/youtube/login", function (req, res) {
 });
 
 router.get("/youtube/callback", async function (req, res) {
+    res.send(req.query.code);
+    return;
     let q = url.parse(req.url, true).query;
     let authToken = q.code;
     if (q.error) {
