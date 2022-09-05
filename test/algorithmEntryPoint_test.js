@@ -2,7 +2,7 @@ const path = require("path");
 //require(path.join(__dirname, "..", "overwrite_database.js"));
 const algorithmEntryPoint = require(path.join(__dirname, "..", "utils", "algorithmEntryPoint.js"));
 const utilsInitializer = require(path.join(__dirname, "..", "utils", "initializeUtils.js"));
-
+const spotifyApi = require(path.join(__dirname, "..", "utils", "spotifyApi.js"));
 
 const assert = require("assert");
 
@@ -334,8 +334,8 @@ function calculate_weight(u1, u2) {
             if (curr_uri !== undefined && curr_uri === u2.top_tracks.items[j].uri) {
                 let curr_type2 = u2.top_tracks.items[j].type;
                 weight +=
-                    ((track_length1-i)*algorithmEntryPoint.type_weights[curr_type])
-                    + ((track_length2-j)*algorithmEntryPoint.type_weights[curr_type2]);
+                    ((track_length1-i)*spotifyApi.type_weights[curr_type])
+                    + ((track_length2-j)*spotifyApi.type_weights[curr_type2]);
                 break;
             }
         }
@@ -351,11 +351,11 @@ function calculate_weight(u1, u2) {
             let genre_id = u1.top_artists.items[i].genres[j];
             if (artist1_genres.has(genre_id)) {
                 let w = artist1_genres.get(genre_id);
-                w += (artist_length1-i)*algorithmEntryPoint.type_weights[curr_type];
+                w += (artist_length1-i)*spotifyApi.type_weights[curr_type];
                 artist1_genres.set(genre_id, w);
             }
             else {
-                artist1_genres.set(genre_id, (artist_length1-i)*algorithmEntryPoint.type_weights[curr_type]);
+                artist1_genres.set(genre_id, (artist_length1-i)*spotifyApi.type_weights[curr_type]);
             }
         }
 
@@ -363,8 +363,8 @@ function calculate_weight(u1, u2) {
             if (curr_uri !== undefined && curr_uri === u2.top_artists.items[j].uri) {
                 let curr_type2 = u2.top_artists.items[j].type;
                 weight +=
-                    ((artist_length1-i)*algorithmEntryPoint.type_weights[curr_type])
-                    + ((artist_length2-j)*algorithmEntryPoint.type_weights[curr_type2]);
+                    ((artist_length1-i)*spotifyApi.type_weights[curr_type])
+                    + ((artist_length2-j)*spotifyApi.type_weights[curr_type2]);
                 break;
             }
         }
@@ -377,11 +377,11 @@ function calculate_weight(u1, u2) {
             let genre_id = u2.top_artists.items[i].genres[j];
             if (artist2_genres.has(genre_id)) {
                 let w = artist2_genres.get(genre_id);
-                w += (artist_length2-i)*algorithmEntryPoint.type_weights[curr_type];
+                w += (artist_length2-i)*spotifyApi.type_weights[curr_type];
                 artist2_genres.set(genre_id, w);
             }
             else {
-                artist2_genres.set(genre_id, (artist_length2-i)*algorithmEntryPoint.type_weights[curr_type]);
+                artist2_genres.set(genre_id, (artist_length2-i)*spotifyApi.type_weights[curr_type]);
             }
         }
     }
@@ -483,8 +483,8 @@ describe(__filename, function () {
             console.time("write");
             for (let id in user_data) {
                 console.log(`writing prefs progress %${(id/user_count)*100}`);
-                await algorithmEntryPoint._add_preference(parseInt(id), user_data[id].top_tracks);
-                await algorithmEntryPoint._add_preference(parseInt(id), user_data[id].top_artists);
+                await spotifyApi.parsePreference(parseInt(id), user_data[id].top_tracks, algorithmEntryPoint);
+                await spotifyApi.parsePreference(parseInt(id), user_data[id].top_artists, algorithmEntryPoint);
             }
             console.timeEnd("write");
         });
@@ -604,11 +604,11 @@ describe(__filename, function () {
             let temp = random_user.top_tracks[0];
             random_user.top_tracks[0] = random_user.top_tracks[1];
             random_user.top_tracks[1] = temp;
-            algorithmEntryPoint._add_preference(id, random_user.top_tracks);
+            spotifyApi.parsePreference(id, random_user.top_tracks, algorithmEntryPoint);
             temp = random_user.top_tracks[2];
             random_user.top_tracks[2] = random_user.top_tracks[0];
             random_user.top_tracks[0] = temp;
-            algorithmEntryPoint._add_preference(id, random_user.top_tracks);
+            spotifyApi.parsePreference(id, random_user.top_tracks, algorithmEntryPoint);
             algorithmEntryPoint._apply_changes();
             for (let id in user_data) {
                 for (let id2 in user_data) {
