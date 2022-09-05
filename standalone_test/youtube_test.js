@@ -7,7 +7,7 @@ const OAuth2 = google.auth.OAuth2;
 // If modifying these scopes, delete your previously saved credentials
 // at ~/.credentials/youtube-nodejs-quickstart.json
 const SCOPES = ['https://www.googleapis.com/auth/youtube.readonly'];
-const TOKEN_PATH = path.join(__dirname, "..", "youtube_secret.json");
+const TOKEN_PATH = path.join(__dirname, "youtube_secret.json");
 
 let access_token = undefined;
 let oauth2Client = undefined;
@@ -104,7 +104,6 @@ function getChannel(auth) {
         }
     });
 }
-
 
 // Load client secrets from a local file.
 fs.readFile(TOKEN_PATH, function processClientSecrets(err, content) {

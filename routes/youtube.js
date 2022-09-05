@@ -4,7 +4,7 @@ const crypto = require("crypto");
 const url = require('url');
 
 const path = require("path");
-const youtube = require(path.join(__dirname, "..", "utils", "youtubeApi.js"));
+const youtubeApi = require(path.join(__dirname, "..", "utils", "youtubeApi.js"));
 const isCorrectToken = require(path.join(__dirname, "..", "utils", "isCorrectToken.js"));
 
 let login_states = {};
@@ -26,7 +26,7 @@ router.get("/youtube/login", function (req, res) {
     let login_state = crypto.randomBytes(8).toString('hex');
     login_states[login_state] = user_id;
 
-    const authorizationUrl = youtube.oauth2Client.generateAuthUrl({
+    const authorizationUrl = youtubeApi.getLoginUrl({
         // 'online' (default) or 'offline' (gets refresh_token)
         access_type: 'offline',
         /** Pass in the scopes array defined above.
@@ -65,16 +65,16 @@ router.get("/youtube/callback", async function (req, res) {
             return res.send("An error occurred");
         }
         // get refresh and access token
-        let tokenResponse = await youtube.convertAuthToken(authToken);
+        let tokenResponse = await youtubeApi.convertAuthToken(authToken);
         console.log(tokenResponse);
-        if (tokenResponse.res.status != 200) {
+        if (tokenResponse.res.status !== 200) {
             res.status(500);
             return res.send("An error occurred, please try again.");
         }
         // save refresh token in db
         let refreshToken = tokenResponse.tokens.refresh_token;
         let accessToken = tokenResponse.tokens.access_token;
-        algorithmEntryPoint.updateYoutubeTokens(user_id, accessToken, refreshToken);
+        youtubeApi.setTokens(user_id, accessToken, refreshToken);
         // TODO await algorithmEntryPoint.updateYoutubePreferences(user_id);
         res.status(200);
         res.send("OK");

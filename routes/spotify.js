@@ -67,7 +67,7 @@ router.get("/spotify/callback", function (req, res, next) {
         axios.post('https://accounts.spotify.com/api/token', querystring.stringify(data), config)
             .then(async function (spotify_response) {
                 spotifyApi.setTokens(user_id, spotify_response.data.access_token, spotify_response.data.refresh_token);
-                await spotifyApi.updateSpotifyPreferences(user_id, algorithmEntryPoint._add_preference);
+                await spotifyApi.updateSpotifyPreferences(user_id, algorithmEntryPoint);
                 res.status(200);
                 res.send("OK");
                 algorithmEntryPoint.setActive(user_id);
