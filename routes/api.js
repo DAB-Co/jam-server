@@ -17,6 +17,7 @@ const validators = new Validators();
 const isCorrectToken = require(path.join(__dirname, "..", "utils", "isCorrectToken.js"));
 const sendForgotPasswordToken = require(path.join(__dirname, "..", "utils", "sendMail.js"));
 const algorithmEntryPoint = require(path.join(__dirname, "..", "utils", "algorithmEntryPoint.js"));
+const spotifyApi = require(path.join(__dirname, "..", "utils", "spotifyApi.js"));
 
 const iso_dict = require(path.join(__dirname, "..", "utils", "languages.js"));
 
@@ -179,7 +180,7 @@ router.post("/api/wake", function (req, res, next) {
     let response = {
         friends: userFriendsUtils.getFriends(user_id),
         //languages: utilsInitializer.userLanguagesUtils().getUserLanguages(user_id),
-        refresh_token_expired: algorithmEntryPoint.refreshTokenExpired(user_id),
+        refresh_token_expired: spotifyApi.refreshTokenExpired(user_id),
         was_inactive: utilsInitializer.accountUtils().getColumnByPrimaryKey(user_id, "inactive") === 1,
     }
     console.log(response);
