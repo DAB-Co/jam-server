@@ -146,7 +146,7 @@ class SpotifyApi extends OAuth2 {
      * get spotify preferences from api and add them to database
      *
      * @param user_id
-     * @param add_preference_callback
+     * @param algorithmObject
      * @returns {Promise<void>}
      */
     async updateSpotifyPreferences(user_id, algorithmObject) {

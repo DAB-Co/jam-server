@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const crypto = require("crypto");
-const url = require('url');
 
 const path = require("path");
 const youtubeApi = require(path.join(__dirname, "..", "utils", "youtubeApi.js"));
@@ -37,48 +36,28 @@ router.get("/youtube/login", function (req, res) {
         state: login_state,
     });
 
-    res.writeHead(301, {
-        "Location": authorizationUrl
-    });
-    res.end();
+    res.redirect(authorizationUrl);
 });
 
-router.get("/youtube/callback", async function (req, res) {
-    res.send(req.query.code);
-    return;
-    let q = url.parse(req.url, true).query;
-    let authToken = q.code;
-    if (q.error) {
-        console.log(q.error);
-        res.status(400);
-        res.send(q.error);
-    } else if (authToken === undefined) {
-        res.status(500);
-        res.send("no code");
-    } else {
-        let state = q.state;
-        const user_id = login_states[state];
-        delete login_states[state];
-        console.log(user_id);
-        if (user_id === undefined) {
-            res.status(500);
-            return res.send("An error occurred");
+router.get("/youtube/callback", async function (req, res, next) {
+    try {
+        const code = req.query.code || null;
+        const state = req.query.state || null;
+
+        if (state === null || !(state in login_states)) {
+            res.send("unable to login: state mismatch");
         }
-        // get refresh and access token
-        let tokenResponse = await youtubeApi.convertAuthToken(authToken);
-        console.log(tokenResponse);
-        if (tokenResponse.res.status !== 200) {
-            res.status(500);
-            return res.send("An error occurred, please try again.");
+        else {
+            const user_id = login_states[state];
+            delete login_states[state];
+
+            youtubeApi.setTokens(user_id, '', code);
+            await youtubeApi.updateAccessToken(user_id);
+            res.status(200);
+            return res.send("OK");
         }
-        // save refresh token in db
-        let refreshToken = tokenResponse.tokens.refresh_token;
-        let accessToken = tokenResponse.tokens.access_token;
-        youtubeApi.setTokens(user_id, accessToken, refreshToken);
-        // TODO await algorithmEntryPoint.updateYoutubePreferences(user_id);
-        res.status(200);
-        res.send("OK");
-        algorithmEntryPoint.setActive(user_id);
+    } catch (e) {
+        next(e);
     }
 });
 

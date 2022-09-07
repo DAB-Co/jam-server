@@ -1,11 +1,10 @@
 const path = require("path");
 const OAuth2 = require(path.join(__dirname, "OAuth2Api.js"));
 
-const youtubeUtils = require(path.join(__dirname, "utilsInitializer.js")).youtubeUtils();
-
+const youtubeUtils = require(path.join(__dirname, "initializeUtils.js")).youtubeUtils();
+const fs = require("fs");
 
 const {google} = require('googleapis');
-const {oauth2} = require("googleapis/build/src/apis/oauth2");
 const GoogleOAuth2 = google.auth.OAuth2;
 
 let credentials = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "youtube_secret.json"), {
@@ -20,7 +19,7 @@ let redirectUrl = credentials.web.redirect_uris[0];
 class YoutubeApi extends OAuth2 {
     constructor(clientId, clientSecret, redirectUrl) {
         super({});
-        this.oAuth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
+        this.oAuth2Client = new GoogleOAuth2(clientId, clientSecret, redirectUrl);
     }
 
     getLoginUrl(options) {
