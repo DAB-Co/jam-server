@@ -2,28 +2,33 @@ const path = require("path");
 const OAuth2 = require(path.join(__dirname, "OAuth2Api.js"));
 
 const youtubeUtils = require(path.join(__dirname, "initializeUtils.js")).youtubeUtils();
-const fs = require("fs");
 
 const {google} = require('googleapis');
 const GoogleOAuth2 = google.auth.OAuth2;
 
-let credentials = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "youtube_secret.json"), {
-    encoding: "utf-8",
-    flag: 'r'
-}));
+require("dotenv").config({path: path.join(__dirname, "..", ".env.local")});
 
-let clientSecret = credentials.web.client_secret;
-let clientId = credentials.web.client_id;
-let redirectUrl = credentials.web.redirect_uris[0];
+const youtube_client_id = process.env.youtube_client_id;
+const youtube_client_secret = process.env.youtube_client_secret;
+const youtube_redirect_uri = process.env.youtube_redirect_uri;
 
 class YoutubeApi extends OAuth2 {
-    constructor(clientId, clientSecret, redirectUrl) {
-        super({});
-        this.oAuth2Client = new GoogleOAuth2(clientId, clientSecret, redirectUrl);
+    constructor(client_id, client_secret, redirect_uri, type_weights, token_db) {
+        super(client_id, client_secret, redirect_uri, type_weights, token_db);
+        this.oAuth2Client = new GoogleOAuth2(this.client_id, this.client_secret, this.redirect_uri);
     }
 
-    getLoginUrl(options) {
-        return this.oAuth2Client.generateAuthUrl(options);
+    getLoginUrl(state) {
+        return this.oAuth2Client.generateAuthUrl({
+            // 'online' (default) or 'offline' (gets refresh_token)
+            access_type: 'offline',
+            /** Pass in the scopes array defined above.
+             * Alternatively, if only one scope is needed, you can pass a scope URL as a string */
+            scope: 'https://www.googleapis.com/auth/youtube.readonly',
+            // Enable incremental authorization. Recommended as a best practice.
+            include_granted_scopes: true,
+            state: state,
+        });
     }
 
     refreshTokenExpired(user_id) {
@@ -55,10 +60,9 @@ class YoutubeApi extends OAuth2 {
         });
     };
 
-    async setTokens(user_id, access_token, refresh_token) {
-        youtubeUtils().updateRefreshToken(user_id, refresh_token);
-        this.access_tokens[user_id] = access_token;
-    };
+    updatePreferences() {
+
+    }
 
     writePreference(pref) {
     };
@@ -67,6 +71,6 @@ class YoutubeApi extends OAuth2 {
     };
 }
 
-const youtubeApi = new YoutubeApi(clientId, clientSecret, redirectUrl);
+const youtubeApi = new YoutubeApi(youtube_client_id, youtube_client_secret, youtube_redirect_uri, {}, youtubeUtils);
 
 module.exports = youtubeApi;

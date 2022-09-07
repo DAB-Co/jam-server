@@ -43,6 +43,18 @@ rl.question('Press enter when you have logged in with your spotify account:', as
         });
 
     rl.close();
+
+    const rl2 = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+    console.log(domain+"/youtube/login?"+querystring.stringify(data));
+
+    rl2.question('Press enter when you have logged in with your Youtube account:', async (str) => {
+        console.log(utilsInitializer.youtubeUtils().getRefreshToken(user_id));
+        rl.close();
+    });
 });
 
 

@@ -5,11 +5,10 @@ require("dotenv").config({path: path.join(__dirname, "..", ".env.local")});
 
 const spotify_client_id = process.env.spotify_client_id;
 const spotify_client_secret = process.env.spotify_client_secret;
+const spotify_redirect_uri = process.env.spotify_redirect_uri;
 
 const utilsInitializer = require(path.join(__dirname, "initializeUtils.js"));
 const spotifyUtils = utilsInitializer.spotifyUtils();
-const userPreferencesUtils = utilsInitializer.userPreferencesUtils();
-const spotifyPreferencesUtils = utilsInitializer.spotifyPreferencesUtils();
 const querystring = require("query-string");
 
 let type_weights = {
@@ -18,30 +17,18 @@ let type_weights = {
 };
 
 class SpotifyApi extends OAuth2 {
-    constructor(client_id, client_secret, type_weights) {
-        super(type_weights);
-        this.client_id = client_id;
-        this.client_secret = client_secret;
-    }
-
-    setTokens(user_id, access_token, refresh_token) {
-        spotifyUtils().updateRefreshToken(user_id, refresh_token);
-        this.access_tokens[user_id] = access_token;
-    }
-
-    refreshTokenExpired(user_id) {
-        const token = spotifyUtils.getRefreshToken(user_id);
-        return token === null || token === ''; // if token is undefined, it technically is not expired?
-        // undefined means nonexistent user id is sent
+    constructor(client_id, client_secret, redirect_uri, type_weights, token_db) {
+        super(client_id, client_secret, redirect_uri, type_weights, token_db);
     }
 
     async updateAccessToken(user_id) {
         console.log("update access token called for", user_id);
-        const refresh_token = spotifyUtils.getRefreshToken(user_id);
+        const refresh_token = this.token_db.getRefreshToken(user_id);
         if (refresh_token === undefined || refresh_token === null || refresh_token === '') {
             console.log("no refresh token");
             return false;
         }
+
         const data = {
             refresh_token: refresh_token,
             grant_type: 'refresh_token'
@@ -66,7 +53,7 @@ class SpotifyApi extends OAuth2 {
                 if (err.response === undefined) {
                     console.log(err);
                 } else {
-                    console.log(err.response);
+                    //console.log(err.response);
                 }
             });
         if (access_token === '') {
@@ -149,11 +136,11 @@ class SpotifyApi extends OAuth2 {
      * @param algorithmObject
      * @returns {Promise<void>}
      */
-    async updateSpotifyPreferences(user_id, algorithmObject) {
+    async updatePreferences(user_id, algorithmObject) {
         let raw_artists = await this._get_artists(user_id);
         if (raw_artists === undefined) {
             if (!(await this.updateAccessToken(user_id))) {
-                spotifyUtils.updateRefreshToken(user_id, null);
+                this.token_db.updateRefreshToken(user_id, null);
                 return;
             }
             raw_artists = await this._get_artists(user_id);
@@ -161,7 +148,7 @@ class SpotifyApi extends OAuth2 {
         let raw_tracks = await this._get_tracks(user_id);
         if (raw_tracks === undefined) {
             if (!(await this.updateAccessToken(user_id))) {
-                spotifyUtils.updateRefreshToken(user_id, null);
+                this.token_db.updateRefreshToken(user_id, null);
                 return;
             }
             raw_tracks = await this._get_tracks(user_id);
@@ -170,16 +157,6 @@ class SpotifyApi extends OAuth2 {
             await this.parsePreference(user_id, raw_artists, algorithmObject);
         if (raw_tracks !== undefined)
             await this.parsePreference(user_id, raw_tracks, algorithmObject);
-    }
-
-    async writePreference(pref) {
-        const existing_data = userPreferencesUtils.getPreference(pref.user_id, pref.pref_id);
-        if (existing_data === undefined) {
-            userPreferencesUtils.addPreference(pref.user_id, pref.pref_id, pref.weight);
-            spotifyPreferencesUtils.update_preference(pref.pref_id, pref.type, pref.name, pref.data);
-        } else if (existing_data.weight !== pref.weight) {
-            userPreferencesUtils.updatePreferenceWeight(pref.user_id, pref.pref_id, pref.weight);
-        }
     }
 
     async parsePreference(user_id, raw_preference, algorithmObject) {
@@ -228,8 +205,19 @@ class SpotifyApi extends OAuth2 {
             }, this.writePreference);
         }
     }
+
+    getLoginUrl(state) {
+        return 'https://accounts.spotify.com/authorize?' +
+            querystring.stringify({
+                response_type: 'code',
+                client_id: this.client_id,
+                scope: 'user-top-read',
+                state: state,
+                redirect_uri: this.redirect_uri,
+            });
+    }
 }
 
-const spotifyApi = new SpotifyApi(spotify_client_id, spotify_client_secret, type_weights);
+const spotifyApi = new SpotifyApi(spotify_client_id, spotify_client_secret, spotify_redirect_uri, type_weights, spotifyUtils);
 
 module.exports = spotifyApi;

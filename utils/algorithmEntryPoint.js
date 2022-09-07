@@ -328,7 +328,7 @@ class AlgorithmEntryPoint {
     }
 
     async updatePreferences(user_id) {
-        await this.spotifyApi.updateSpotifyPreferences(user_id, this);
+        await this.spotifyApi.updatePreferences(user_id, this);
     }
 
     /**

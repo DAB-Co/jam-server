@@ -3,8 +3,11 @@ const router = express.Router();
 const crypto = require("crypto");
 
 const path = require("path");
-const youtubeApi = require(path.join(__dirname, "..", "utils", "youtubeApi.js"));
+
 const isCorrectToken = require(path.join(__dirname, "..", "utils", "isCorrectToken.js"));
+
+const algorithmEntryPoint = require(path.join(__dirname, "..", "utils", "algorithmEntryPoint.js"));
+const youtubeApi = require(path.join(__dirname, "..", "utils", "spotifyApi.js"));
 
 let login_states = {};
 
@@ -25,18 +28,7 @@ router.get("/youtube/login", function (req, res) {
     let login_state = crypto.randomBytes(8).toString('hex');
     login_states[login_state] = user_id;
 
-    const authorizationUrl = youtubeApi.getLoginUrl({
-        // 'online' (default) or 'offline' (gets refresh_token)
-        access_type: 'offline',
-        /** Pass in the scopes array defined above.
-          * Alternatively, if only one scope is needed, you can pass a scope URL as a string */
-        scope: 'https://www.googleapis.com/auth/youtube.readonly',
-        // Enable incremental authorization. Recommended as a best practice.
-        include_granted_scopes: true,
-        state: login_state,
-    });
-
-    res.redirect(authorizationUrl);
+    res.redirect(youtubeApi.getLoginUrl(login_state));
 });
 
 router.get("/youtube/callback", async function (req, res, next) {
@@ -46,15 +38,22 @@ router.get("/youtube/callback", async function (req, res, next) {
 
         if (state === null || !(state in login_states)) {
             res.send("unable to login: state mismatch");
-        }
-        else {
+        } else {
             const user_id = login_states[state];
             delete login_states[state];
 
-            youtubeApi.setTokens(user_id, '', code);
-            await youtubeApi.updateAccessToken(user_id);
-            res.status(200);
-            return res.send("OK");
+            youtubeApi.setRefreshToken(user_id, code);
+
+            if (await youtubeApi.updateAccessToken(user_id)) {
+                await youtubeApi.updatePreferences(user_id, algorithmEntryPoint);
+                res.status(200);
+                res.send("OK");
+                algorithmEntryPoint.setActive(user_id);
+            }
+            else {
+                res.status(500);
+                res.send("An error occurred");
+            }
         }
     } catch (e) {
         next(e);
