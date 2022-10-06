@@ -180,8 +180,9 @@ router.post("/api/wake", function (req, res, next) {
     let response = {
         friends: userFriendsUtils.getFriends(user_id),
         //languages: utilsInitializer.userLanguagesUtils().getUserLanguages(user_id),
-        refresh_token_expired: spotifyApi.refreshTokenExpired(user_id),
+        //refresh_token_expired: spotifyApi.refreshTokenExpired(user_id),
         was_inactive: utilsInitializer.accountUtils().getColumnByPrimaryKey(user_id, "inactive") === 1,
+        preferences: utilsInitializer.userPreferencesUtils().getUserPreferences(user_id),
     }
     console.log(response);
     for (let key of Object.keys(response.friends)) {
@@ -191,6 +192,10 @@ router.post("/api/wake", function (req, res, next) {
     res.status(200);
     res.send(JSON.stringify(response));
     algorithmEntryPoint.setActive(user_id);
+});
+
+router.post("/api/update_preferences", function(req, res, next) {
+    // TODO
 });
 
 // Get users someone can message

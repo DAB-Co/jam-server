@@ -2,7 +2,6 @@ const path = require("path");
 
 const utilsInitializer = require(path.join(__dirname, "initializeUtils.js"));
 const spotifyUtils = utilsInitializer.spotifyUtils();
-const spotifyApi = require(path.join(__dirname, "spotifyApi.js"));
 
 const firebaseNotificationWrapper = require(path.join(__dirname, "firebaseNotificationWrapper.js"));
 
@@ -17,7 +16,7 @@ function random(min, max) {
 }
 
 class AlgorithmEntryPoint {
-    constructor(spotifyApi) {
+    constructor() {
         // user_id: access_token
         this.graph = new Map();
         this.matched = new Map();
@@ -25,7 +24,6 @@ class AlgorithmEntryPoint {
         this.inactive_users = utilsInitializer.accountUtils().getAllInactives();
         this.user_ids = utilsInitializer.accountUtils().getAllPrimaryKeys();
         this.changes = [];
-        this.spotifyApi = spotifyApi;
     }
 
     async setActive(user_id) {
@@ -36,6 +34,9 @@ class AlgorithmEntryPoint {
             // below part can be parallelized
             utilsInitializer.accountUtils().setInactivity(user_id, false);
         }
+		else {
+			utilsInitializer.accountUtils().setInactivity(user_id, true);
+		}
     }
 
     async add_preference(pref, db_callback) {
@@ -327,20 +328,11 @@ class AlgorithmEntryPoint {
         utilsInitializer.userConnectionsUtils().dump(this.graph, this.matched);
     }
 
-    async updatePreferences(user_id) {
-        await this.spotifyApi.updatePreferences(user_id, this);
-    }
-
     /**
      *
      * @returns {Promise<void>}
      */
     async run() {
-        this.user_ids = utilsInitializer.accountUtils().getAllPrimaryKeys();
-        for (let i = 0; i < this.user_ids.length; i++) {
-            await this.updatePreferences(this.user_ids[i]);
-        }
-
         this._apply_changes();
         this._match_users();
         for (let inactive_user of this.inactive_users) {
@@ -359,6 +351,6 @@ class AlgorithmEntryPoint {
     }
 }
 
-const algorithmEntryPoint = new AlgorithmEntryPoint(spotifyApi);
+const algorithmEntryPoint = new AlgorithmEntryPoint();
 
 module.exports = algorithmEntryPoint;

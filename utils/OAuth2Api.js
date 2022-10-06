@@ -2,7 +2,7 @@ const path = require("path");
 const utilsInitializer = require(path.join(__dirname, "initializeUtils.js"));
 
 const userPreferencesUtils = utilsInitializer.userPreferencesUtils();
-const spotifyPreferencesUtils = utilsInitializer.spotifyPreferencesUtils();
+//const spotifyPreferencesUtils = utilsInitializer.spotifyPreferencesUtils();
 
 class OAuth2{
     constructor(client_id, client_secret, redirect_uri, type_weights, token_db) {
@@ -26,19 +26,35 @@ class OAuth2{
         this.token_db.updateRefreshToken(user_id, refresh_token);
     };
 
-    updatePreference(user_id, algorithmObject) {};
+    updatePreferences(user_id, algorithmObject) {};
 
     async writePreference(pref) {
         const existing_data = userPreferencesUtils.getPreference(pref.user_id, pref.pref_id);
         if (existing_data === undefined) {
             userPreferencesUtils.addPreference(pref.user_id, pref.pref_id, pref.weight);
-            spotifyPreferencesUtils.update_preference(pref.pref_id, pref.type, pref.name, pref.data);
+            //spotifyPreferencesUtils.update_preference(pref.pref_id, pref.type, pref.name, pref.data);
         } else if (existing_data.weight !== pref.weight) {
             userPreferencesUtils.updatePreferenceWeight(pref.user_id, pref.pref_id, pref.weight);
         }
     }
 
-    parsePreference(user_id, raw_preference, add_preference_callback) {};
+    async parsePreference(user_id, raw_preference, algorithmObject) {
+        let item_count = raw_preference.length;
+        for (let i = 0; i < item_count; i++) {
+            const item = raw_preference[i];
+            const type = item.type;
+            const id = item.id;
+            let weight_to_be_added = (item_count - i) * this.type_weights[type];
+
+            algorithmObject.add_preference({
+                pref_id: id,
+                type: type,
+                weight: weight_to_be_added,
+                user_id: user_id,
+                data: item
+            }, this.writePreference);
+        }
+    };
 
     getLoginUrl(state) {};
 }

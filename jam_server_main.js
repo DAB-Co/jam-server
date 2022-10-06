@@ -5,6 +5,7 @@ const fs = require("fs");
 require("dotenv").config({ path: path.join(__dirname, ".env.local") });
 const algorithmEntryPoint = require(path.join(__dirname, "utils", "algorithmEntryPoint.js"));
 const firebaseNotificationWrapper = require(path.join(__dirname, "utils", "firebaseNotificationWrapper.js"));
+//const spotifyApi = require(path.join(__dirname, "utils", "spotifyApi"));
 
 let log = console.log;
 
@@ -25,7 +26,12 @@ console.log = function(){
 let firstAlgorithmRun = true;
 const day_length = 86400000;
 
-function run_algorithm() {
+async function run_algorithm() {
+	let user_ids = utilsInitializer.accountUtils().getAllPrimaryKeys();
+	for (let i = 0; i < user_ids.length; i++) {
+        //await spotifyApi.updatePreferences(user_ids[i], algorithmEntryPoint);
+	}
+
     algorithmEntryPoint.run();
     if (firstAlgorithmRun) {
         firstAlgorithmRun = false;
