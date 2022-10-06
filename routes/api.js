@@ -182,7 +182,8 @@ router.post("/api/wake", function (req, res, next) {
         //languages: utilsInitializer.userLanguagesUtils().getUserLanguages(user_id),
         //refresh_token_expired: spotifyApi.refreshTokenExpired(user_id),
         was_inactive: utilsInitializer.accountUtils().getColumnByPrimaryKey(user_id, "inactive") === 1,
-        preferences: utilsInitializer.userPreferencesUtils().getUserPreferences(user_id),
+        user_preferences: utilsInitializer.userPreferencesUtils().getUserPreferences(user_id),
+        available_preferences: [],
     }
     console.log(response);
     for (let key of Object.keys(response.friends)) {
