@@ -17,7 +17,7 @@ const validators = new Validators();
 const isCorrectToken = require(path.join(__dirname, "..", "utils", "isCorrectToken.js"));
 const sendForgotPasswordToken = require(path.join(__dirname, "..", "utils", "sendMail.js"));
 const algorithmEntryPoint = require(path.join(__dirname, "..", "utils", "algorithmEntryPoint.js"));
-const spotifyApi = require(path.join(__dirname, "..", "utils", "spotifyApi.js"));
+//const spotifyApi = require(path.join(__dirname, "..", "utils", "spotifyApi.js"));
 
 const iso_dict = require(path.join(__dirname, "..", "utils", "languages.js"));
 
