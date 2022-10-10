@@ -29,10 +29,17 @@ class SpotifyApi extends OAuth2 {
             return false;
         }
 
-        const data = {
+        /*const data = {
             refresh_token: refresh_token,
             grant_type: 'refresh_token'
         };
+         */
+
+        const data = {
+            code: refresh_token,
+            redirect_uri: spotify_redirect_uri,
+            grant_type: "authorization_code"
+        }
 
         const config = {
             headers: {
@@ -45,7 +52,7 @@ class SpotifyApi extends OAuth2 {
 
         await axios.post('https://accounts.spotify.com/api/token', querystring.stringify(data), config)
             .then(function (response) {
-                console.log(response.data);
+                //console.log(response.data);
                 access_token = response.data.access_token;
             })
             .catch(function (err) {
@@ -53,7 +60,7 @@ class SpotifyApi extends OAuth2 {
                 if (err.response === undefined) {
                     console.log(err);
                 } else {
-                    //console.log(err.response);
+                    console.log(err.response.data);
                 }
             });
         if (access_token === '') {
@@ -94,6 +101,7 @@ class SpotifyApi extends OAuth2 {
             .catch(function (error) {
                 console.log(error.response.data);
             });
+        //console.log(data);
         return data;
     }
 
@@ -126,6 +134,7 @@ class SpotifyApi extends OAuth2 {
             .catch(function (error) {
                 console.log(error.response.data);
             });
+        console.log(data);
         return data;
     }
 

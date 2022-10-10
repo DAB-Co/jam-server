@@ -8,7 +8,6 @@ require("dotenv").config({path: path.join(__dirname, "..", ".env.local")});
 const domain = "http://localhost:" + process.env.http_port;
 
 const utilsInitializer = require(path.join(__dirname, "..", "utils", "initializeUtils.js"));
-const algorithm = require(path.join(__dirname, "..", "utils", "algorithmEntryPoint.js"));
 
 const accountUtils = utilsInitializer.accountUtils();
 const readline = require("readline");
@@ -33,7 +32,6 @@ const rl = readline.createInterface({
 console.log(domain+"/spotify/login?"+querystring.stringify(data));
 
 rl.question('Press enter when you have logged in with your spotify account:', async (str) => {
-    await algorithm.updatePreferences(user_id);
     axios.post(domain+"/api/top_preferences", data)
         .then(function (res) {
             console.log(res.data);
@@ -53,7 +51,7 @@ rl.question('Press enter when you have logged in with your spotify account:', as
 
     rl2.question('Press enter when you have logged in with your Youtube account:', async (str) => {
         console.log(utilsInitializer.youtubeUtils().getRefreshToken(user_id));
-        rl.close();
+        rl2.close();
     });
 });
 

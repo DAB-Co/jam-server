@@ -7,7 +7,7 @@ const path = require("path");
 const isCorrectToken = require(path.join(__dirname, "..", "utils", "isCorrectToken.js"));
 
 const algorithmEntryPoint = require(path.join(__dirname, "..", "utils", "algorithmEntryPoint.js"));
-const youtubeApi = require(path.join(__dirname, "..", "utils", "spotifyApi.js"));
+const youtubeApi = require(path.join(__dirname, "..", "utils", "youtubeApi.js"));
 
 let login_states = {};
 

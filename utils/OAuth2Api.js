@@ -9,7 +9,7 @@ class OAuth2{
         this.client_id = client_id;
         this.client_secret = client_secret;
         this.redirect_uri = redirect_uri;
-        this.access_tokens = new Map();
+        this.access_tokens = {};
         this.type_weights = type_weights;
         this.token_db = token_db;
     }
