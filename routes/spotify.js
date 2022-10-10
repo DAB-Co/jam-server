@@ -56,4 +56,8 @@ router.get("/spotify/callback", async function (req, res, next) {
     }
 });
 
+router.get("/spotify/genres", async function (req, res) {
+    res.send(await spotifyApi.getGenres());
+});
+
 module.exports = router;

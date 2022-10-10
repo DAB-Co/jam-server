@@ -1,6 +1,6 @@
 /*
-This is a standalone test for testing spotify preferences.
-Manually login from web interface to spotify, and request preferences here.
+This is a standalone test for testing spotify and youtube preferences.
+Manually login from web interface and request preferences here.
  */
 const axios = require('axios');
 const path = require("path");

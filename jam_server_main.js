@@ -27,10 +27,11 @@ let firstAlgorithmRun = true;
 const day_length = 86400000;
 
 async function run_algorithm() {
-	let user_ids = utilsInitializer.accountUtils().getAllPrimaryKeys();
+	/*let user_ids = utilsInitializer.accountUtils().getAllPrimaryKeys();
 	for (let i = 0; i < user_ids.length; i++) {
-        //await spotifyApi.updatePreferences(user_ids[i], algorithmEntryPoint);
+        await spotifyApi.updatePreferences(user_ids[i], algorithmEntryPoint);
 	}
+	 */
 
     algorithmEntryPoint.run();
     if (firstAlgorithmRun) {

@@ -19,6 +19,7 @@ let type_weights = {
 class SpotifyApi extends OAuth2 {
     constructor(client_id, client_secret, redirect_uri, type_weights, token_db) {
         super(client_id, client_secret, redirect_uri, type_weights, token_db);
+        this.genres = [];
     }
 
     async updateAccessToken(user_id) {
@@ -224,6 +225,35 @@ class SpotifyApi extends OAuth2 {
                 state: state,
                 redirect_uri: this.redirect_uri,
             });
+    }
+
+    async getGenres() {
+        const token = this.access_tokens[1];
+        if (token === undefined || token === null || token === '') {
+            return undefined;
+        }
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token,
+            }
+        };
+
+        let data = undefined;
+
+        await axios.get('https://api.spotify.com/v1/recommendations/available-genre-seeds', config)
+            .then(function (response) {
+                data = response.data;
+            })
+            .catch(function (error) {
+                console.log(error.response.data);
+            });
+        if ("genres" in data) {
+            return data.genres;
+        }
+        else {
+            return [];
+        }
     }
 }
 
