@@ -1,15 +1,7 @@
 const path = require("path");
-const axios = require("axios");
-const querystring = require("query-string");
-require("dotenv").config({path: path.join(__dirname, "..", ".env.local")});
-
-const client_id = process.env.client_id;
-const client_secret = process.env.client_secret;
 
 const utilsInitializer = require(path.join(__dirname, "initializeUtils.js"));
 const spotifyUtils = utilsInitializer.spotifyUtils();
-const userPreferencesUtils = utilsInitializer.userPreferencesUtils();
-const spotifyPreferencesUtils = utilsInitializer.spotifyPreferencesUtils();
 
 const firebaseNotificationWrapper = require(path.join(__dirname, "firebaseNotificationWrapper.js"));
 
@@ -29,17 +21,13 @@ class AlgorithmEntryPoint {
         this.graph = new Map();
         this.matched = new Map();
         this.prefs = utilsInitializer.userPreferencesUtils().getAllCommonPreferences();
-        this.access_tokens = new Map();
         this.inactive_users = utilsInitializer.accountUtils().getAllInactives();
         this.user_ids = utilsInitializer.accountUtils().getAllPrimaryKeys();
         this.changes = [];
-        this.type_weights = {
-            "track": 2,
-            "artist": 1
-        };
     }
 
     async setActive(user_id) {
+        /*
         let refresh_token = spotifyUtils.getRefreshToken(user_id);
         if (refresh_token !== undefined && refresh_token !== null && refresh_token !== '') {
             this.inactive_users.delete(user_id);
@@ -47,128 +35,18 @@ class AlgorithmEntryPoint {
             // below part can be parallelized
             utilsInitializer.accountUtils().setInactivity(user_id, false);
         }
+		else {
+			utilsInitializer.accountUtils().setInactivity(user_id, true);
+		}
+         */
+        this.inactive_users.delete(user_id);
     }
 
-    /**
-     *
-     * @param user_id
-     * @param access_token
-     * @param refresh_token
-     */
-    updateTokens(user_id, access_token, refresh_token) {
-        spotifyUtils.updateRefreshToken(user_id, refresh_token);
-        this.access_tokens[user_id] = access_token;
-    }
-
-    /**
-     *
-     * @param user_id
-     * @returns {boolean}
-     */
-    refreshTokenExpired(user_id) {
-        const token = spotifyUtils.getRefreshToken(user_id);
-        return token === null || token === ''; // if token is undefined, it technically is not expired?
-        // undefined means nonexistent user id is sent
-    }
-
-    /**
-     * updates spotify access token for user. will return false if there is an error, indicating
-     * refresh token might need to be requested again by the user via get request to /spotify/login
-     *
-     * @param user_id
-     * @returns {Promise<boolean>}
-     */
-    async update_access_token(user_id) {
-        console.log("update access token called for", user_id);
-        const refresh_token = spotifyUtils.getRefreshToken(user_id);
-        if (refresh_token === undefined || refresh_token === null || refresh_token === '') {
-            console.log("no refresh token");
-            return false;
-        }
-        const data = {
-            refresh_token: refresh_token,
-            grant_type: 'refresh_token'
-        };
-
-        const config = {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': 'Basic ' + (Buffer.from(client_id + ':' + client_secret).toString('base64'))
-            }
-        };
-
-        let access_token = '';
-
-        await axios.post('https://accounts.spotify.com/api/token', querystring.stringify(data), config)
-            .then(function (response) {
-                console.log(response.data);
-                access_token = response.data.access_token;
-            })
-            .catch(function (err) {
-                console.log("error:");
-                if (err.response === undefined) {
-                    console.log(err);
-                } else {
-                    console.log(err.response);
-                }
-            });
-        if (access_token === '') {
-            this.access_tokens[user_id] = '';
-            return false;
-        } else {
-            this.access_tokens[user_id] = access_token;
-            return true;
-        }
-    }
-
-    async _write_pref_to_database(user_id, item, weight_to_be_added) {
-        const existing_data = userPreferencesUtils.getPreference(user_id, item.uri);
-        if (existing_data === undefined) {
-            userPreferencesUtils.addPreference(user_id, item.uri, weight_to_be_added);
-            spotifyPreferencesUtils.update_preference(item.uri, item.type, item.name, item);
-        } else if (existing_data.preference_weight !== weight_to_be_added) {
-            userPreferencesUtils.updatePreferenceWeight(user_id, item.uri, weight_to_be_added);
-        }
-    }
-
-    /**
-     *
-     * @param user_id
-     * @param raw_preference
-     */
-    async _add_preference(user_id, raw_preference) {
-        let item_count = raw_preference.items.length;
-        let genre_weights = new Map();
-        for (let i = 0; i < item_count; i++) {
-            const item = raw_preference.items[i];
-            const type = item.type;
-            const id = item.uri;
-            let weight_to_be_added = (item_count - i) * this.type_weights[type];
-            if ("genres" in item) {
-                for (let j=0; j<item.genres.length; j++) {
-                    if (!genre_weights.has(item.genres[j])) {
-                        genre_weights.set(item.genres[j], weight_to_be_added);
-                    } else {
-                        let w = genre_weights.get(item.genres[j]);
-                        genre_weights.set(item.genres[j], w+weight_to_be_added);
-                    }
-                }
-            }
-            if (!this.prefs.has(id) || !this.prefs.get(id).has(user_id) || weight_to_be_added !== this.prefs.get(id).get(user_id)) {
-                this.changes.push([id, user_id, weight_to_be_added]);
-                this._write_pref_to_database(user_id, item, weight_to_be_added);
-            }
-        }
-
-        for (let [genre, weight] of genre_weights) {
-            if (!this.prefs.has(genre) || !this.prefs.get(genre).has(user_id) || weight !== this.prefs.get(genre).get(user_id)) {
-                this.changes.push([genre, user_id, weight]);
-                let genre_ob = {
-                    uri: genre,
-                    type:"genre",
-                    name: genre
-                };
-                this._write_pref_to_database(user_id, genre_ob, weight);
+    async add_preference(pref, db_callback) {
+        if (!this.prefs.has(pref.pref_id) || !this.prefs.get(pref.pref_id).has(pref.user_id) || pref.weight !== this.prefs.get(pref.pref_id).get(pref.user_id)) {
+            this.changes.push([pref.pref_id, pref.user_id, pref.weight]);
+            if (db_callback) {
+                db_callback(pref);
             }
         }
     }
@@ -454,108 +332,10 @@ class AlgorithmEntryPoint {
     }
 
     /**
-     * get top track data from spotify api
-     *
-     * @param user_id
-     * @returns {Promise<undefined> | Promise<JSON>}
-     * @private
-     */
-    async _get_tracks(user_id) {
-        const token = this.access_tokens[user_id];
-        if (token === undefined || token === null || token === '') {
-            return undefined;
-        }
-        const config = {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token,
-                "limit": 50,
-            }
-        };
-
-        let data = undefined;
-
-        await axios.get('https://api.spotify.com/v1/me/top/tracks', config)
-            .then(function (response) {
-                data = response.data;
-            })
-            .catch(function (error) {
-                console.log(error.response.data);
-            });
-        return data;
-    }
-
-    /**
-     * get top artist data from spotify api
-     *
-     * @param user_id
-     * @returns {Promise<undefined> | Promise<JSON>}
-     * @private
-     */
-    async _get_artists(user_id) {
-        const token = this.access_tokens[user_id];
-        if (token === undefined || token === null || token === '') {
-            return undefined;
-        }
-        const config = {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token,
-                "limit": 50,
-            }
-        };
-
-        let data = undefined;
-
-        await axios.get('https://api.spotify.com/v1/me/top/artists', config)
-            .then(function (response) {
-                data = response.data;
-            })
-            .catch(function (error) {
-                console.log(error.response.data);
-            });
-        return data;
-    }
-
-    /**
-     * get preferences from api and add them to database
-     *
-     * @param user_id
-     * @returns {Promise<void>}
-     */
-    async updatePreferences(user_id) {
-        let raw_artists = await this._get_artists(user_id);
-        if (raw_artists === undefined) {
-            if (!(await this.update_access_token(user_id))) {
-                spotifyUtils.updateRefreshToken(user_id, null);
-                return;
-            }
-            raw_artists = await this._get_artists(user_id);
-        }
-        let raw_tracks = await this._get_tracks(user_id);
-        if (raw_tracks === undefined) {
-            if (!(await this.update_access_token(user_id))) {
-                spotifyUtils.updateRefreshToken(user_id, null);
-                return;
-            }
-            raw_tracks = await this._get_tracks(user_id);
-        }
-        if (raw_artists !== undefined)
-            await this._add_preference(user_id, raw_artists);
-        if (raw_tracks !== undefined)
-            await this._add_preference(user_id, raw_tracks);
-    }
-
-    /**
      *
      * @returns {Promise<void>}
      */
     async run() {
-        this.user_ids = utilsInitializer.accountUtils().getAllPrimaryKeys();
-        for (let i = 0; i < this.user_ids.length; i++) {
-            await this.updatePreferences(this.user_ids[i]);
-        }
-
         this._apply_changes();
         this._match_users();
         for (let inactive_user of this.inactive_users) {

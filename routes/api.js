@@ -17,7 +17,11 @@ const validators = new Validators();
 const isCorrectToken = require(path.join(__dirname, "..", "utils", "isCorrectToken.js"));
 const sendForgotPasswordToken = require(path.join(__dirname, "..", "utils", "sendMail.js"));
 const algorithmEntryPoint = require(path.join(__dirname, "..", "utils", "algorithmEntryPoint.js"));
-
+const DataApi = require(path.join(__dirname, "..", "utils", "OAuth2Api.js"));
+const dataApi = new DataApi(undefined, undefined, undefined, {
+    "color": 1,
+}, undefined);
+const {colors, colors_set} = require(path.join(__dirname, "..", "utils", "colors.js"));
 const iso_dict = require(path.join(__dirname, "..", "utils", "languages.js"));
 
 router.get("/api", async (req, res) => {
@@ -179,8 +183,10 @@ router.post("/api/wake", function (req, res, next) {
     let response = {
         friends: userFriendsUtils.getFriends(user_id),
         //languages: utilsInitializer.userLanguagesUtils().getUserLanguages(user_id),
-        refresh_token_expired: algorithmEntryPoint.refreshTokenExpired(user_id),
+        //refresh_token_expired: spotifyApi.refreshTokenExpired(user_id),
         was_inactive: utilsInitializer.accountUtils().getColumnByPrimaryKey(user_id, "inactive") === 1,
+        user_preferences: utilsInitializer.userPreferencesUtils().getUserPreferences(user_id),
+        available_preferences: colors,
     }
     console.log(response);
     for (let key of Object.keys(response.friends)) {
@@ -190,6 +196,38 @@ router.post("/api/wake", function (req, res, next) {
     res.status(200);
     res.send(JSON.stringify(response));
     algorithmEntryPoint.setActive(user_id);
+});
+
+router.post("/api/update_preferences", function(req, res, next) {
+    console.log("------/api/update_preferences------");
+    let user_id = req.body.user_id;
+    let token = req.body.api_token;
+    if (user_id === undefined || token === undefined) {
+        res.status(400);
+        console.log("Bad Request:", req.body);
+        res.send("Bad Request");
+        return;
+    }
+    console.log(`${user_id} called update_preferences`);
+    if (!isCorrectToken(token, user_id)) {
+        console.log("Wrong api token");
+        res.status(403);
+        return res.send("Wrong api token");
+    }
+    let preferences = req.body.preferences;
+    utilsInitializer.userPreferencesUtils().deleteUserPreference(user_id);
+    // probably this function should be called somewhere else
+    let raw_data = [];
+    for (let i=0; i<preferences.length; i++) {
+        if (colors_set.has(preferences[i])) {
+            raw_data.push({id: preferences[i], type: "color"});
+        }
+    }
+    if (raw_data.length > 0) {
+        dataApi.parsePreference(user_id, raw_data, algorithmEntryPoint);
+    }
+    res.status(200);
+    res.send("OK");
 });
 
 // Get users someone can message
