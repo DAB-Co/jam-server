@@ -2,7 +2,7 @@ const path = require("path");
 const utilsInitializer = require(path.join(__dirname, "initializeUtils.js"));
 
 const userPreferencesUtils = utilsInitializer.userPreferencesUtils();
-//const spotifyPreferencesUtils = utilsInitializer.spotifyPreferencesUtils();
+const spotifyPreferencesUtils = utilsInitializer.spotifyPreferencesUtils();
 
 class OAuth2{
     constructor(client_id, client_secret, redirect_uri, type_weights, token_db) {
@@ -28,16 +28,28 @@ class OAuth2{
 
     updatePreferences(user_id, algorithmObject) {};
 
+    /**
+     *
+     * @param {json} pref {user_id, pref_id, weight}
+     * @returns {Promise<void>}
+     */
     async writePreference(pref) {
         const existing_data = userPreferencesUtils.getPreference(pref.user_id, pref.pref_id);
         if (existing_data === undefined) {
             userPreferencesUtils.addPreference(pref.user_id, pref.pref_id, pref.weight);
-            //spotifyPreferencesUtils.update_preference(pref.pref_id, pref.type, pref.name, pref.data);
+            spotifyPreferencesUtils.update_preference(pref.pref_id, pref.type, pref.name, pref.data);
         } else if (existing_data.weight !== pref.weight) {
             userPreferencesUtils.updatePreferenceWeight(pref.user_id, pref.pref_id, pref.weight);
         }
     }
 
+    /**
+     *
+     * @param user_id
+     * @param {json} raw_preference {id, type}
+     * @param algorithmObject
+     * @returns {Promise<void>}
+     */
     async parsePreference(user_id, raw_preference, algorithmObject) {
         let item_count = raw_preference.length;
         for (let i = 0; i < item_count; i++) {

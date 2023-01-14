@@ -27,6 +27,7 @@ class AlgorithmEntryPoint {
     }
 
     async setActive(user_id) {
+        /*
         let refresh_token = spotifyUtils.getRefreshToken(user_id);
         if (refresh_token !== undefined && refresh_token !== null && refresh_token !== '') {
             this.inactive_users.delete(user_id);
@@ -37,6 +38,8 @@ class AlgorithmEntryPoint {
 		else {
 			utilsInitializer.accountUtils().setInactivity(user_id, true);
 		}
+         */
+        this.inactive_users.delete(user_id);
     }
 
     async add_preference(pref, db_callback) {

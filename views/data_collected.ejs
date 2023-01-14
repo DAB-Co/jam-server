@@ -75,13 +75,10 @@
     We do not make any further attempt to record it for long term use. The only purpose it serves is to diagnose issues.
     Usually it is gone when the server resets.
 </p>
-<p>
-    This list is non-exhaustive. It is just here to give an idea and some things may be missing or omitted.
-</p>
 <ol>
     <li>
         <dl>
-            <dt>data that is public in every web connection: ip etc.</dt>
+            <dt>data that is public in every web connection: ip, useragent etc.</dt>
             <dd></dd>
         </dl>
     </li>
@@ -89,7 +86,9 @@
     <li>
         <dl>
             <dt>message metadata</dt>
-            <dd>From, to and what time a message was sent</dd>
+            <dd>From, to and what time a message was sent. We do not see the message content since they are encrypted
+            via the private key in your device. The private key is stored locally in your device and never sent to the
+            server.</dd>
         </dl>
     </li>
 </ol>
