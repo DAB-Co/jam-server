@@ -57,7 +57,7 @@ describe(__filename, function () {
                     assert.strictEqual(res.data.user_id, users.test_user.user_id);
                     assert.ok(Array.isArray(res.data.languages));
                     assert.strictEqual(res.data.languages.length, 0);
-                    assert.strictEqual(res.data.was_inactive, true);
+                    assert.strictEqual(res.data.was_inactive, false);
                     users.test_user.api_token = res.data.api_token;
                 })
                 .catch(function (error) {
@@ -97,7 +97,7 @@ describe(__filename, function () {
                     assert.strictEqual(res.status, 200);
                     assert.strictEqual(JSON.stringify(res.data.friends), '{}');
                     assert.strictEqual(res.data.small_profile_picture, null);
-                    assert.strictEqual(res.data.was_inactive, true);
+                    assert.strictEqual(res.data.was_inactive, false);
                     //assert.ok(res.data.refresh_token_expired);
                 })
                 .catch(function (error) {
@@ -124,6 +124,30 @@ describe(__filename, function () {
                     let res = error.response;
                     assert.strictEqual(res.status, 403);
                     assert.strictEqual(res.data, "Wrong api token");
+                });
+        });
+    });
+
+    describe("", function () {
+        it("login test_user with api token again", async function () {
+            let data = {
+                user_id: users.test_user.user_id, api_token: users.test_user.api_token, device_id: "device_id"
+            }
+            await axios.post(domain + "/api/wake", data)
+                .then(function (res) {
+                    assert.strictEqual(res.status, 200);
+                    assert.strictEqual(JSON.stringify(res.data.friends), '{}');
+                    assert.strictEqual(res.data.small_profile_picture, null);
+                    assert.strictEqual(res.data.was_inactive, false);
+                    //assert.ok(res.data.refresh_token_expired);
+                })
+                .catch(function (error) {
+                    if (error.response === undefined) {
+                        assert.fail(error);
+                    }
+                    else {
+                        assert.fail(error.response.data);
+                    }
                 });
         });
     });

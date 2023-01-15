@@ -40,6 +40,7 @@ class AlgorithmEntryPoint {
 		}
          */
         this.inactive_users.delete(user_id);
+        utilsInitializer.accountUtils().setInactivity(user_id, false);
     }
 
     async add_preference(pref, db_callback) {
