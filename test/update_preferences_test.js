@@ -77,7 +77,7 @@ describe(__filename, function () {
             await axios.post(domain+"/api/top_preferences", {user_id: parseInt(b_id), api_token: "inout", req_user: parseInt(b_id)})
                 .then(function (res) {
                     assert.strictEqual(res.status, 200);
-                    console.log(res.data);
+                    //console.log(res.data);
                     assert.ok(res.data.user_data.length === 2 && res.data.user_data[0].preference_id === colors[1] && res.data.user_data[1].preference_id === colors[0]);
                 })
                 .catch(function (err) {
