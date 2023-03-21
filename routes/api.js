@@ -184,7 +184,7 @@ router.post("/api/wake", function (req, res, next) {
         friends: userFriendsUtils.getFriends(user_id),
         //languages: utilsInitializer.userLanguagesUtils().getUserLanguages(user_id),
         //refresh_token_expired: spotifyApi.refreshTokenExpired(user_id),
-        was_inactive: utilsInitializer.accountUtils().getColumnByPrimaryKey(user_id, "inactive") === 1,
+        was_inactive: false, // utilsInitializer.accountUtils().getColumnByPrimaryKey(user_id, "inactive") === 1, // this doesn't work because it resets every day anyway
         user_preferences: utilsInitializer.userPreferencesUtils().getUserPreferences(user_id),
         //available_preferences: colors,
     }
