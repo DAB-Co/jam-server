@@ -39,7 +39,7 @@ class AlgorithmEntryPoint {
 			utilsInitializer.accountUtils().setInactivity(user_id, true);
 		}
          */
-        this.inactive_users.delete(user_id);
+        this.inactive_users.delete(Number(user_id));
         utilsInitializer.accountUtils().setInactivity(user_id, false);
     }
 
