@@ -4,7 +4,7 @@
 
 ### With .npmrc
 - Generate a token with repo and read:packages scopes
-- do ```NPM_AUTH_TOKEN=<your token>``` to set it as environment variable
+- do ```export NPM_AUTH_TOKEN=<your token>``` to set it as environment variable
 - ```npm install```
 
 ### Without .npmrc on root
