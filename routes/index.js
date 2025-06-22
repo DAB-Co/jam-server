@@ -8,15 +8,6 @@ router.get("/", function (req, res) {
     res.render("index");
 });
 
-router.get("/data_collected", function (req, res) {
-   res.render("data_collected");
-});
-
-router.get("/privacy_policy", function (req, res) {
-    res.render("data_collected");
-})
-
-
 // Handle api requests
 const api = require(path.join(__dirname, "api.js"));
 router.get("/api", api);
