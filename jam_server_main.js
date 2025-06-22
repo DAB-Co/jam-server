@@ -70,6 +70,12 @@ const argv = require("yargs")(process.argv.slice(1))
         type: "boolean",
         default: false,
     })
+    .option("localhost", {
+        description: "bind to localhost(127.0.0.1)",
+        type: "boolean",
+        default: false,
+        alias: "l",
+    })
     .help().alias("help", "h")
     .parse();
 
@@ -88,9 +94,11 @@ if (argv.notification) {
     firebaseNotificationWrapper.initialize(service_account_key);
 }
 
+const ip = argv.localhost ? "127.0.0.1" : "0.0.0.0";
+
 if (argv.no_https) {
-    const http_server = app.listen(process.env.http_port, () => {
-        console.log(`Running on port ${http_server.address().port}`);
+    const http_server = app.listen(process.env.http_port, ip, () => {
+        console.log(`Running on ${http_server.address().address}:${http_server.address().port}`);
     });
 } else {
     const https = require('https');
@@ -99,8 +107,8 @@ if (argv.no_https) {
         key: fs.readFileSync(process.env.private_key_dir, 'utf8'),
         cert: fs.readFileSync(process.env.certificate_dir, 'utf8'),
     };
-    const https_server = https.createServer(credentials, app).listen(https_port, function () {
-        console.log(`Running on port ${https_server.address().port}`);
+    const https_server = https.createServer(credentials, app).listen(https_port, ip, function () {
+        console.log(`Running on ${http_server.address().address}:${http_server.address().port}`);
     });
 }
 
