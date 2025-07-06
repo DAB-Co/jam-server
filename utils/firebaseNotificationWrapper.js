@@ -40,6 +40,7 @@ class FirebaseNotificationWrapper{
     async sendNotification(title, user_id) {
         if (this.firebaseAdmin !== undefined) {
             const message = {
+                token: utilsInitializer.accountUtils().getNotificationToken(user_id),
                 "notification": {
                     "title": title,
                 }
@@ -49,15 +50,9 @@ class FirebaseNotificationWrapper{
                 priority: "high",
                 timeToLive: 60 * 60 * 24,
             };
-            this.firebaseAdmin.messaging().sendToDevice(utilsInitializer.accountUtils().getNotificationToken(user_id), message, options)
-                .then(response => {
-                    console.log(response);
-                })
-                .catch(error => {
-                    console.log(error);
-                    console.log("deleting notification token for receiver");
-                    utilsInitializer.accountUtils().updateNotificationToken(user_id, null);
-                });
+            this.firebaseAdmin.messaging().send(message, options).catch((error) => {
+                console.log(error);
+            });
         }
     }
 }
