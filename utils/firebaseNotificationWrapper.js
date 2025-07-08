@@ -46,6 +46,11 @@ class FirebaseNotificationWrapper{
                 }
             };
 
+            if (!message.token) {
+                console.log(`User: ${user_id} has notification token ${message.token}, failed to send notification`);
+                return;
+            }
+
             const options = {
                 priority: "high",
                 timeToLive: 60 * 60 * 24,
