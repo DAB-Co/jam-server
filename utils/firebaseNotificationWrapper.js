@@ -51,11 +51,7 @@ class FirebaseNotificationWrapper{
                 return;
             }
 
-            const options = {
-                priority: "high",
-                timeToLive: 60 * 60 * 24,
-            };
-            this.firebaseAdmin.messaging().send(message, options).catch((error) => {
+            this.firebaseAdmin.messaging().send(message).catch((error) => {
                 console.log(error);
             });
         }
